@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Zeroth Studio
 status: executing
-stopped_at: Completed 10-03-PLAN.md
-last_updated: "2026-03-30T14:15:48.632Z"
+stopped_at: Completed 10-04-PLAN.md
+last_updated: "2026-03-30T14:24:50.148Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 69
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 10 (studio-shell-workflow-authoring) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-03-30
 
@@ -56,6 +56,7 @@ Progress: ███████░░░ 69%
 | Phase 10 P02 | 5min | 1 tasks | 10 files |
 | Phase 10 P05 | 167s | 1 tasks | 10 files |
 | Phase 10 P03 | 14min | 1 tasks | 14 files |
+| Phase 10 P04 | 17min | 1 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase 10]: Workflow detail responses include authoritative last_saved_at timestamps for authoring save-state UX.
 - [Phase 10]: Studio frontend uses a standalone Vue 3 + Vite workspace with Pinia, Vue Router, TanStack Query, and zod-validated API contracts.
 - [Phase 10]: Studio exposes editor, executions, and tests routes before shell composition so later plans build against stable mode boundaries.
+- [Phase 10]: Studio shell routes mount a shared AppShell while mode remains URL-driven.
+- [Phase 10]: Studio shell falls back to local workflow and graph fixtures when the backend is unavailable during frontend-only work.
+- [Phase 10]: The initial inspector stays compact and placeholder-oriented instead of exposing deep runtime tables in the shell baseline.
 
 ### Pending Todos
 
@@ -88,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T14:15:48.628Z
-Stopped at: Completed 10-03-PLAN.md
+Last session: 2026-03-30T14:24:50.145Z
+Stopped at: Completed 10-04-PLAN.md
 Resume file: None

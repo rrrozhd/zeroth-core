@@ -141,7 +141,7 @@ Plans:
 - [x] 10-01-PLAN.md — Studio workflow and lease persistence foundations
 - [x] 10-02-PLAN.md — Studio backend bootstrap, auth scope enforcement, and workflow or lease APIs
 - [x] 10-03-PLAN.md — Frontend Studio workspace scaffold and typed API contracts
-- [ ] 10-04-PLAN.md — Canvas-first shell composition and workflow navigation baseline
+- [x] 10-04-PLAN.md — Canvas-first shell composition and workflow navigation baseline
 - [x] 10-05-PLAN.md — Scope-aware draft save, validation, and slash-safe contract lookup APIs
 - [ ] 10-06-PLAN.md — Lease-aware frontend autosave and node-local validation or contract UX
 
@@ -201,7 +201,7 @@ Plans:
 | 7. Transparent Governance & Provenance | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 8. Runtime Security Hardening | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 9. Durable Control Plane & Production Operations | v1.0 | 1/1 | Complete | 2026-03-27 |
-| 10. Studio Shell & Workflow Authoring | v2.0 | 4/6 | In Progress|  |
+| 10. Studio Shell & Workflow Authoring | v2.0 | 5/6 | In Progress|  |
 | 11. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
 | 12. Studio Assets | v2.0 | 0/2 | Not started | - |
 | 13. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |
