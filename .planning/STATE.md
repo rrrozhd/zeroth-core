@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Zeroth Studio
-status: executing
-stopped_at: Completed 10-04-PLAN.md
-last_updated: "2026-03-30T14:24:50.148Z"
+status: verifying
+stopped_at: Completed 10-06-PLAN.md
+last_updated: "2026-03-30T14:35:31.346Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 69
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 Phase: 10 (studio-shell-workflow-authoring) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-30
 
 Progress: ███████░░░ 69%
@@ -57,6 +57,7 @@ Progress: ███████░░░ 69%
 | Phase 10 P05 | 167s | 1 tasks | 10 files |
 | Phase 10 P03 | 14min | 1 tasks | 14 files |
 | Phase 10 P04 | 17min | 1 tasks | 13 files |
+| Phase 10 P06 | 25min | 1 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase 10]: Studio shell routes mount a shared AppShell while mode remains URL-driven.
 - [Phase 10]: Studio shell falls back to local workflow and graph fixtures when the backend is unavailable during frontend-only work.
 - [Phase 10]: The initial inspector stays compact and placeholder-oriented instead of exposing deep runtime tables in the shell baseline.
+- [Phase 10]: Studio frontend lease orchestration now lives in the shell store so workflow switches and unloads follow one release path.
+- [Phase 10]: Validation and contract metadata remain in the node inspector so authoring feedback stays local to the editor shell.
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T14:24:50.145Z
-Stopped at: Completed 10-04-PLAN.md
+Last session: 2026-03-30T14:35:31.343Z
+Stopped at: Completed 10-06-PLAN.md
 Resume file: None
