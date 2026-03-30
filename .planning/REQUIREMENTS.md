@@ -14,7 +14,7 @@
 ### Authoring Studio
 
 - [ ] **STU-01**: User can open a canvas-first Studio interface for authoring workflows
-- [ ] **STU-02**: User can create and edit workflow drafts separately from deployed runtime graphs
+- [x] **STU-02**: User can create and edit workflow drafts separately from deployed runtime graphs
 - [ ] **STU-03**: User can publish and deploy authored workflows to named environments
 - [ ] **STU-04**: User can inspect workflow execution in both run-level and node-level contexts
 
@@ -56,7 +56,7 @@
 | RUN-02 | Phase 1-9 | Complete |
 | RUN-03 | Phase 9 | Complete |
 | STU-01 | Phase 10 | Pending |
-| STU-02 | Phase 10 | Pending |
+| STU-02 | Phase 10 | Complete |
 | STU-03 | Phase 11 | Pending |
 | STU-04 | Phase 11 | Pending |
 | AST-01 | Phase 12 | Pending |
