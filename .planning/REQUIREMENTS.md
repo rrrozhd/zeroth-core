@@ -13,8 +13,8 @@
 
 ### Authoring Studio
 
-- [x] **STU-01**: User can open a canvas-first Studio interface for authoring workflows
-- [x] **STU-02**: User can create and edit workflow drafts separately from deployed runtime graphs
+- [ ] **STU-01**: User can open a canvas-first Studio interface for authoring workflows
+- [ ] **STU-02**: User can create and edit workflow drafts separately from deployed runtime graphs
 - [ ] **STU-03**: User can publish and deploy authored workflows to named environments
 - [ ] **STU-04**: User can inspect workflow execution in both run-level and node-level contexts
 
@@ -23,13 +23,13 @@
 - [ ] **AST-01**: User can manage reusable agent definitions as assets referenced by workflow nodes
 - [ ] **AST-02**: User can manage reusable executable units as assets referenced by workflow nodes
 - [ ] **AST-03**: User can manage reusable memory resources as assets referenced by workflow nodes
-- [x] **AST-04**: User can configure contracts in node-local authoring flows rather than through a detached contract library
+- [ ] **AST-04**: User can configure contracts in node-local authoring flows rather than through a detached contract library
 - [ ] **AST-05**: User can manage environment-bound secrets and bindings separately from workflow structure
 
 ### UX And Governance
 
-- [x] **UX-01**: Studio is minimal by default, with progressive disclosure for governance and runtime detail
-- [x] **UX-02**: Workflows are navigable through a foldered left rail and contextual editor shell
+- [ ] **UX-01**: Studio is minimal by default, with progressive disclosure for governance and runtime detail
+- [ ] **UX-02**: Workflows are navigable through a foldered left rail and contextual editor shell
 - [ ] **UX-03**: Runtime and governance data are accessible without turning the editor into a heavy operations dashboard
 
 ## v2 Requirements
@@ -55,17 +55,17 @@
 | RUN-01 | Phase 1-9 | Complete |
 | RUN-02 | Phase 1-9 | Complete |
 | RUN-03 | Phase 9 | Complete |
-| STU-01 | Phase 10 | Complete |
-| STU-02 | Phase 10 | Complete |
+| STU-01 | Phase 10 | Pending |
+| STU-02 | Phase 10 | Pending |
 | STU-03 | Phase 11 | Pending |
 | STU-04 | Phase 11 | Pending |
 | AST-01 | Phase 12 | Pending |
 | AST-02 | Phase 12 | Pending |
 | AST-03 | Phase 12 | Pending |
-| AST-04 | Phase 10 | Complete |
+| AST-04 | Phase 10 | Pending |
 | AST-05 | Phase 13 | Pending |
-| UX-01 | Phase 10 | Complete |
-| UX-02 | Phase 10 | Complete |
+| UX-01 | Phase 10 | Pending |
+| UX-02 | Phase 10 | Pending |
 | UX-03 | Phase 11 | Pending |
 
 **Coverage:**

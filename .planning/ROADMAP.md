@@ -135,15 +135,12 @@ Plans:
   1. User can open a Studio shell with workflow rail, canvas, inspector, and mode switch
   2. User can manage workflow drafts separately from deployed runtime graphs
   3. Authoring validation and contract configuration work in node-local flows
-**Plans**: 6 plans
+**Plans**: 3 plans
 
 Plans:
-- [x] 10-01-PLAN.md — Studio workflow and lease persistence foundations
-- [x] 10-02-PLAN.md — Studio backend bootstrap, auth scope enforcement, and workflow or lease APIs
-- [x] 10-03-PLAN.md — Frontend Studio workspace scaffold and typed API contracts
-- [x] 10-04-PLAN.md — Canvas-first shell composition and workflow navigation baseline
-- [x] 10-05-PLAN.md — Scope-aware draft save, validation, and slash-safe contract lookup APIs
-- [x] 10-06-PLAN.md — Lease-aware frontend autosave and node-local validation or contract UX
+- [ ] 10-01: Studio backend session, draft, revision, and lease foundations
+- [ ] 10-02: Frontend shell, routing, and canvas/inspector baseline
+- [ ] 10-03: Validation, contract-authoring UX, and autosave boundaries
 
 ### Phase 11: Studio Runtime, Executions, And Testing
 **Goal**: Add execution timelines, test runs, and runtime/gateway views to Studio.
@@ -201,7 +198,7 @@ Plans:
 | 7. Transparent Governance & Provenance | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 8. Runtime Security Hardening | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 9. Durable Control Plane & Production Operations | v1.0 | 1/1 | Complete | 2026-03-27 |
-| 10. Studio Shell & Workflow Authoring | v2.0 | 6/6 | Complete   | 2026-03-30 |
+| 10. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
 | 11. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
 | 12. Studio Assets | v2.0 | 0/2 | Not started | - |
 | 13. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |
