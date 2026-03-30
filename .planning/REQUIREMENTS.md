@@ -23,7 +23,7 @@
 - [ ] **AST-01**: User can manage reusable agent definitions as assets referenced by workflow nodes
 - [ ] **AST-02**: User can manage reusable executable units as assets referenced by workflow nodes
 - [ ] **AST-03**: User can manage reusable memory resources as assets referenced by workflow nodes
-- [ ] **AST-04**: User can configure contracts in node-local authoring flows rather than through a detached contract library
+- [x] **AST-04**: User can configure contracts in node-local authoring flows rather than through a detached contract library
 - [ ] **AST-05**: User can manage environment-bound secrets and bindings separately from workflow structure
 
 ### UX And Governance
@@ -62,7 +62,7 @@
 | AST-01 | Phase 12 | Pending |
 | AST-02 | Phase 12 | Pending |
 | AST-03 | Phase 12 | Pending |
-| AST-04 | Phase 10 | Pending |
+| AST-04 | Phase 10 | Complete |
 | AST-05 | Phase 13 | Pending |
 | UX-01 | Phase 10 | Pending |
 | UX-02 | Phase 10 | Pending |
