@@ -138,9 +138,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 10-01: Studio backend session, draft, revision, and lease foundations
-- [ ] 10-02: Frontend shell, routing, and canvas/inspector baseline
-- [ ] 10-03: Validation, contract-authoring UX, and autosave boundaries
+- [ ] 10-01-PLAN.md — Studio backend session, draft, revision, and lease foundations
+- [ ] 10-02-PLAN.md — Frontend shell, routing, and canvas/inspector baseline
+- [ ] 10-03-PLAN.md — Validation, contract-authoring UX, and autosave boundaries
 
 ### Phase 11: Studio Runtime, Executions, And Testing
 **Goal**: Add execution timelines, test runs, and runtime/gateway views to Studio.
