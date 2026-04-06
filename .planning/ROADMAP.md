@@ -187,8 +187,8 @@ Plans:
 
 Plans:
 - [ ] 12-01-PLAN.md — LiteLLM dependencies, TokenUsage model, LiteLLMProviderAdapter
-- [ ] 12-02-PLAN.md — Retry module with exponential backoff, error classification, runner upgrade
-- [ ] 12-03-PLAN.md — Token audit wiring, unit tests, live integration tests
+- [x] 12-02-PLAN.md — Retry module with exponential backoff, error classification, runner upgrade
+- [x] 12-03-PLAN.md — Token audit wiring, unit tests, live integration tests
 
 ### Phase 13: Regulus Economics Integration
 **Goal**: Every LLM call emits a cost event to the Regulus backend, token costs are attributed per node/run/tenant, budget caps are enforced before execution, and cost totals are queryable via REST.
@@ -351,7 +351,7 @@ Plans:
 | 9. Durable Control Plane & Production Operations | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 10. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Paused | - |
 | 11. Config & Postgres Storage | v1.1 | 2/3 | Complete    | 2026-04-06 |
-| 12. Real LLM Providers & Retry | v1.1 | 0/3 | Not started | - |
+| 12. Real LLM Providers & Retry | v1.1 | 2/3 | In Progress|  |
 | 13. Regulus Economics Integration | v1.1 | 0/TBD | Not started | - |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 0/TBD | Not started | - |
 | 15. Webhooks & Approval SLA | v1.1 | 0/TBD | Not started | - |

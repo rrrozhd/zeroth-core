@@ -15,10 +15,10 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 ### LLM Providers
 
-- [ ] **LLM-01**: OpenAI provider adapter implements ProviderAdapter protocol via langchain-openai
-- [ ] **LLM-02**: Anthropic provider adapter implements ProviderAdapter protocol via langchain-anthropic
+- [x] **LLM-01**: OpenAI provider adapter implements ProviderAdapter protocol via langchain-openai
+- [x] **LLM-02**: Anthropic provider adapter implements ProviderAdapter protocol via langchain-anthropic
 - [x] **LLM-03**: Provider calls retry with exponential backoff and jitter on rate limits and transient failures
-- [ ] **LLM-04**: Token usage (input/output) captured from provider responses and attached to node audit records
+- [x] **LLM-04**: Token usage (input/output) captured from provider responses and attached to node audit records
 
 ### Economics
 
@@ -97,10 +97,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CFG-01 | Phase 11 | Complete |
 | CFG-02 | Phase 11 | Complete |
 | CFG-03 | Phase 11 | Complete |
-| LLM-01 | Phase 12 | Pending |
-| LLM-02 | Phase 12 | Pending |
+| LLM-01 | Phase 12 | Complete |
+| LLM-02 | Phase 12 | Complete |
 | LLM-03 | Phase 12 | Complete |
-| LLM-04 | Phase 12 | Pending |
+| LLM-04 | Phase 12 | Complete |
 | ECON-01 | Phase 13 | Pending |
 | ECON-02 | Phase 13 | Pending |
 | ECON-03 | Phase 13 | Pending |

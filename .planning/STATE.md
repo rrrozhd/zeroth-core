@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-04-06T21:44:28.914Z"
+stopped_at: Completed 12-03-PLAN.md
+last_updated: "2026-04-06T21:54:44.943Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 7
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 1
+  total_plans: 6
+  completed_plans: 4
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 12 (Real LLM Providers & Retry) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-06
 
@@ -51,6 +51,7 @@ Progress: ░░░░░░░░░░ 0% (v1.1)
 | Phase 11-config-postgres-storage P02 | 1523 | 2 tasks | 25 files |
 | Phase 11-config-postgres-storage P03 | 2403 | 2 tasks | 49 files |
 | Phase 12 P02 | 157 | 2 tasks | 3 files |
+| Phase 12-real-llm-providers-retry P03 | 296 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,8 @@ Progress: ░░░░░░░░░░ 0% (v1.1)
 - [Phase 11-config-postgres-storage]: All repositories and callers converted to async AsyncDatabase protocol; Alembic migrations run at startup via sync run_migrations()
 - [Phase 11-config-postgres-storage]: All tests converted to async with Alembic-migrated fixtures; testcontainers Postgres integration tests added; migration schema fixed with missing columns
 - [Phase 12]: Full jitter exponential backoff for provider retry; transient error classification via litellm exception types
+- [Phase 12]: Token audit trail: NodeAuditRecord.token_usage wired from ProviderResponse through AgentRunner
+- [Phase 12]: Live tests gated behind @pytest.mark.live; default pytest excludes them via addopts
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T21:44:28.912Z
-Stopped at: Completed 12-02-PLAN.md
+Last session: 2026-04-06T21:54:44.940Z
+Stopped at: Completed 12-03-PLAN.md
 Resume file: None
