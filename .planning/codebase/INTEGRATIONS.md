@@ -1,92 +1,210 @@
-# Zeroth Codebase Integrations
+# External Integrations
 
-## Overview
+**Analysis Date:** 2026-04-05
 
-The current codebase is mostly self-contained, but it already integrates with several external-facing concerns: a local GovernAI runtime dependency, HTTP auth infrastructure, SQLite and Redis storage, and secret-bearing execution contexts.
+## APIs & External Services
 
-## Core Runtime Dependency
+**GovernAI (Core Governance Engine):**
+- Local dependency at `file:///Users/dondoe/coding/governai`
+- Provides: `GovernedLLM`, `Tool`, `PythonTool`, `GovernedStepSpec`, `RunState`, `RunStatus`
+- Runtime stores: `RedisRunStore`, `RedisInterruptStore`, `RedisAuditEmitter`
+- Tool call normalization: `NormalizedToolCall`, `extract_tool_calls`, `build_tool_message`
+- Import locations: `src/zeroth/agent_runtime/provider.py`, `src/zeroth/storage/redis.py`, `src/zeroth/execution_units/`, `src/zeroth/runs/`, `src/zeroth/graph/`, `src/zeroth/contracts/`
 
-- GovernAI is consumed via the local path dependency in [`pyproject.toml`](`pyproject.toml`)
-- This is the most important external code dependency in the current system
-- The Zeroth codebase appears to wrap or align with GovernAI abstractions rather than re-implementing all runtime behavior from scratch
+**LLM Providers:**
+- Accessed through GovernAI's `GovernedLLM` abstraction (`src/zeroth/agent_runtime/provider.py`)
+- `GovernedLLMProviderAdapter` wraps `GovernedLLM` for production use
+- `DeterministicProviderAdapter` available for testing without real LLM calls
+- No direct OpenAI/Anthropic SDK imports; all LLM access is mediated through GovernAI
 
-## HTTP Service Surface
+**JWT/OIDC Identity Providers:**
+- JWKS-based token verification (`src/zeroth/service/auth.py`)
+- Configurable issuer, audience, algorithms (default RS256)
+- JWKS fetched from remote URL or provided inline via config
+- Config via `ZEROTH_SERVICE_BEARER_JSON` env var
 
-The service layer exposes deployment-bound HTTP APIs through FastAPI:
+## API Surface (REST)
 
-- [`src/zeroth/service/run_api.py`](`src/zeroth/service/run_api.py`) — public run submission and status
-- [`src/zeroth/service/approval_api.py`](`src/zeroth/service/approval_api.py`) — human approval interactions
-- [`src/zeroth/service/contracts_api.py`](`src/zeroth/service/contracts_api.py`) — contract metadata surfaces
-- [`src/zeroth/service/audit_api.py`](`src/zeroth/service/audit_api.py`) — audit, timeline, evidence, attestation surfaces
-- [`src/zeroth/service/admin_api.py`](`src/zeroth/service/admin_api.py`) — admin controls and metrics
+**Health & Diagnostics:**
+- `GET /health` - Deployment health check (returns deployment ref, version, graph version ref)
+- `GET /metrics` - Prometheus text exposition format metrics (requires `metrics:read` permission)
 
-These APIs are internally integrated through the deployment bootstrap in [`src/zeroth/service/bootstrap.py`](`src/zeroth/service/bootstrap.py`).
+**Run Management (registered in `src/zeroth/service/run_api.py`):**
+- Run submission and status endpoints
+- Run lifecycle: PENDING -> RUNNING -> COMPLETED / FAILED / WAITING_INTERRUPT
 
-## Authentication And Authorization
+**Admin Operations (registered in `src/zeroth/service/admin_api.py`):**
+- `GET /admin/runs` - List runs by status (requires `run:admin`)
+- `POST /admin/runs/{run_id}/cancel` - Force-fail a run
+- `POST /admin/runs/{run_id}/replay` - Replay a dead-letter/failed run (resets to PENDING)
+- `POST /admin/runs/{run_id}/interrupt` - Interrupt a running run (transitions to WAITING_INTERRUPT)
 
-External auth-related integrations include:
+**Contracts (registered in `src/zeroth/service/contracts_api.py`):**
+- Contract metadata endpoints
 
-- Static API key credentials via [`src/zeroth/service/auth.py`](`src/zeroth/service/auth.py`)
-- JWT/JWKS bearer verification support in [`src/zeroth/service/auth.py`](`src/zeroth/service/auth.py`)
-- Role and scope enforcement via [`src/zeroth/service/authorization.py`](`src/zeroth/service/authorization.py`)
+**Approvals (registered in `src/zeroth/service/approval_api.py`):**
+- Human approval interaction endpoints
 
-Potential external providers or integration points:
+**Audit (registered in `src/zeroth/service/audit_api.py`):**
+- Audit timeline, evidence, attestation endpoints
 
-- JWKS URL for bearer auth
-- signed JWT issuers
-- tenant/workspace identity boundaries
+**Route Registration:**
+- All routes registered in `src/zeroth/service/app.py` via `create_app()`
+- Routes grouped by domain: runs, contracts, approvals, audit, admin/metrics
 
-## Storage Integrations
+## Authentication & Identity
 
-- SQLite is the main persisted storage system via [`src/zeroth/storage/sqlite.py`](`src/zeroth/storage/sqlite.py`)
-- Redis-related storage hooks exist in [`src/zeroth/storage/redis.py`](`src/zeroth/storage/redis.py`)
-- JSON-based storage helper exists in [`src/zeroth/storage/json.py`](`src/zeroth/storage/json.py`)
+**Auth Mechanisms:**
 
-Phase 9 durable control work suggests Redis may matter for dispatch/control-plane scenarios even though SQLite remains the evident default persistence layer.
+1. **Static API Key** - `X-API-Key` header
+   - Credentials loaded from `ZEROTH_SERVICE_API_KEYS_JSON` env var
+   - Each key maps to: subject, roles, tenant_id, workspace_id
+   - Model: `StaticApiKeyCredential` in `src/zeroth/service/auth.py`
 
-## Secret And Credential Handling
+2. **JWT Bearer Token** - `Authorization: Bearer <token>` header
+   - OIDC-compatible with JWKS verification
+   - Claims extracted: sub, roles, tenant_id, workspace_id
+   - Verifier: `JWTBearerTokenVerifier` in `src/zeroth/service/auth.py`
+   - Config via `ZEROTH_SERVICE_BEARER_JSON` env var
 
-The codebase expects secret-bearing configurations to exist in runtime contexts:
+**Authorization (RBAC):**
+- Three roles: `operator`, `reviewer`, `admin` (`src/zeroth/identity/models.py`)
+- Permission enum in `src/zeroth/service/authorization.py`:
+  - `deployment:read`, `run:create`, `run:read`
+  - `approval:read`, `approval:resolve`
+  - `audit:read`, `run:admin`, `metrics:read`
+- Admin role has all permissions
+- Operator: deployment read, run create/read, approval read
+- Reviewer: deployment read, run read, approval read/resolve
 
-- secret provider interfaces in [`src/zeroth/secrets/provider.py`](`src/zeroth/secrets/provider.py`)
-- redaction helpers in [`src/zeroth/secrets/redaction.py`](`src/zeroth/secrets/redaction.py`)
-- encrypted-field helper in [`src/zeroth/storage/sqlite.py`](`src/zeroth/storage/sqlite.py`)
+**Identity Models (`src/zeroth/identity/models.py`):**
+- `AuthenticatedPrincipal` - Shared identity shape across all services
+- `ActorIdentity` - Actor tracking for audit trail
+- `ServiceRole` enum - operator, reviewer, admin
+- `AuthMethod` enum - API_KEY, BEARER
+- `PrincipalScope` - Tenant and workspace scoping
 
-This matters for future Studio work because environment management will likely sit above these lower-level primitives.
+**Authentication Middleware (`src/zeroth/service/app.py`):**
+- Every HTTP request passes through auth middleware
+- Failed auth records denial audit event via `record_service_denial()`
+- Correlation ID propagated via `X-Correlation-ID` header (auto-generated if absent)
 
-## Deployment And Environment-Like Integration Points
+## Data Storage
 
-Deployment snapshots and runtime binding information live in:
+**SQLite (Local Persistence):**
+- Client: `SQLiteDatabase` wrapper in `src/zeroth/storage/sqlite.py`
+- Features: WAL mode, foreign keys, versioned migrations, optional Fernet encryption
+- Repositories using SQLite:
+  - `src/zeroth/deployments/` - `SQLiteDeploymentRepository`
+  - `src/zeroth/graph/` - `GraphRepository`
+  - `src/zeroth/runs/` - `RunRepository`, `ThreadRepository`
+  - `src/zeroth/approvals/` - `ApprovalRepository`
+  - `src/zeroth/audit/` - `AuditRepository`
+  - `src/zeroth/contracts/` - `ContractRegistry`
 
-- [`src/zeroth/deployments/models.py`](`src/zeroth/deployments/models.py`)
-- [`src/zeroth/deployments/service.py`](`src/zeroth/deployments/service.py`)
-- [`src/zeroth/deployments/provenance.py`](`src/zeroth/deployments/provenance.py`)
+**Redis (Distributed Runtime State):**
+- Client: `redis >=5.0.0` Python package
+- Connection config: `RedisConfig` in `src/zeroth/storage/redis.py`
+- Env vars: `ZEROTH_REDIS_HOST`, `ZEROTH_REDIS_PORT`, `ZEROTH_REDIS_MODE`, `ZEROTH_REDIS_PASSWORD`, `ZEROTH_REDIS_SSL`, `ZEROTH_REDIS_URL`, etc.
+- Three GovernAI-backed store types:
+  - `RedisRunStore` (prefix `zeroth:run`) - Run state tracking
+  - `RedisInterruptStore` (prefix `zeroth:interrupt`) - Pause/approval handling
+  - `RedisAuditEmitter` (prefix `zeroth:audit`) - Real-time audit events
+- Factory: `build_governai_redis_runtime()` in `src/zeroth/storage/redis.py`
+- Docker support: Automatic container detection via `docker inspect`
 
-Current deployment references already carry tenant/workspace metadata and pinned graph/contract versions, which will be important integration points for a future Studio gateway.
+**File Storage:**
+- Local filesystem only (SQLite files)
 
-## Human Workflow Integrations
+**Caching:**
+- Redis serves as both runtime state store and implicit cache
 
-The codebase supports human-in-the-loop operations through:
+## Monitoring & Observability
 
-- approval service and repository in `src/zeroth/approvals/`
-- audit/evidence/attestation in `src/zeroth/audit/`
-- admin operations such as cancel, replay, and interrupt in [`src/zeroth/service/admin_api.py`](`src/zeroth/service/admin_api.py`)
+**Metrics:**
+- Custom in-process `MetricsCollector` in `src/zeroth/observability/metrics.py`
+- No external Prometheus client dependency; pure Python implementation
+- Supports counters, gauges, histograms
+- Renders Prometheus text exposition format via `render_prometheus_text()`
+- Exposed at `GET /metrics` endpoint
 
-These are not third-party SaaS integrations by themselves, but they are external-facing control surfaces meant to be consumed by an operator UI or client.
+**Queue Depth Gauge:**
+- Background async task: `QueueDepthGauge` in `src/zeroth/observability/queue_gauge.py`
+- Polls pending run count, reports `zeroth_queue_depth` gauge
+- Configurable poll interval (default 10s)
+- Started/stopped via FastAPI lifespan
 
-## Test And Scenario Integrations
+**Correlation IDs:**
+- Request-scoped correlation tracking in `src/zeroth/observability/correlation.py`
+- Propagated via `X-Correlation-ID` HTTP header
+- Functions: `get_correlation_id()`, `set_correlation_id()`, `new_correlation_id()`
 
-- Live scenario coverage exists under [`tests/live_scenarios/test_research_audit.py`](`tests/live_scenarios/test_research_audit.py`)
-- Service integration helpers live in [`tests/service/helpers.py`](`tests/service/helpers.py`)
-- The repo includes `live_scenarios/README.md`, suggesting local research-audit scenario setup
+**Logging:**
+- Python standard `logging` module
+- Pattern: `logger = logging.getLogger(__name__)` per module
+- No structured logging library (no structlog, etc.)
 
-## Not Found During Mapping
+**Error Tracking:**
+- None (no Sentry, Datadog, or similar)
 
-- No frontend analytics, Sentry, Stripe, or cloud SDK integrations
-- No Docker Compose or Kubernetes manifests in the root files inspected
-- No explicit external database services besides Redis support
-- No checked-in OpenAPI client generation or frontend API client package
+## Secrets Management
 
-## Practical Summary
+**Secret Provider Interface:**
+- Protocol: `SecretProvider` in `src/zeroth/secrets/provider.py`
+- Default: `EnvSecretProvider` reads from environment variables
+- `SecretResolver` resolves `EnvironmentVariable` models into runtime env dicts
+- `SecretRedactor` sanitizes secret values from output (`src/zeroth/secrets/redaction.py`)
 
-Today’s integrations are mostly backend-runtime and auth/storage oriented. The next major integration surface will likely be a Studio UI and authoring gateway layered over the existing deployment, runtime, audit, approval, and admin APIs rather than replacing them.
+**Field Encryption:**
+- Fernet symmetric encryption for sensitive SQLite columns
+- `EncryptedField` class in `src/zeroth/storage/sqlite.py`
+- Key generation: `EncryptedField.generate_key()`
+
+## Durable Dispatch & Guardrails
+
+**Run Worker:**
+- `RunWorker` in `src/zeroth/dispatch/worker.py` - Background poll loop for run execution
+- Started via FastAPI lifespan in `src/zeroth/service/app.py`
+
+**Lease Manager:**
+- `LeaseManager` in `src/zeroth/dispatch/lease.py` - Run-level lease coordination
+- Prevents duplicate execution; lease clearing on admin cancel
+
+**Dead Letter:**
+- `DeadLetterManager` in `src/zeroth/guardrails/dead_letter.py`
+- Failed runs can be replayed via `POST /admin/runs/{run_id}/replay`
+
+**Rate Limiting & Quotas:**
+- `TokenBucketRateLimiter` in `src/zeroth/guardrails/rate_limit.py`
+- `QuotaEnforcer` in `src/zeroth/guardrails/rate_limit.py`
+- Config: `GuardrailConfig` in `src/zeroth/guardrails/config.py`
+
+## CI/CD & Deployment
+
+**Hosting:**
+- Not configured (no Dockerfile, no deployment manifests)
+
+**CI Pipeline:**
+- Not detected (no `.github/workflows/` or CI config files)
+
+## Webhooks & Callbacks
+
+**Incoming:**
+- None detected
+
+**Outgoing:**
+- None detected
+
+## Environment Configuration
+
+**Required env vars (for full service):**
+- `ZEROTH_REDIS_*` - Redis connection (at minimum HOST/PORT or URL)
+- `ZEROTH_SERVICE_API_KEYS_JSON` or `ZEROTH_SERVICE_BEARER_JSON` - Authentication config
+
+**Secrets location:**
+- Environment variables at runtime
+- No `.env` file committed to repository
+
+---
+
+*Integration audit: 2026-04-05*

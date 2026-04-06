@@ -98,3 +98,7 @@ None -- all implementations are functional.
 2. `uv run ruff check` on all new files -- no lint errors
 3. `python -c "from zeroth.config import ZerothSettings; s = ZerothSettings(); print(s.database.backend)"` -- prints "sqlite"
 4. `python -c "from zeroth.storage import AsyncDatabase, AsyncSQLiteDatabase; print(isinstance(AsyncSQLiteDatabase('/tmp/test.db'), AsyncDatabase))"` -- prints "True"
+
+## Self-Check: PASSED
+
+All 14 created files verified present. Both commits (1cbcf92, 4ccd14b) verified in git log.

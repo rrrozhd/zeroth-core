@@ -1,81 +1,128 @@
-# Zeroth Codebase Stack
+# Technology Stack
 
-## Overview
+**Analysis Date:** 2026-04-05
 
-Zeroth is currently a Python 3.12 backend/service codebase. The repo is organized as a Python package under `src/zeroth` with pytest-based verification in `tests/`. There is no checked-in frontend application, package manager lockfile for JavaScript, or Vite/Vue/React workspace yet.
+## Languages
 
-## Languages And Runtime
+**Primary:**
+- Python >=3.12 - Backend platform (`src/zeroth/`), all core logic, API surface, tests
 
-- Python 3.12+ is required by [`pyproject.toml`](`pyproject.toml`)
-- The package name is `zeroth`
-- Packaging uses Hatchling via [`pyproject.toml`](`pyproject.toml`)
-- Local development uses `uv` with lockfile [`uv.lock`](`uv.lock`)
+**Secondary:**
+- TypeScript ~5.8 - Studio mockup frontend (`apps/studio-mockups/`)
+- Vue SFC (`.vue`) - Studio UI components (`apps/studio-mockups/src/`)
 
-## Primary Frameworks And Libraries
+## Runtime
 
-- FastAPI powers the HTTP service surface in [`src/zeroth/service/app.py`](`src/zeroth/service/app.py`)
-- Pydantic v2 is used for API models, domain models, and validation throughout `src/zeroth/*`
-- PyJWT with crypto extras is used for bearer auth support in [`src/zeroth/service/auth.py`](`src/zeroth/service/auth.py`)
-- `httpx` is present as a dependency for HTTP-facing integrations/tests
-- `redis` is present as a dependency; there is also Redis-related storage code in [`src/zeroth/storage/redis.py`](`src/zeroth/storage/redis.py`)
-- `uvicorn` is present for serving the FastAPI app
-- `cryptography` is used indirectly through Fernet encryption in [`src/zeroth/storage/sqlite.py`](`src/zeroth/storage/sqlite.py`)
+**Environment:**
+- Python 3.12+ (specified via `requires-python = ">=3.12"` in `pyproject.toml`)
+- Ruff target version: `py312`
+- Node.js (for studio mockups build tooling; no `.nvmrc` present)
 
-## Local Path Dependency
+**Package Manager:**
+- `uv` - Python dependency management and virtual environment
+- Lockfile: `uv.lock` present (revision 3)
+- `npm` - Frontend dependencies for studio mockups (`apps/studio-mockups/package.json`)
 
-- The project depends on a local editable-style path for GovernAI:
-  - `governai @ file:///Users/dondoe/coding/governai`
-- This is defined in [`pyproject.toml`](`pyproject.toml`)
-- This makes the repo environment-sensitive and can block reproducible setup on another machine unless that path exists or the dependency is replaced
+## Frameworks
 
-## Tooling
+**Core:**
+- FastAPI >=0.115 - HTTP API framework (`src/zeroth/service/app.py`)
+- Pydantic >=2.10 - Data validation and settings management (used throughout all modules)
+- Uvicorn >=0.30 - ASGI server for FastAPI
 
-- Testing: pytest, configured in [`pyproject.toml`](`pyproject.toml`)
-- Async test support: `pytest-asyncio`
-- Linting/format import ordering: Ruff
-- No separate mypy, pre-commit, or frontend build tool configuration was found in repo root during mapping
+**Frontend:**
+- Vue 3 ^3.5.13 - Studio mockup UI (`apps/studio-mockups/`)
+- Vite ^5.4.18 - Frontend build tool (`apps/studio-mockups/vite.config.ts`)
+- vue-tsc ^2.2.8 - Vue TypeScript type checking
+- @vitejs/plugin-vue ^5.2.4 - Vite Vue plugin
 
-## Persistence And Storage Technologies
+**Testing:**
+- pytest >=8.0 - Test runner, config in `pyproject.toml` (`testpaths = ["tests"]`)
+- pytest-asyncio >=0.25 - Async test support (`asyncio_mode = "auto"`)
 
-- SQLite is the primary persisted storage backend through [`src/zeroth/storage/sqlite.py`](`src/zeroth/storage/sqlite.py`)
-- JSON storage helpers exist in [`src/zeroth/storage/json.py`](`src/zeroth/storage/json.py`)
-- Redis support exists in [`src/zeroth/storage/redis.py`](`src/zeroth/storage/redis.py`) and Phase 9 mentions Redis-related durable control behavior
-- SQLite wrapper enables WAL mode, foreign keys, and schema version tracking
+**Build/Dev:**
+- Hatchling - Python build backend (`pyproject.toml` build-system)
+- Ruff >=0.11 - Linting and formatting (configured in `pyproject.toml`)
 
-## Security And Identity Stack
+## Key Dependencies
 
-- Static API key auth and bearer token verification are implemented in [`src/zeroth/service/auth.py`](`src/zeroth/service/auth.py`)
-- Identity/role models live in [`src/zeroth/identity/models.py`](`src/zeroth/identity/models.py`)
-- Service authorization gates live in [`src/zeroth/service/authorization.py`](`src/zeroth/service/authorization.py`)
-- Secret resolution/redaction logic lives under `src/zeroth/secrets/`
+**Critical:**
+- `governai` (local path: `file:///Users/dondoe/coding/governai`) - Core governance engine providing `GovernedLLM`, `RunStore`, `InterruptStore`, `AuditEmitter`, `Tool`, `PythonTool`, `GovernedStepSpec`, `RunState`, `RunStatus`. This is the foundational runtime that Zeroth wraps and extends.
+- `fastapi >=0.115` - HTTP service layer for deployed agents
+- `pydantic >=2.10` - Data models, validation, serialization across all modules
+- `redis >=5.0.0` - Distributed runtime state (runs, interrupts, audit events)
 
-## Runtime And Domain Packages
+**Infrastructure:**
+- `httpx >=0.27` - Async HTTP client for external API calls
+- `PyJWT[crypto] >=2.10` - JWT bearer token verification (`src/zeroth/service/auth.py`)
+- `cryptography` (transitive via PyJWT[crypto], also used directly) - Fernet symmetric encryption for `EncryptedField` in `src/zeroth/storage/sqlite.py`
+- `uvicorn >=0.30` - Production ASGI server
 
-The package layout shows a strongly modular backend:
+## Configuration
 
-- `graph` — graph models, validation, serialization, storage
-- `contracts` — contract registry and errors
-- `mappings` — payload mapping execution and validation
-- `runs` — run persistence and lifecycle state
-- `agent_runtime` — agent invocation, prompts, tools, thread store
-- `execution_units` — executable-unit manifests, adapters, runner, sandbox
-- `conditions` — branching and condition evaluation
-- `memory` — memory connectors and registry
-- `approvals` — human approval models, repo, service
-- `audit` — audit records, evidence, verifier, timeline
-- `deployments` — deployment snapshots and provenance
-- `dispatch` — leases and durable workers
-- `guardrails` — quotas, dead letters, rate limiting
-- `observability` — metrics, correlation, queue gauges
-- `service` — FastAPI-facing HTTP APIs
+**Environment Variables:**
+- `ZEROTH_REDIS_*` - Redis connection settings (HOST, PORT, MODE, PASSWORD, SSL, etc.) loaded via `RedisConfig.from_env()` in `src/zeroth/storage/redis.py`
+- `ZEROTH_SERVICE_API_KEYS_JSON` - Static API key credentials (JSON string)
+- `ZEROTH_SERVICE_BEARER_JSON` - JWT/OIDC bearer token config (JSON string)
+- No `.env` file present in repository root
 
-## Missing Or Not Yet Present
+**Build Configuration:**
+- `pyproject.toml` - Python project config, dependencies, Ruff settings, pytest settings
+- `apps/studio-mockups/vite.config.ts` - Frontend build configuration
+- `apps/studio-mockups/tsconfig.json` - TypeScript configuration
 
-- No frontend app directory such as `apps/studio`, `web/`, or `frontend/`
-- No TypeScript config, Vite config, or Node package manifest
-- No monorepo package management or workspace tooling
-- No Studio-specific backend package yet such as `src/zeroth/studio/`
+**Ruff Settings (in `pyproject.toml`):**
+- Line length: 100
+- Target: Python 3.12
+- Lint rules: E (pycodestyle), F (pyflakes), I (isort), N (naming), UP (pyupgrade), B (bugbear), SIM (simplify)
 
-## Practical Summary
+**Pytest Settings (in `pyproject.toml`):**
+- Test paths: `tests/`
+- Async mode: `auto` (all async tests run automatically without markers)
 
-This is a mature Python backend with strong domain decomposition and test coverage, but it is still backend-only in repository shape. Any Studio UI phase will be additive: introducing a frontend stack and likely a new backend package for authoring/gateway concerns rather than extending an existing web client.
+## Data Storage
+
+**SQLite (Local Persistence):**
+- Custom wrapper: `src/zeroth/storage/sqlite.py` (`SQLiteDatabase` class)
+- WAL mode, foreign keys enabled, NORMAL synchronous
+- Schema migration system with versioned `Migration` dataclass per scope
+- Optional Fernet-based field encryption (`EncryptedField`)
+- Used by all repository classes: deployments, graphs, contracts, runs, threads, approvals, audit
+
+**Redis (Distributed Runtime State):**
+- Config: `src/zeroth/storage/redis.py` (`RedisConfig`)
+- Deployment modes: local, Docker, remote
+- Three GovernAI-backed stores: `RedisRunStore`, `RedisInterruptStore`, `RedisAuditEmitter`
+- Key prefix: `zeroth` (configurable)
+- Optional TTL for runs and audit events
+
+**JSON:**
+- Helper module: `src/zeroth/storage/json.py`
+
+## Platform Requirements
+
+**Development:**
+- Python 3.12+
+- `uv` package manager
+- Redis (local, Docker, or remote) for runtime state
+- GovernAI sibling repo at `/Users/dondoe/coding/governai` (local path dependency)
+- Node.js + npm (only for `apps/studio-mockups/` frontend)
+- Docker (optional, for Redis container mode)
+
+**Production:**
+- Python 3.12+ with uvicorn ASGI server
+- Redis instance for distributed runtime state
+- SQLite file storage (local filesystem)
+- JWT/OIDC provider or static API keys for authentication
+
+**Build & Test Commands:**
+```bash
+uv sync                    # Install/update Python dependencies
+uv run pytest -v           # Run all tests
+uv run ruff check src/     # Lint
+uv run ruff format src/    # Format
+```
+
+---
+
+*Stack analysis: 2026-04-05*
