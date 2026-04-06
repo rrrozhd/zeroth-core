@@ -170,7 +170,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [x] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
 - [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
 - [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 
@@ -350,7 +350,7 @@ Plans:
 | 8. Runtime Security Hardening | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 9. Durable Control Plane & Production Operations | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 10. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Paused | - |
-| 11. Config & Postgres Storage | v1.1 | 0/3 | Not started | - |
+| 11. Config & Postgres Storage | v1.1 | 1/3 | In Progress|  |
 | 12. Real LLM Providers & Retry | v1.1 | 0/TBD | Not started | - |
 | 13. Regulus Economics Integration | v1.1 | 0/TBD | Not started | - |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 0/TBD | Not started | - |

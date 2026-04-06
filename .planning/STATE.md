@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
-status: planning
-stopped_at: Phase 11 context gathered
-last_updated: "2026-04-06T14:22:37.896Z"
-last_activity: 2026-04-06 — v1.1 roadmap created, 28 requirements mapped across 7 phases
+status: executing
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-04-06T14:46:04.965Z"
+last_activity: 2026-04-06
 progress:
   total_phases: 7
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Milestone v1.1 Production Readiness — Phase 11: Config & Postgres Storage
+**Current focus:** Phase 11 — config-postgres-storage
 
 ## Current Position
 
-Phase: 11 of 17 in v1.1 (Config & Postgres Storage)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-06 — v1.1 roadmap created, 28 requirements mapped across 7 phases
+Phase: 11 (config-postgres-storage) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-06
 
 Progress: ░░░░░░░░░░ 0% (v1.1)
 
@@ -47,6 +47,7 @@ Progress: ░░░░░░░░░░ 0% (v1.1)
 | 1-9 | 13 | historical | historical |
 
 *Updated after each plan completion*
+| Phase 11-config-postgres-storage P01 | 266s | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -58,6 +59,9 @@ Progress: ░░░░░░░░░░ 0% (v1.1)
 - Studio UI (Phase 10): paused — v1.1 production hardening takes priority; Studio renumbered to Phases 18-21
 - Sandbox: sidecar architecture required — API container must never mount Docker socket
 - MQ: ARQ is wakeup notification only — Postgres lease remains authoritative queue
+- [Phase 11-config-postgres-storage]: Pydantic-settings with YamlConfigSettingsSource for unified config (env > .env > YAML priority)
+- [Phase 11-config-postgres-storage]: Runtime-checkable Protocol for AsyncDatabase/AsyncConnection enables isinstance checks
+- [Phase 11-config-postgres-storage]: Alembic initial migration consolidates all 10 tables from 7 repositories
 
 ### Pending Todos
 
@@ -72,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T14:22:37.889Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-config-postgres-storage/11-CONTEXT.md
+Last session: 2026-04-06T14:46:04.963Z
+Stopped at: Completed 11-01-PLAN.md
+Resume file: None
