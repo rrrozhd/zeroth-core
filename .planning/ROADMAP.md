@@ -159,7 +159,7 @@ Plans:
 ## Phase Details
 
 ### Phase 11: Config & Postgres Storage
-**Goal**: All platform configuration loads from a unified pydantic-settings source and Postgres is available as a production storage backend behind the existing synchronous repository interface.
+**Goal**: All platform configuration loads from a unified pydantic-settings source and Postgres is available as a production storage backend behind an async repository interface with Alembic-managed migrations.
 **Depends on**: Phase 9
 **Requirements**: CFG-01, CFG-02, CFG-03
 **Success Criteria** (what must be TRUE):
@@ -167,7 +167,12 @@ Plans:
   2. `ZEROTH_DB_BACKEND=postgres` boots the platform against a Postgres database with no code changes beyond the env var
   3. `ZEROTH_DB_BACKEND=sqlite` continues to pass all 280 existing tests without modification
   4. Alembic migrations run cleanly against a fresh Postgres database and produce a schema matching the SQLite test schema
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
+- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 
 ### Phase 12: Real LLM Providers & Retry
 **Goal**: The platform can invoke real OpenAI and Anthropic models through typed adapters, with automatic retry on transient failures and token usage captured in node audit records.
@@ -178,7 +183,12 @@ Plans:
   2. An agent node configured with `provider: anthropic` executes against a real Anthropic model when live credentials are present
   3. A provider call that encounters a rate-limit error retries with exponential backoff and jitter before propagating failure
   4. Node audit records include `token_usage.input` and `token_usage.output` after a successful provider call
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
+- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 
 ### Phase 13: Regulus Economics Integration
 **Goal**: Every LLM call emits a cost event to the Regulus backend, token costs are attributed per node/run/tenant, budget caps are enforced before execution, and cost totals are queryable via REST.
@@ -189,7 +199,12 @@ Plans:
   2. Node audit records carry cost attribution fields (node, run, tenant, deployment) populated from Regulus event data
   3. A tenant that has exceeded its budget cap receives a policy rejection before any LLM call is attempted
   4. `GET /v1/tenants/{id}/cost` returns a cumulative spend figure consistent with audit records
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
+- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 
 ### Phase 14: Memory Connectors & Container Sandbox
 **Goal**: Agents can use persistent external memory backends (Redis KV, Redis thread, pgvector, ChromaDB, Elasticsearch) bridged to GovernAI protocol, and untrusted execution units run inside a Docker sandbox via a sidecar architecture.
@@ -201,7 +216,12 @@ Plans:
   3. Semantic memory queries against `pgvector`, `chroma`, or `elasticsearch` connectors return relevant results without in-process storage
   4. All Zeroth memory connectors expose `ScopedMemoryConnector` and `AuditingMemoryConnector` interfaces from GovernAI v0.3.0
   5. An executable unit marked `UNTRUSTED` runs inside a Docker container with resource limits and no host network access; the API container never mounts the Docker socket
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
+- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 
 ### Phase 15: Webhooks & Approval SLA
 **Goal**: Callers receive durable push notifications on run completion, approval requests, and failure events, and approval SLA timeouts trigger escalation rather than silent expiry.
@@ -211,7 +231,12 @@ Plans:
   1. A subscriber that registers a webhook URL receives an HTTP POST within a reasonable window after run completion or failure, even if the first delivery attempt fails
   2. A failed webhook delivery is retried with exponential backoff and eventually written to a dead-letter store rather than silently dropped
   3. An approval that is not actioned within its configured SLA window escalates to the configured delegate or raises an alert rather than hanging indefinitely
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
+- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 
 ### Phase 16: Distributed Dispatch & Horizontal Scaling
 **Goal**: Multiple worker processes share a Postgres lease store for run ownership, and an ARQ-backed wakeup notification reduces lease poll latency without replacing the database as the authoritative queue.
@@ -221,7 +246,12 @@ Plans:
   1. Two or more worker processes started against the same Postgres instance each claim disjoint sets of pending runs with no duplicate execution
   2. Submitting a run triggers an ARQ wakeup notification that causes a worker to begin processing sooner than the configured poll interval
   3. Killing a worker mid-run causes another worker to reclaim the run after the lease expires, with no manual intervention
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
+- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 
 ### Phase 17: Deployment Packaging & Operations
 **Goal**: The platform ships as a reproducible container image with versioned API routes, auto-generated OpenAPI documentation, TLS support, and readiness/liveness probes that block traffic until all dependencies are healthy.
@@ -233,7 +263,12 @@ Plans:
   3. `GET /health/ready` returns HTTP 200 only when the database, Redis, and optional Regulus backend are all reachable, and returns a structured error otherwise
   4. The OpenAPI spec served at `/openapi.json` documents all `/v1/` routes with correct schemas and authentication requirements
   5. The platform accepts HTTPS traffic when configured with a TLS certificate or behind a Nginx/Traefik reverse proxy
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
+- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 
 ### 📋 v2.0 Zeroth Studio (Planned)
 
@@ -315,7 +350,7 @@ Plans:
 | 8. Runtime Security Hardening | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 9. Durable Control Plane & Production Operations | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 10. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Paused | - |
-| 11. Config & Postgres Storage | v1.1 | 0/TBD | Not started | - |
+| 11. Config & Postgres Storage | v1.1 | 0/3 | Not started | - |
 | 12. Real LLM Providers & Retry | v1.1 | 0/TBD | Not started | - |
 | 13. Regulus Economics Integration | v1.1 | 0/TBD | Not started | - |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 0/TBD | Not started | - |
