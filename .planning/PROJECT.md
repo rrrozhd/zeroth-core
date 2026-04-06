@@ -38,17 +38,16 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 - ✓ Identity, governance evidence, runtime hardening, and durable control-plane foundations exist — phases 6-9
 - ✓ GovernAI dependency pinned to GitHub v0.3.0-dev (memory, secrets, capabilities, agent specs, tool manifests)
 - ✓ Unified pydantic-settings config (YAML + env vars) and async Postgres storage backend — Phase 11
+- ✓ Real LLM provider adapters (OpenAI, Anthropic via LiteLLM), retry with exponential backoff/jitter, token usage in audit records — Phase 12
 
 ### Active
 
-- [ ] Real LLM provider integration (OpenAI, Anthropic adapters)
 - [ ] Regulus SDK integration for token/cost metering per node, run, and tenant
 - [ ] Budget caps and spend enforcement per tenant/deployment
 - [ ] Real message queue for durable distributed dispatch
 - [ ] External memory connectors (Redis, vector store)
 - [ ] Hardened container-based sandbox for untrusted executable units
 - [ ] Approval escalation and SLA timeout policies
-- [ ] Provider-aware retry with exponential backoff and model fallback
 - [ ] Containerized deployment (Dockerfile, docker-compose, config management)
 - [ ] Webhook/callback notifications for run completion and approval events
 - [ ] API versioning and OpenAPI spec generation
