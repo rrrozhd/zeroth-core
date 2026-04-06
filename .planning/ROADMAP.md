@@ -186,7 +186,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
+- [x] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
 - [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
 - [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
 

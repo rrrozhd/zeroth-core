@@ -10,7 +10,7 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 ### Configuration & Storage
 
 - [x] **CFG-01**: Platform loads configuration from environment variables and .env files with startup validation
-- [ ] **CFG-02**: Postgres storage backend available behind existing sync repository interface with Alembic migrations
+- [x] **CFG-02**: Postgres storage backend available behind existing sync repository interface with Alembic migrations
 - [x] **CFG-03**: Storage backend selectable via ZEROTH_DB_BACKEND flag (sqlite/postgres) at startup
 
 ### LLM Providers
@@ -95,7 +95,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CFG-01 | Phase 11 | Complete |
-| CFG-02 | Phase 11 | Pending |
+| CFG-02 | Phase 11 | Complete |
 | CFG-03 | Phase 11 | Complete |
 | LLM-01 | Phase 12 | Pending |
 | LLM-02 | Phase 12 | Pending |
