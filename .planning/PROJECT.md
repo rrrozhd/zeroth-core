@@ -37,13 +37,13 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 - ✓ Runtime orchestration, approvals, memory, and deployment-bound service APIs exist — phases 2-5
 - ✓ Identity, governance evidence, runtime hardening, and durable control-plane foundations exist — phases 6-9
 - ✓ GovernAI dependency pinned to GitHub v0.3.0-dev (memory, secrets, capabilities, agent specs, tool manifests)
+- ✓ Unified pydantic-settings config (YAML + env vars) and async Postgres storage backend — Phase 11
 
 ### Active
 
 - [ ] Real LLM provider integration (OpenAI, Anthropic adapters)
 - [ ] Regulus SDK integration for token/cost metering per node, run, and tenant
 - [ ] Budget caps and spend enforcement per tenant/deployment
-- [ ] Production storage backend (Postgres) for all repositories
 - [ ] Real message queue for durable distributed dispatch
 - [ ] External memory connectors (Redis, vector store)
 - [ ] Hardened container-based sandbox for untrusted executable units
@@ -102,4 +102,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after milestone v1.1 initialization*
+*Last updated: 2026-04-06 after Phase 11 completion*
