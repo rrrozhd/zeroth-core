@@ -148,7 +148,7 @@ Plans:
 
 **Milestone Goal:** Close every gap between Zeroth's architecture and a production-viable governed AI workflow platform — real LLM providers, economic control via Regulus, reliable infrastructure, hardened governance, and deployable operations.
 
-- [ ] **Phase 11: Config & Postgres Storage** - Unified config and production-grade storage backend
+- [x] **Phase 11: Config & Postgres Storage** - Unified config and production-grade storage backend (completed 2026-04-06)
 - [ ] **Phase 12: Real LLM Providers & Retry** - OpenAI/Anthropic adapters with retry and token capture
 - [ ] **Phase 13: Regulus Economics Integration** - Token metering, cost attribution, and budget enforcement
 - [ ] **Phase 14: Memory Connectors & Container Sandbox** - External memory backends and hardened Docker sandbox
@@ -350,7 +350,7 @@ Plans:
 | 8. Runtime Security Hardening | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 9. Durable Control Plane & Production Operations | v1.0 | 1/1 | Complete | 2026-03-27 |
 | 10. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Paused | - |
-| 11. Config & Postgres Storage | v1.1 | 2/3 | In Progress|  |
+| 11. Config & Postgres Storage | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 12. Real LLM Providers & Retry | v1.1 | 0/TBD | Not started | - |
 | 13. Regulus Economics Integration | v1.1 | 0/TBD | Not started | - |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 0/TBD | Not started | - |
