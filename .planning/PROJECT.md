@@ -2,11 +2,32 @@
 
 ## What This Is
 
-Zeroth is a governed medium-code platform for building, running, and deploying production-grade multi-agent systems as standalone API services. The current repository contains the backend/runtime foundation through durable execution, governance, security, and operations, and the next major product step is Zeroth Studio: a canvas-first authoring and control-plane UI layered on top of those runtime surfaces.
+Zeroth is a governed medium-code platform for building, running, and deploying production-grade multi-agent systems as standalone API services. The repository contains a complete backend/runtime foundation (Phases 1-9) covering graph-based orchestration, typed contracts, sandboxed execution, human approvals, per-node audit trails, identity/RBAC, tenant isolation, deployment provenance, and durable dispatch. The current milestone focuses on closing the gap between this architecture and a production-viable platform.
 
 ## Core Value
 
 Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
+
+## Current Milestone: v1.1 Production Readiness
+
+**Goal:** Close every gap between Zeroth's architecture and a production-viable governed AI workflow platform — real LLM providers, economic control via Regulus, reliable infrastructure, hardened governance, and deployable operations.
+
+**Target features:**
+- Real LLM provider adapters (OpenAI, Anthropic) replacing test stubs
+- Regulus SDK integration for token metering, cost attribution per node/run/tenant, budget enforcement
+- Production storage backend (Postgres) replacing SQLite-only persistence
+- Real message queue integration for durable distributed dispatch
+- External memory connectors (Redis, vector store) replacing in-memory implementations
+- Hardened container-based sandbox backend (finish Phase 8A)
+- Approval escalation and SLA timeout policies
+- Provider-aware retry with exponential backoff and model fallback
+- Containerized deployment (Dockerfile, docker-compose, config management)
+- TLS/HTTPS support
+- API versioning
+- Webhook/callback notifications for run completion and approval events
+- OpenAPI spec generation
+- Readiness/liveness health probes with dependency checks
+- Horizontal worker scaling support
 
 ## Requirements
 
@@ -15,52 +36,70 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 - ✓ Governed workflow graph modeling, validation, and versioning exist — phases 1-1F
 - ✓ Runtime orchestration, approvals, memory, and deployment-bound service APIs exist — phases 2-5
 - ✓ Identity, governance evidence, runtime hardening, and durable control-plane foundations exist — phases 6-9
+- ✓ GovernAI dependency pinned to GitHub v0.3.0-dev (memory, secrets, capabilities, agent specs, tool manifests)
 
 ### Active
 
-- [ ] Deliver a Studio authoring layer for workflows, assets, and environments
-- [ ] Deliver a frontend shell that is canvas-first, minimal by default, and operationally navigable
-- [ ] Expose runtime, audit, approval, evidence, and admin data through a Studio-oriented control-plane/gateway surface
-- [ ] Preserve separation between reusable assets, node configuration, and environment-bound execution context
+- [ ] Real LLM provider integration (OpenAI, Anthropic adapters)
+- [ ] Regulus SDK integration for token/cost metering per node, run, and tenant
+- [ ] Budget caps and spend enforcement per tenant/deployment
+- [ ] Production storage backend (Postgres) for all repositories
+- [ ] Real message queue for durable distributed dispatch
+- [ ] External memory connectors (Redis, vector store)
+- [ ] Hardened container-based sandbox for untrusted executable units
+- [ ] Approval escalation and SLA timeout policies
+- [ ] Provider-aware retry with exponential backoff and model fallback
+- [ ] Containerized deployment (Dockerfile, docker-compose, config management)
+- [ ] Webhook/callback notifications for run completion and approval events
+- [ ] API versioning and OpenAPI spec generation
+- [ ] Readiness/liveness health probes with dependency checks
+- [ ] Horizontal worker scaling support
+- [ ] TLS/HTTPS support
 
 ### Out of Scope
 
-- Mobile apps — the immediate product gap is a web-based Studio, not native/mobile delivery
-- Replacing the existing runtime/control-plane internals — Studio should layer on top of them, not fork them
-- Forking or transplanting n8n editor code — only product patterns should be reused
+- Studio UI — deferred to a separate milestone after production backend is solid
+- Mobile apps — web-based platform only
+- Judge/evaluation subsystem — preserved as extension point per original PLAN.md
+- Replacing runtime/control-plane internals — this milestone hardens, not rewrites
 
 ## Context
 
-The repository is a mature Python backend with domain packages under `src/zeroth/`, broad pytest coverage under `tests/`, and phase-oriented planning/evidence documents in `phases/` and `PROGRESS.md`. There is no existing frontend app in the repo yet. A Studio design spec already exists at `docs/superpowers/specs/2026-03-29-zeroth-studio-design.md`, defining the intended UX model: canvas-first authoring, quiet workflow rail, top mode switch, contextual runtime surfaces, assets as reusable building blocks, and environment management in the header/settings layer.
+The repository is a mature Python backend (280+ tests, lint clean) with domain packages under `src/zeroth/`, broad pytest coverage under `tests/`, and phase-oriented planning in `phases/` and `PROGRESS.md`. GovernAI v0.3.0-dev is now pinned from GitHub with new memory, secrets, capability policy, agent spec, and tool manifest modules. An adjacent project, Regulus (`/Users/dondoe/coding/regulus`), provides a Python SDK (`econ_instrumentation`) for LLM economics telemetry with OpenAI/Anthropic/LangChain/LangGraph auto-instrumentation, a FastAPI backend for cost/value analysis, and tenant-scoped pricing catalogs.
 
 ## Constraints
 
-- **Tech stack**: Existing backend is Python/FastAPI/Pydantic — new Studio work should integrate with, not replace, this foundation
-- **Architecture**: Studio is a gateway + authoring layer — existing deployment/service runtime remains source of truth for execution
-- **UX**: Minimal by default — runtime/governance depth must be progressively disclosed rather than always visible
-- **Product semantics**: Zeroth-specific concepts must remain intact — agent, executable unit, memory resource, approvals, evidence, attestation, environments
-- **Dependency portability**: Local GovernAI path dependency currently exists — environment assumptions should be treated carefully during planning
+- **Tech stack**: Python/FastAPI/Pydantic backend — all new work integrates with existing foundation
+- **GovernAI**: Pinned to git+https://github.com/rrrozhd/governai.git@7452de4 — use new v0.3.0 modules where applicable
+- **Regulus**: SDK-level integration preferred — Regulus backend runs as companion service, not embedded
+- **Backward compatibility**: Existing 280 tests must continue passing through all changes
+- **Architecture**: Modular monolith — new capabilities are new modules, not separate services (except Regulus backend)
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Studio is canvas-first | Authoring is the product’s primary interaction, not operations monitoring | — Pending |
-| Left rail is workflows-only with `Assets` as a secondary entry | Keeps the default shell minimal and focused | — Pending |
-| Runtime records must be reachable by run and by node | Governance data is meaningful in both scopes | — Pending |
-| Contracts are authored in node context, not as a primary asset library | They are tightly coupled to authoring and connection logic | — Pending |
-| Environments live in the header/settings layer | They are cross-cutting operational context, not everyday navigation items | — Pending |
+| GovernAI pinned to GitHub commit, not PyPI | v0.3.0 unreleased but has needed memory/secrets/policy modules | ✓ Good |
+| Regulus integrated via SDK, not embedded | Separation of concerns — economics is a companion service | — Pending |
+| Postgres as production storage, SQLite retained for dev/test | Production needs vs developer experience | — Pending |
+| Studio UI deferred to next milestone | Backend must be production-viable before adding frontend | — Pending |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-After each phase transition:
-1. Requirements invalidated move to Out of Scope with reason
-2. Requirements validated move to Validated with phase reference
-3. New requirements are added to Active
-4. Significant decisions are logged in the table above
-5. The "What This Is" section is updated if product reality drifts
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after GSD initialization*
+*Last updated: 2026-04-06 after milestone v1.1 initialization*
