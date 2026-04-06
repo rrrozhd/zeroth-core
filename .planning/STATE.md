@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Milestone v1.1 — Production Readiness
+**Current focus:** Milestone v1.1 Production Readiness — Phase 11: Config & Postgres Storage
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-06 — Milestone v1.1 started
+Phase: 11 of 17 in v1.1 (Config & Postgres Storage)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-04-06 — v1.1 roadmap created, 28 requirements mapped across 7 phases
 
-Progress: ░░░░░░░░░░ 0%
+Progress: ░░░░░░░░░░ 0% (v1.1)
 
 ## Performance Metrics
 
@@ -28,16 +28,19 @@ Progress: ░░░░░░░░░░ 0%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1-9 | 13 | historical | historical |
-| 10 | 1 (mockup) | historical | historical |
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
 ### Decisions
 
-- GovernAI dependency switched from local file path to GitHub commit pin (v0.3.0-dev)
-- Regulus SDK integration chosen over embedded costing module
-- Studio UI deferred — production backend first
-- Phase numbering continues from 11
+- GovernAI: switched from local path to GitHub commit pin (7452de4) — required before Dockerfile phase
+- Regulus: SDK-level integration only — companion service, not embedded
+- Storage: Postgres for production, SQLite retained for dev/test — repos stay synchronous (psycopg2/psycopg3 sync, NOT asyncpg)
+- Studio UI (Phase 10): paused — v1.1 production hardening takes priority; Studio renumbered to Phases 18-21
+- Sandbox: sidecar architecture required — API container must never mount Docker socket
+- MQ: ARQ is wakeup notification only — Postgres lease remains authoritative queue
 
 ### Pending Todos
 
@@ -45,12 +48,13 @@ None yet.
 
 ### Blockers/Concerns
 
-- GovernAI v0.3.0 not yet released to PyPI — pinned to commit hash
-- Regulus SDK not yet a published package — integration approach TBD (git dep vs vendored)
-- Phase 8A (hardened sandbox) still in-progress from previous work
+- [Phase 11] GovernAI git ref must be verified before Phase 13 or Phase 17 (whichever comes first)
+- [Phase 13] Regulus TelemetryTransport flush-on-SIGTERM behavior unverified — needs spike during Phase 13 planning
+- [Phase 14] Sandbox sidecar API surface needs design spike before implementation tasks
+- [Phase 16] ARQ 0.26 PyPI version not confirmed — verify before adding to pyproject.toml
 
 ## Session Continuity
 
 Last session: 2026-04-06
-Stopped at: Milestone v1.1 initialized, entering research/requirements phase
-Resume file: .planning/ROADMAP.md
+Stopped at: v1.1 roadmap written, requirements traceability updated, ready for Phase 11 planning
+Resume file: None

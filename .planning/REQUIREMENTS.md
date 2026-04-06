@@ -94,40 +94,40 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CFG-01 | — | Pending |
-| CFG-02 | — | Pending |
-| CFG-03 | — | Pending |
-| LLM-01 | — | Pending |
-| LLM-02 | — | Pending |
-| LLM-03 | — | Pending |
-| LLM-04 | — | Pending |
-| ECON-01 | — | Pending |
-| ECON-02 | — | Pending |
-| ECON-03 | — | Pending |
-| ECON-04 | — | Pending |
-| MEM-01 | — | Pending |
-| MEM-02 | — | Pending |
-| MEM-03 | — | Pending |
-| MEM-04 | — | Pending |
-| MEM-05 | — | Pending |
-| MEM-06 | — | Pending |
-| SBX-01 | — | Pending |
-| SBX-02 | — | Pending |
-| OPS-01 | — | Pending |
-| OPS-02 | — | Pending |
-| OPS-03 | — | Pending |
-| OPS-04 | — | Pending |
-| OPS-05 | — | Pending |
-| DEP-01 | — | Pending |
-| DEP-02 | — | Pending |
-| DEP-03 | — | Pending |
-| DEP-04 | — | Pending |
+| CFG-01 | Phase 11 | Pending |
+| CFG-02 | Phase 11 | Pending |
+| CFG-03 | Phase 11 | Pending |
+| LLM-01 | Phase 12 | Pending |
+| LLM-02 | Phase 12 | Pending |
+| LLM-03 | Phase 12 | Pending |
+| LLM-04 | Phase 12 | Pending |
+| ECON-01 | Phase 13 | Pending |
+| ECON-02 | Phase 13 | Pending |
+| ECON-03 | Phase 13 | Pending |
+| ECON-04 | Phase 13 | Pending |
+| MEM-01 | Phase 14 | Pending |
+| MEM-02 | Phase 14 | Pending |
+| MEM-03 | Phase 14 | Pending |
+| MEM-04 | Phase 14 | Pending |
+| MEM-05 | Phase 14 | Pending |
+| MEM-06 | Phase 14 | Pending |
+| SBX-01 | Phase 14 | Pending |
+| SBX-02 | Phase 14 | Pending |
+| OPS-01 | Phase 15 | Pending |
+| OPS-02 | Phase 15 | Pending |
+| OPS-03 | Phase 17 | Pending |
+| OPS-04 | Phase 16 | Pending |
+| OPS-05 | Phase 16 | Pending |
+| DEP-01 | Phase 17 | Pending |
+| DEP-02 | Phase 17 | Pending |
+| DEP-03 | Phase 17 | Pending |
+| DEP-04 | Phase 17 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28
+- Mapped to phases: 28
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after milestone v1.1 initialization*
+*Last updated: 2026-04-06 after v1.1 roadmap creation*
