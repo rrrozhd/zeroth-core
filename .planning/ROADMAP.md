@@ -204,7 +204,7 @@ Plans:
 Plans:
 - [x] 13-01-PLAN.md — Econ module foundation: SDK dependency, InstrumentedProviderAdapter, cost estimation, config
 - [ ] 13-02-PLAN.md — Budget enforcement: BudgetEnforcer with TTL cache, AgentRunner integration
-- [ ] 13-03-PLAN.md — Cost REST endpoints and ServiceBootstrap wiring
+- [x] 13-03-PLAN.md — Cost REST endpoints and ServiceBootstrap wiring
 
 ### Phase 14: Memory Connectors & Container Sandbox
 **Goal**: Agents can use persistent external memory backends (Redis KV, Redis thread, pgvector, ChromaDB, Elasticsearch) bridged to GovernAI protocol, and untrusted execution units run inside a Docker sandbox via a sidecar architecture.
@@ -352,7 +352,7 @@ Plans:
 | 10. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Paused | - |
 | 11. Config & Postgres Storage | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 12. Real LLM Providers & Retry | v1.1 | 2/3 | Complete    | 2026-04-06 |
-| 13. Regulus Economics Integration | v1.1 | 1/3 | In Progress|  |
+| 13. Regulus Economics Integration | v1.1 | 2/3 | In Progress|  |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 0/TBD | Not started | - |
 | 15. Webhooks & Approval SLA | v1.1 | 0/TBD | Not started | - |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/TBD | Not started | - |
