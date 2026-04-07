@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-04-07T17:03:13.630Z"
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-04-07T17:11:23.839Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 7
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 1
+  completed_phases: 5
+  total_plans: 20
+  completed_plans: 19
   percent: 88
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 16 (distributed-dispatch-horizontal-scaling) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-07
 
@@ -61,6 +61,7 @@ Progress: [========]░░ 88% (v1.1)
 | Phase 15-webhooks-approval-sla P02 | 413s | 2 tasks | 9 files |
 | Phase 15-webhooks-approval-sla P03 | 858 | 2 tasks | 9 files |
 | Phase 16 P02 | 218 | 2 tasks | 6 files |
+| Phase 16 P03 | 270 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,7 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 16]: ARQ wakeup is fire-and-forget: enqueue_wakeup never raises, logs on failure
 - [Phase 16]: RunWorker._release_to_pending uses synchronous repo calls matching existing sync RunRepository pattern
 - [Phase 16]: ARQ exports guarded by try/except ImportError so dispatch works without arq installed
+- [Phase 16]: ARQ pool wired at bootstrap, wakeup enqueued after run creation and approval continuation, SIGTERM triggers graceful shutdown
 
 ### Pending Todos
 
@@ -115,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T17:03:13.624Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-04-07T17:11:23.837Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None

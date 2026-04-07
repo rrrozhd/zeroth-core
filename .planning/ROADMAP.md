@@ -153,7 +153,7 @@ Plans:
 - [x] **Phase 13: Regulus Economics Integration** - Token metering, cost attribution, and budget enforcement (completed 2026-04-07)
 - [x] **Phase 14: Memory Connectors & Container Sandbox** - External memory backends and hardened Docker sandbox (completed 2026-04-07)
 - [x] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies (completed 2026-04-07)
-- [ ] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation
+- [x] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation (completed 2026-04-07)
 - [ ] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS
 
 ## Phase Details
@@ -251,9 +251,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — DispatchSettings, LeaseManager Postgres SKIP LOCKED claiming, Alembic migration 004
-- [ ] 16-02-PLAN.md — ARQ wakeup module, RunWorker wakeup handler, graceful shutdown
-- [ ] 16-03-PLAN.md — Bootstrap wiring, lifespan SIGTERM handling, run_api wakeup injection
+- [x] 16-01-PLAN.md — DispatchSettings, LeaseManager Postgres SKIP LOCKED claiming, Alembic migration 004
+- [x] 16-02-PLAN.md — ARQ wakeup module, RunWorker wakeup handler, graceful shutdown
+- [x] 16-03-PLAN.md — Bootstrap wiring, lifespan SIGTERM handling, run_api wakeup injection
 
 ### Phase 17: Deployment Packaging & Operations
 **Goal**: The platform ships as a reproducible container image with versioned API routes, auto-generated OpenAPI documentation, TLS support, and readiness/liveness probes that block traffic until all dependencies are healthy.
@@ -357,7 +357,7 @@ Plans:
 | 13. Regulus Economics Integration | v1.1 | 2/3 | Complete    | 2026-04-07 |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 5/5 | Complete    | 2026-04-07 |
 | 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete    | 2026-04-07 |
-| 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/3 | Not started | - |
+| 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 3/3 | Complete   | 2026-04-07 |
 | 17. Deployment Packaging & Operations | v1.1 | 0/TBD | Not started | - |
 | 18. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
 | 19. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
