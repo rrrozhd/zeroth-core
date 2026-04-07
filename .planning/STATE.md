@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Completed 14-02-PLAN.md
+stopped_at: Completed 14-03-PLAN.md
 last_updated: "2026-04-07T08:43:32.466Z"
 last_activity: 2026-04-07
 progress:
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 14
-Plan: Not started
-Status: Ready to execute
+Plan: 3 of 5
+Status: executing
 Last activity: 2026-04-07
 
 Progress: [=]░░░░░░░░░ 11% (v1.1)
@@ -56,6 +56,7 @@ Progress: [=]░░░░░░░░░ 11% (v1.1)
 | Phase 13-regulus-economics-integration P03 | 306 | 2 tasks | 4 files |
 | Phase 14-memory-connectors-container-sandbox P04 | 371 | 2 tasks | 11 files |
 | Phase 14 P02 | 215 | 2 tasks | 4 files |
+| Phase 14-memory-connectors-container-sandbox P03 | 285 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Progress: [=]░░░░░░░░░ 11% (v1.1)
 - [Phase 14-memory-connectors-container-sandbox]: asyncio.run() bridge for sync-to-async sidecar dispatch in SandboxManager
 - [Phase 14-memory-connectors-container-sandbox]: Per-execution --internal Docker network for untrusted sandbox isolation
 - [Phase 14]: Upsert semantics for KV write preserving created_at; sorted-set timestamps for thread ordering
+- [Phase 14-memory-connectors-container-sandbox]: PgvectorMemoryConnector uses conn_factory callable for flexible async connection management
+- [Phase 14-memory-connectors-container-sandbox]: Elasticsearch uses NotFoundError exception for read/delete miss detection; no embedding needed for full-text search
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T08:43:32.463Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-04-07T09:00:00Z
+Stopped at: Completed 14-03-PLAN.md
 Resume file: None

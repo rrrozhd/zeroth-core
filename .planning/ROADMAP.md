@@ -221,7 +221,7 @@ Plans:
 Plans:
 - [x] 14-01-PLAN.md — GovernAI protocol rewrite, in-memory connectors, resolver wrapping, AgentRunner update
 - [x] 14-02-PLAN.md — Redis KV and Redis thread memory connectors
-- [ ] 14-03-PLAN.md — pgvector, ChromaDB, and Elasticsearch memory connectors
+- [x] 14-03-PLAN.md — pgvector, ChromaDB, and Elasticsearch memory connectors
 - [x] 14-04-PLAN.md — Sandbox sidecar service, HTTP client, SandboxManager SIDECAR mode
 - [ ] 14-05-PLAN.md — Connector registration factory and ServiceBootstrap wiring
 
