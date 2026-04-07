@@ -40,11 +40,11 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 - ✓ Unified pydantic-settings config (YAML + env vars) and async Postgres storage backend — Phase 11
 - ✓ Real LLM provider adapters (OpenAI, Anthropic via LiteLLM), retry with exponential backoff/jitter, token usage in audit records — Phase 12
 - ✓ Regulus economics integration: cost event emission per LLM call, cost attribution in audit records, budget enforcement, cost REST endpoints — Phase 13
+- ✓ External memory connectors (Redis KV, Redis thread, pgvector, ChromaDB, Elasticsearch) bridged to GovernAI v0.3.0 protocol with ScopedMemoryConnector + AuditingMemoryConnector wrapping — Phase 14
+- ✓ Container sandbox sidecar architecture: Docker socket isolated to sidecar service, API container communicates via HTTP — Phase 14
 
 ### Active
 - [ ] Real message queue for durable distributed dispatch
-- [ ] External memory connectors (Redis, vector store)
-- [ ] Hardened container-based sandbox for untrusted executable units
 - [ ] Approval escalation and SLA timeout policies
 - [ ] Containerized deployment (Dockerfile, docker-compose, config management)
 - [ ] Webhook/callback notifications for run completion and approval events
