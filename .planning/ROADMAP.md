@@ -152,7 +152,7 @@ Plans:
 - [x] **Phase 12: Real LLM Providers & Retry** - OpenAI/Anthropic adapters with retry and token capture (completed 2026-04-06)
 - [x] **Phase 13: Regulus Economics Integration** - Token metering, cost attribution, and budget enforcement (completed 2026-04-07)
 - [x] **Phase 14: Memory Connectors & Container Sandbox** - External memory backends and hardened Docker sandbox (completed 2026-04-07)
-- [ ] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies
+- [x] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies (completed 2026-04-07)
 - [ ] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation
 - [ ] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS
 
@@ -238,7 +238,7 @@ Plans:
 Plans:
 - [x] 15-01-PLAN.md — Webhook models, signing, config, repository, Alembic migration 003, approval/graph SLA extensions
 - [x] 15-02-PLAN.md — WebhookService, WebhookDeliveryWorker, webhook REST API, lifespan wiring
-- [ ] 15-03-PLAN.md — ApprovalSLAChecker, escalation logic, event emission hooks, ServiceBootstrap wiring
+- [x] 15-03-PLAN.md — ApprovalSLAChecker, escalation logic, event emission hooks, ServiceBootstrap wiring
 
 ### Phase 16: Distributed Dispatch & Horizontal Scaling
 **Goal**: Multiple worker processes share a Postgres lease store for run ownership, and an ARQ-backed wakeup notification reduces lease poll latency without replacing the database as the authoritative queue.
@@ -356,7 +356,7 @@ Plans:
 | 12. Real LLM Providers & Retry | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 13. Regulus Economics Integration | v1.1 | 2/3 | Complete    | 2026-04-07 |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 5/5 | Complete    | 2026-04-07 |
-| 15. Webhooks & Approval SLA | v1.1 | 1/3 | In Progress|  |
+| 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete   | 2026-04-07 |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/TBD | Not started | - |
 | 17. Deployment Packaging & Operations | v1.1 | 0/TBD | Not started | - |
 | 18. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
