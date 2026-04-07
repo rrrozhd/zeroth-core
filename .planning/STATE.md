@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-04-07T16:56:01.643Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-04-07T17:03:13.630Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 7
@@ -60,7 +60,7 @@ Progress: [========]░░ 88% (v1.1)
 | Phase 14 P05 | 224 | 1 tasks | 4 files |
 | Phase 15-webhooks-approval-sla P02 | 413s | 2 tasks | 9 files |
 | Phase 15-webhooks-approval-sla P03 | 858 | 2 tasks | 9 files |
-| Phase 16 P01 | 292 | 2 tasks | 5 files |
+| Phase 16 P02 | 218 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -98,8 +98,9 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 15-webhooks-approval-sla]: SLA checker uses optional WebhookService injection to avoid circular imports
 - [Phase 15-webhooks-approval-sla]: Webhook emission is fire-and-forget with exception logging (never blocks main flow)
 - [Phase 15-webhooks-approval-sla]: ApprovalRepository.write extended to persist SLA columns for efficient overdue queries
-- [Phase 16]: Synchronous claim_pending interface preserved; Postgres async path bridged via ThreadPoolExecutor
-- [Phase 16]: Conditional import with _HAS_PG guard allows deployment without psycopg
+- [Phase 16]: ARQ wakeup is fire-and-forget: enqueue_wakeup never raises, logs on failure
+- [Phase 16]: RunWorker._release_to_pending uses synchronous repo calls matching existing sync RunRepository pattern
+- [Phase 16]: ARQ exports guarded by try/except ImportError so dispatch works without arq installed
 
 ### Pending Todos
 
@@ -114,6 +115,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T16:56:01.641Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-04-07T17:03:13.624Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None

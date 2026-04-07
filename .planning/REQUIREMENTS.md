@@ -47,7 +47,7 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 - [x] **OPS-02**: Approval SLA timeouts with escalation and delegation policies
 - [ ] **OPS-03**: Readiness and liveness health probes with dependency checks (DB, Redis, Regulus)
 - [x] **OPS-04**: Multi-worker horizontal scaling with shared Postgres lease store
-- [ ] **OPS-05**: ARQ (Redis queue) wakeup notifications supplementing existing lease poller
+- [x] **OPS-05**: ARQ (Redis queue) wakeup notifications supplementing existing lease poller
 
 ### Deployment
 
@@ -117,7 +117,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OPS-02 | Phase 15 | Complete |
 | OPS-03 | Phase 17 | Pending |
 | OPS-04 | Phase 16 | Complete |
-| OPS-05 | Phase 16 | Pending |
+| OPS-05 | Phase 16 | Complete |
 | DEP-01 | Phase 17 | Pending |
 | DEP-02 | Phase 17 | Pending |
 | DEP-03 | Phase 17 | Pending |
