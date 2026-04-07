@@ -237,7 +237,7 @@ Plans:
 
 Plans:
 - [x] 15-01-PLAN.md — Webhook models, signing, config, repository, Alembic migration 003, approval/graph SLA extensions
-- [ ] 15-02-PLAN.md — WebhookService, WebhookDeliveryWorker, webhook REST API, lifespan wiring
+- [x] 15-02-PLAN.md — WebhookService, WebhookDeliveryWorker, webhook REST API, lifespan wiring
 - [ ] 15-03-PLAN.md — ApprovalSLAChecker, escalation logic, event emission hooks, ServiceBootstrap wiring
 
 ### Phase 16: Distributed Dispatch & Horizontal Scaling
