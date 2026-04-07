@@ -154,7 +154,7 @@ Plans:
 - [x] **Phase 14: Memory Connectors & Container Sandbox** - External memory backends and hardened Docker sandbox (completed 2026-04-07)
 - [x] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies (completed 2026-04-07)
 - [x] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation (completed 2026-04-07)
-- [ ] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS
+- [x] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS (completed 2026-04-07)
 
 ## Phase Details
 
@@ -270,7 +270,7 @@ Plans:
 Plans:
 - [x] 17-01-PLAN.md — Health probes (readiness/liveness), TLS settings, auth middleware exclusion
 - [x] 17-02-PLAN.md — API versioning (/v1/ prefix), backward-compatible aliases, OpenAPI metadata
-- [ ] 17-03-PLAN.md — Dockerfile, docker-compose.yml, Nginx TLS reverse proxy, production entrypoint
+- [x] 17-03-PLAN.md — Dockerfile, docker-compose.yml, Nginx TLS reverse proxy, production entrypoint
 
 ### 📋 v2.0 Zeroth Studio (Planned)
 
@@ -358,7 +358,7 @@ Plans:
 | 14. Memory Connectors & Container Sandbox | v1.1 | 5/5 | Complete    | 2026-04-07 |
 | 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 3/3 | Complete    | 2026-04-07 |
-| 17. Deployment Packaging & Operations | v1.1 | 2/3 | In Progress|  |
+| 17. Deployment Packaging & Operations | v1.1 | 3/3 | Complete   | 2026-04-07 |
 | 18. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
 | 19. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
 | 20. Studio Assets | v2.0 | 0/2 | Not started | - |

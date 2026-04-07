@@ -51,7 +51,7 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 ### Deployment
 
-- [ ] **DEP-01**: Dockerfile and docker-compose for Zeroth, Postgres, Redis, and Regulus backend
+- [x] **DEP-01**: Dockerfile and docker-compose for Zeroth, Postgres, Redis, and Regulus backend
 - [x] **DEP-02**: API routes prefixed with /v1/ with version negotiation headers
 - [x] **DEP-03**: OpenAPI spec auto-generated from FastAPI route definitions
 - [x] **DEP-04**: TLS/HTTPS support via reverse proxy or uvicorn SSL configuration
@@ -118,7 +118,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OPS-03 | Phase 17 | Complete |
 | OPS-04 | Phase 16 | Pending |
 | OPS-05 | Phase 16 | Pending |
-| DEP-01 | Phase 17 | Pending |
+| DEP-01 | Phase 17 | Complete |
 | DEP-02 | Phase 17 | Complete |
 | DEP-03 | Phase 17 | Complete |
 | DEP-04 | Phase 17 | Complete |

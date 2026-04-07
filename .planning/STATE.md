@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-04-07T18:19:30.103Z"
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-04-07T18:27:43.415Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 23
-  completed_plans: 22
+  completed_plans: 23
   percent: 88
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 17 (deployment-packaging-operations) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-07
 
@@ -63,6 +63,7 @@ Progress: [========]░░ 88% (v1.1)
 | Phase 16 P02 | 218 | 2 tasks | 6 files |
 | Phase 16 P03 | 270 | 2 tasks | 6 files |
 | Phase 17 P02 | 198 | 2 tasks | 6 files |
+| Phase 17 P03 | 89 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 16]: ARQ pool wired at bootstrap, wakeup enqueued after run creation and approval continuation, SIGTERM triggers graceful shutdown
 - [Phase 17]: Route registration functions accept FastAPI | APIRouter union type for dual registration
 - [Phase 17]: v1_router with include_in_schema=True, compat_router with include_in_schema=False for clean OpenAPI spec
+- [Phase 17]: Regulus SDK via pre-built wheel in docker/regulus-sdk/ for Docker builds
+- [Phase 17]: Production entrypoint uses sync migrations + async uvicorn factory pattern
 
 ### Pending Todos
 
@@ -120,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T18:19:30.100Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-04-07T18:27:43.413Z
+Stopped at: Completed 17-03-PLAN.md
 Resume file: None
