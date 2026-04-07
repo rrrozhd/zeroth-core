@@ -216,13 +216,14 @@ Plans:
   3. Semantic memory queries against `pgvector`, `chroma`, or `elasticsearch` connectors return relevant results without in-process storage
   4. All Zeroth memory connectors expose `ScopedMemoryConnector` and `AuditingMemoryConnector` interfaces from GovernAI v0.3.0
   5. An executable unit marked `UNTRUSTED` runs inside a Docker container with resource limits and no host network access; the API container never mounts the Docker socket
-**Plans**: 4 plans
+**Plans**: 5 plans
 
 Plans:
 - [ ] 14-01-PLAN.md — GovernAI protocol rewrite, in-memory connectors, resolver wrapping, AgentRunner update
 - [ ] 14-02-PLAN.md — Redis KV and Redis thread memory connectors
 - [ ] 14-03-PLAN.md — pgvector, ChromaDB, and Elasticsearch memory connectors
 - [ ] 14-04-PLAN.md — Sandbox sidecar service, HTTP client, SandboxManager SIDECAR mode
+- [ ] 14-05-PLAN.md — Connector registration factory and ServiceBootstrap wiring
 
 ### Phase 15: Webhooks & Approval SLA
 **Goal**: Callers receive durable push notifications on run completion, approval requests, and failure events, and approval SLA timeouts trigger escalation rather than silent expiry.
@@ -354,7 +355,7 @@ Plans:
 | 11. Config & Postgres Storage | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 12. Real LLM Providers & Retry | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 13. Regulus Economics Integration | v1.1 | 2/3 | Complete    | 2026-04-07 |
-| 14. Memory Connectors & Container Sandbox | v1.1 | 0/4 | In progress | - |
+| 14. Memory Connectors & Container Sandbox | v1.1 | 0/5 | In progress | - |
 | 15. Webhooks & Approval SLA | v1.1 | 0/TBD | Not started | - |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/TBD | Not started | - |
 | 17. Deployment Packaging & Operations | v1.1 | 0/TBD | Not started | - |
