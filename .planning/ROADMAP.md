@@ -150,7 +150,7 @@ Plans:
 
 - [x] **Phase 11: Config & Postgres Storage** - Unified config and production-grade storage backend (completed 2026-04-06)
 - [x] **Phase 12: Real LLM Providers & Retry** - OpenAI/Anthropic adapters with retry and token capture (completed 2026-04-06)
-- [ ] **Phase 13: Regulus Economics Integration** - Token metering, cost attribution, and budget enforcement
+- [x] **Phase 13: Regulus Economics Integration** - Token metering, cost attribution, and budget enforcement (completed 2026-04-07)
 - [ ] **Phase 14: Memory Connectors & Container Sandbox** - External memory backends and hardened Docker sandbox
 - [ ] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies
 - [ ] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation
@@ -352,7 +352,7 @@ Plans:
 | 10. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Paused | - |
 | 11. Config & Postgres Storage | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 12. Real LLM Providers & Retry | v1.1 | 2/3 | Complete    | 2026-04-06 |
-| 13. Regulus Economics Integration | v1.1 | 2/3 | In Progress|  |
+| 13. Regulus Economics Integration | v1.1 | 2/3 | Complete    | 2026-04-07 |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 0/TBD | Not started | - |
 | 15. Webhooks & Approval SLA | v1.1 | 0/TBD | Not started | - |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/TBD | Not started | - |
