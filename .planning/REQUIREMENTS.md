@@ -38,8 +38,8 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 ### Sandbox & Security
 
-- [ ] **SBX-01**: Docker-based sandbox backend for untrusted executable units with resource limits and network isolation
-- [ ] **SBX-02**: Sandbox sidecar architecture prevents Docker socket exposure on the API container
+- [x] **SBX-01**: Docker-based sandbox backend for untrusted executable units with resource limits and network isolation
+- [x] **SBX-02**: Sandbox sidecar architecture prevents Docker socket exposure on the API container
 
 ### Operations
 
@@ -111,8 +111,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MEM-04 | Phase 14 | Pending |
 | MEM-05 | Phase 14 | Pending |
 | MEM-06 | Phase 14 | Pending |
-| SBX-01 | Phase 14 | Pending |
-| SBX-02 | Phase 14 | Pending |
+| SBX-01 | Phase 14 | Complete |
+| SBX-02 | Phase 14 | Complete |
 | OPS-01 | Phase 15 | Pending |
 | OPS-02 | Phase 15 | Pending |
 | OPS-03 | Phase 17 | Pending |
