@@ -45,7 +45,7 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 - [x] **OPS-01**: Durable webhook notifications for run completion, approval needed, and failure events
 - [x] **OPS-02**: Approval SLA timeouts with escalation and delegation policies
-- [ ] **OPS-03**: Readiness and liveness health probes with dependency checks (DB, Redis, Regulus)
+- [x] **OPS-03**: Readiness and liveness health probes with dependency checks (DB, Redis, Regulus)
 - [ ] **OPS-04**: Multi-worker horizontal scaling with shared Postgres lease store
 - [ ] **OPS-05**: ARQ (Redis queue) wakeup notifications supplementing existing lease poller
 
@@ -54,7 +54,7 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 - [ ] **DEP-01**: Dockerfile and docker-compose for Zeroth, Postgres, Redis, and Regulus backend
 - [ ] **DEP-02**: API routes prefixed with /v1/ with version negotiation headers
 - [ ] **DEP-03**: OpenAPI spec auto-generated from FastAPI route definitions
-- [ ] **DEP-04**: TLS/HTTPS support via reverse proxy or uvicorn SSL configuration
+- [x] **DEP-04**: TLS/HTTPS support via reverse proxy or uvicorn SSL configuration
 
 ## Future Requirements
 
@@ -115,13 +115,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SBX-02 | Phase 14 | Complete |
 | OPS-01 | Phase 15 | Complete |
 | OPS-02 | Phase 15 | Complete |
-| OPS-03 | Phase 17 | Pending |
+| OPS-03 | Phase 17 | Complete |
 | OPS-04 | Phase 16 | Pending |
 | OPS-05 | Phase 16 | Pending |
 | DEP-01 | Phase 17 | Pending |
 | DEP-02 | Phase 17 | Pending |
 | DEP-03 | Phase 17 | Pending |
-| DEP-04 | Phase 17 | Pending |
+| DEP-04 | Phase 17 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 28 total

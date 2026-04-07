@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
-status: executing
-stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-04-07T13:16:58.720Z"
+status: verifying
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-04-07T18:07:29.424Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
   percent: 88
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 Phase: 15 (webhooks-approval-sla) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-07
 
 Progress: [========]░░ 88% (v1.1)
@@ -60,6 +60,7 @@ Progress: [========]░░ 88% (v1.1)
 | Phase 14 P05 | 224 | 1 tasks | 4 files |
 | Phase 15-webhooks-approval-sla P02 | 413s | 2 tasks | 9 files |
 | Phase 15-webhooks-approval-sla P03 | 858 | 2 tasks | 9 files |
+| Phase 17 P01 | 457 | 1 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,7 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 15-webhooks-approval-sla]: SLA checker uses optional WebhookService injection to avoid circular imports
 - [Phase 15-webhooks-approval-sla]: Webhook emission is fire-and-forget with exception logging (never blocks main flow)
 - [Phase 15-webhooks-approval-sla]: ApprovalRepository.write extended to persist SLA columns for efficient overdue queries
+- [Phase 17]: Health endpoints bypass auth middleware via path prefix check; Regulus unavailability produces degraded not unhealthy status
 
 ### Pending Todos
 
@@ -111,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T13:16:58.717Z
-Stopped at: Completed 15-03-PLAN.md
+Last session: 2026-04-07T18:07:29.421Z
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None
