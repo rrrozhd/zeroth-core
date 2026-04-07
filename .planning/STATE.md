@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Completed 14-04-PLAN.md
-last_updated: "2026-04-07T08:31:25.140Z"
+stopped_at: Completed 14-02-PLAN.md
+last_updated: "2026-04-07T08:43:32.466Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 14
-  completed_plans: 9
+  completed_plans: 12
   percent: 11
 ---
 
@@ -55,6 +55,7 @@ Progress: [=]░░░░░░░░░ 11% (v1.1)
 | Phase 13-regulus-economics-integration P01 | 346s | 2 tasks | 13 files |
 | Phase 13-regulus-economics-integration P03 | 306 | 2 tasks | 4 files |
 | Phase 14-memory-connectors-container-sandbox P04 | 371 | 2 tasks | 11 files |
+| Phase 14 P02 | 215 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ Progress: [=]░░░░░░░░░ 11% (v1.1)
 - [Phase 13-regulus-economics-integration]: Cost endpoints use app.state for Regulus config rather than bootstrap Protocol
 - [Phase 14-memory-connectors-container-sandbox]: asyncio.run() bridge for sync-to-async sidecar dispatch in SandboxManager
 - [Phase 14-memory-connectors-container-sandbox]: Per-execution --internal Docker network for untrusted sandbox isolation
+- [Phase 14]: Upsert semantics for KV write preserving created_at; sorted-set timestamps for thread ordering
 
 ### Pending Todos
 
@@ -95,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T08:31:25.137Z
-Stopped at: Completed 14-04-PLAN.md
+Last session: 2026-04-07T08:43:32.463Z
+Stopped at: Completed 14-02-PLAN.md
 Resume file: None

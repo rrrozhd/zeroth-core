@@ -220,7 +220,7 @@ Plans:
 
 Plans:
 - [x] 14-01-PLAN.md — GovernAI protocol rewrite, in-memory connectors, resolver wrapping, AgentRunner update
-- [ ] 14-02-PLAN.md — Redis KV and Redis thread memory connectors
+- [x] 14-02-PLAN.md — Redis KV and Redis thread memory connectors
 - [ ] 14-03-PLAN.md — pgvector, ChromaDB, and Elasticsearch memory connectors
 - [x] 14-04-PLAN.md — Sandbox sidecar service, HTTP client, SandboxManager SIDECAR mode
 - [ ] 14-05-PLAN.md — Connector registration factory and ServiceBootstrap wiring
@@ -355,7 +355,7 @@ Plans:
 | 11. Config & Postgres Storage | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 12. Real LLM Providers & Retry | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 13. Regulus Economics Integration | v1.1 | 2/3 | Complete    | 2026-04-07 |
-| 14. Memory Connectors & Container Sandbox | v1.1 | 1/5 | In Progress|  |
+| 14. Memory Connectors & Container Sandbox | v1.1 | 3/5 | In Progress|  |
 | 15. Webhooks & Approval SLA | v1.1 | 0/TBD | Not started | - |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/TBD | Not started | - |
 | 17. Deployment Packaging & Operations | v1.1 | 0/TBD | Not started | - |
