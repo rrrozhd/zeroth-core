@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Phase 16 context gathered
-last_updated: "2026-04-07T16:29:40.907Z"
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-04-07T16:56:01.643Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 7
-  completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 1
   percent: 88
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 15 — webhooks-approval-sla
+**Current focus:** Phase 16 — distributed-dispatch-horizontal-scaling
 
 ## Current Position
 
-Phase: 16
-Plan: Not started
+Phase: 16 (distributed-dispatch-horizontal-scaling) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-04-07
 
@@ -60,6 +60,7 @@ Progress: [========]░░ 88% (v1.1)
 | Phase 14 P05 | 224 | 1 tasks | 4 files |
 | Phase 15-webhooks-approval-sla P02 | 413s | 2 tasks | 9 files |
 | Phase 15-webhooks-approval-sla P03 | 858 | 2 tasks | 9 files |
+| Phase 16 P01 | 292 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,8 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 15-webhooks-approval-sla]: SLA checker uses optional WebhookService injection to avoid circular imports
 - [Phase 15-webhooks-approval-sla]: Webhook emission is fire-and-forget with exception logging (never blocks main flow)
 - [Phase 15-webhooks-approval-sla]: ApprovalRepository.write extended to persist SLA columns for efficient overdue queries
+- [Phase 16]: Synchronous claim_pending interface preserved; Postgres async path bridged via ThreadPoolExecutor
+- [Phase 16]: Conditional import with _HAS_PG guard allows deployment without psycopg
 
 ### Pending Todos
 
@@ -111,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T16:29:40.903Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-distributed-dispatch-horizontal-scaling/16-CONTEXT.md
+Last session: 2026-04-07T16:56:01.641Z
+Stopped at: Completed 16-01-PLAN.md
+Resume file: None
