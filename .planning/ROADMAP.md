@@ -203,8 +203,8 @@ Plans:
 
 Plans:
 - [x] 13-01-PLAN.md — Econ module foundation: SDK dependency, InstrumentedProviderAdapter, cost estimation, config
-- [x] 13-02-PLAN.md — Budget enforcement: BudgetEnforcer with TTL cache, AgentRunner integration
-- [ ] 13-03-PLAN.md — Cost REST endpoints and ServiceBootstrap wiring
+- [ ] 13-02-PLAN.md — Budget enforcement: BudgetEnforcer with TTL cache, AgentRunner integration
+- [x] 13-03-PLAN.md — Cost REST endpoints and ServiceBootstrap wiring
 
 ### Phase 14: Memory Connectors & Container Sandbox
 **Goal**: Agents can use persistent external memory backends (Redis KV, Redis thread, pgvector, ChromaDB, Elasticsearch) bridged to GovernAI protocol, and untrusted execution units run inside a Docker sandbox via a sidecar architecture.

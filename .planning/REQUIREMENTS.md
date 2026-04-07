@@ -24,8 +24,8 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 - [x] **ECON-01**: InstrumentedProviderAdapter wraps any ProviderAdapter and emits Regulus ExecutionEvent per LLM call
 - [x] **ECON-02**: Token cost attributed per node, run, tenant, and deployment in audit records
-- [x] **ECON-03**: Per-tenant and per-deployment budget caps enforced via policy guard before execution
-- [ ] **ECON-04**: REST endpoints expose cumulative cost per tenant and deployment
+- [ ] **ECON-03**: Per-tenant and per-deployment budget caps enforced via policy guard before execution
+- [x] **ECON-04**: REST endpoints expose cumulative cost per tenant and deployment
 
 ### Memory Connectors
 
@@ -103,8 +103,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LLM-04 | Phase 12 | Complete |
 | ECON-01 | Phase 13 | Complete |
 | ECON-02 | Phase 13 | Complete |
-| ECON-03 | Phase 13 | Complete |
-| ECON-04 | Phase 13 | Pending |
+| ECON-03 | Phase 13 | Pending |
+| ECON-04 | Phase 13 | Complete |
 | MEM-01 | Phase 14 | Pending |
 | MEM-02 | Phase 14 | Pending |
 | MEM-03 | Phase 14 | Pending |
