@@ -356,7 +356,7 @@ Plans:
 | 12. Real LLM Providers & Retry | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 13. Regulus Economics Integration | v1.1 | 2/3 | Complete    | 2026-04-07 |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 5/5 | Complete    | 2026-04-07 |
-| 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete   | 2026-04-07 |
+| 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/TBD | Not started | - |
 | 17. Deployment Packaging & Operations | v1.1 | 0/TBD | Not started | - |
 | 18. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
