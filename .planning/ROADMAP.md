@@ -151,7 +151,7 @@ Plans:
 - [x] **Phase 11: Config & Postgres Storage** - Unified config and production-grade storage backend (completed 2026-04-06)
 - [x] **Phase 12: Real LLM Providers & Retry** - OpenAI/Anthropic adapters with retry and token capture (completed 2026-04-06)
 - [x] **Phase 13: Regulus Economics Integration** - Token metering, cost attribution, and budget enforcement (completed 2026-04-07)
-- [ ] **Phase 14: Memory Connectors & Container Sandbox** - External memory backends and hardened Docker sandbox
+- [x] **Phase 14: Memory Connectors & Container Sandbox** - External memory backends and hardened Docker sandbox (completed 2026-04-07)
 - [ ] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies
 - [ ] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation
 - [ ] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS
@@ -223,7 +223,7 @@ Plans:
 - [x] 14-02-PLAN.md — Redis KV and Redis thread memory connectors
 - [x] 14-03-PLAN.md — pgvector, ChromaDB, and Elasticsearch memory connectors
 - [x] 14-04-PLAN.md — Sandbox sidecar service, HTTP client, SandboxManager SIDECAR mode
-- [ ] 14-05-PLAN.md — Connector registration factory and ServiceBootstrap wiring
+- [x] 14-05-PLAN.md — Connector registration factory and ServiceBootstrap wiring
 
 ### Phase 15: Webhooks & Approval SLA
 **Goal**: Callers receive durable push notifications on run completion, approval requests, and failure events, and approval SLA timeouts trigger escalation rather than silent expiry.
@@ -355,7 +355,7 @@ Plans:
 | 11. Config & Postgres Storage | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 12. Real LLM Providers & Retry | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 13. Regulus Economics Integration | v1.1 | 2/3 | Complete    | 2026-04-07 |
-| 14. Memory Connectors & Container Sandbox | v1.1 | 3/5 | In Progress|  |
+| 14. Memory Connectors & Container Sandbox | v1.1 | 5/5 | Complete   | 2026-04-07 |
 | 15. Webhooks & Approval SLA | v1.1 | 0/TBD | Not started | - |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/TBD | Not started | - |
 | 17. Deployment Packaging & Operations | v1.1 | 0/TBD | Not started | - |
