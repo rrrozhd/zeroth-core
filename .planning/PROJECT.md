@@ -42,12 +42,12 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 - ✓ Regulus economics integration: cost event emission per LLM call, cost attribution in audit records, budget enforcement, cost REST endpoints — Phase 13
 - ✓ External memory connectors (Redis KV, Redis thread, pgvector, ChromaDB, Elasticsearch) bridged to GovernAI v0.3.0 protocol with ScopedMemoryConnector + AuditingMemoryConnector wrapping — Phase 14
 - ✓ Container sandbox sidecar architecture: Docker socket isolated to sidecar service, API container communicates via HTTP — Phase 14
+- ✓ Durable webhook notifications (run.completed, run.failed, approval.requested/resolved/escalated) with HMAC-SHA256 signing, exponential backoff retry, and dead-letter store — Phase 15
+- ✓ Approval SLA timeout enforcement with configurable escalation (delegate, auto-reject, alert) and double-escalation prevention — Phase 15
 
 ### Active
 - [ ] Real message queue for durable distributed dispatch
-- [ ] Approval escalation and SLA timeout policies
 - [ ] Containerized deployment (Dockerfile, docker-compose, config management)
-- [ ] Webhook/callback notifications for run completion and approval events
 - [ ] API versioning and OpenAPI spec generation
 - [ ] Readiness/liveness health probes with dependency checks
 - [ ] Horizontal worker scaling support
