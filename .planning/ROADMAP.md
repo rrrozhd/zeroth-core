@@ -202,9 +202,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [x] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
-- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
-- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
+- [ ] 13-01-PLAN.md — Econ module foundation: SDK dependency, InstrumentedProviderAdapter, cost estimation, config
+- [ ] 13-02-PLAN.md — Budget enforcement: BudgetEnforcer with TTL cache, AgentRunner integration
+- [ ] 13-03-PLAN.md — Cost REST endpoints and ServiceBootstrap wiring
 
 ### Phase 14: Memory Connectors & Container Sandbox
 **Goal**: Agents can use persistent external memory backends (Redis KV, Redis thread, pgvector, ChromaDB, Elasticsearch) bridged to GovernAI protocol, and untrusted execution units run inside a Docker sandbox via a sidecar architecture.
@@ -219,9 +219,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
-- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
-- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
+- [ ] 14-01-PLAN.md — TBD
+- [ ] 14-02-PLAN.md — TBD
+- [ ] 14-03-PLAN.md — TBD
 
 ### Phase 15: Webhooks & Approval SLA
 **Goal**: Callers receive durable push notifications on run completion, approval requests, and failure events, and approval SLA timeouts trigger escalation rather than silent expiry.
@@ -234,9 +234,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
-- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
-- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
+- [ ] 15-01-PLAN.md — TBD
+- [ ] 15-02-PLAN.md — TBD
+- [ ] 15-03-PLAN.md — TBD
 
 ### Phase 16: Distributed Dispatch & Horizontal Scaling
 **Goal**: Multiple worker processes share a Postgres lease store for run ownership, and an ARQ-backed wakeup notification reduces lease poll latency without replacing the database as the authoritative queue.
@@ -249,9 +249,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
-- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
-- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
+- [ ] 16-01-PLAN.md — TBD
+- [ ] 16-02-PLAN.md — TBD
+- [ ] 16-03-PLAN.md — TBD
 
 ### Phase 17: Deployment Packaging & Operations
 **Goal**: The platform ships as a reproducible container image with versioned API routes, auto-generated OpenAPI documentation, TLS support, and readiness/liveness probes that block traffic until all dependencies are healthy.
@@ -266,9 +266,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Config package, async database protocol, implementations, Alembic migrations
-- [ ] 11-02-PLAN.md — Async rewrite of all repositories and callers
-- [ ] 11-03-PLAN.md — Test infrastructure, dual-backend verification, Postgres integration tests
+- [ ] 17-01-PLAN.md — TBD
+- [ ] 17-02-PLAN.md — TBD
+- [ ] 17-03-PLAN.md — TBD
 
 ### 📋 v2.0 Zeroth Studio (Planned)
 
@@ -352,7 +352,7 @@ Plans:
 | 10. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Paused | - |
 | 11. Config & Postgres Storage | v1.1 | 2/3 | Complete    | 2026-04-06 |
 | 12. Real LLM Providers & Retry | v1.1 | 2/3 | Complete    | 2026-04-06 |
-| 13. Regulus Economics Integration | v1.1 | 0/TBD | Not started | - |
+| 13. Regulus Economics Integration | v1.1 | 0/3 | Not started | - |
 | 14. Memory Connectors & Container Sandbox | v1.1 | 0/TBD | Not started | - |
 | 15. Webhooks & Approval SLA | v1.1 | 0/TBD | Not started | - |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 0/TBD | Not started | - |
