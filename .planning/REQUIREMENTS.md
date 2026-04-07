@@ -34,7 +34,7 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 - [ ] **MEM-03**: pgvector-backed semantic memory connector for agent context retrieval
 - [ ] **MEM-04**: ChromaDB memory connector for vector similarity search
 - [ ] **MEM-05**: Elasticsearch memory connector for full-text and hybrid search
-- [ ] **MEM-06**: Zeroth memory connectors bridged to GovernAI v0.3.0 ScopedMemoryConnector and AuditingMemoryConnector
+- [x] **MEM-06**: Zeroth memory connectors bridged to GovernAI v0.3.0 ScopedMemoryConnector and AuditingMemoryConnector
 
 ### Sandbox & Security
 
@@ -110,7 +110,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MEM-03 | Phase 14 | Pending |
 | MEM-04 | Phase 14 | Pending |
 | MEM-05 | Phase 14 | Pending |
-| MEM-06 | Phase 14 | Pending |
+| MEM-06 | Phase 14 | Complete |
 | SBX-01 | Phase 14 | Pending |
 | SBX-02 | Phase 14 | Pending |
 | OPS-01 | Phase 15 | Pending |
