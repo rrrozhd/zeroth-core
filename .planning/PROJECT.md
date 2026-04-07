@@ -47,11 +47,11 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 
 ### Active
 - [ ] Real message queue for durable distributed dispatch
-- [ ] Containerized deployment (Dockerfile, docker-compose, config management)
-- [ ] API versioning and OpenAPI spec generation
-- [ ] Readiness/liveness health probes with dependency checks
+- ✓ Containerized deployment (Dockerfile, docker-compose, config management) — Phase 17
+- ✓ API versioning and OpenAPI spec generation — Phase 17
+- ✓ Readiness/liveness health probes with dependency checks — Phase 17
 - [ ] Horizontal worker scaling support
-- [ ] TLS/HTTPS support
+- ✓ TLS/HTTPS support — Phase 17
 
 ### Out of Scope
 
@@ -99,4 +99,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after Phase 16 completion — Distributed Dispatch & Horizontal Scaling*
+*Last updated: 2026-04-07 after Phase 17 completion — Deployment Packaging & Operations*
