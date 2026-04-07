@@ -43,8 +43,8 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 ### Operations
 
-- [ ] **OPS-01**: Durable webhook notifications for run completion, approval needed, and failure events
-- [ ] **OPS-02**: Approval SLA timeouts with escalation and delegation policies
+- [x] **OPS-01**: Durable webhook notifications for run completion, approval needed, and failure events
+- [x] **OPS-02**: Approval SLA timeouts with escalation and delegation policies
 - [ ] **OPS-03**: Readiness and liveness health probes with dependency checks (DB, Redis, Regulus)
 - [ ] **OPS-04**: Multi-worker horizontal scaling with shared Postgres lease store
 - [ ] **OPS-05**: ARQ (Redis queue) wakeup notifications supplementing existing lease poller
@@ -113,8 +113,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MEM-06 | Phase 14 | Pending |
 | SBX-01 | Phase 14 | Complete |
 | SBX-02 | Phase 14 | Complete |
-| OPS-01 | Phase 15 | Pending |
-| OPS-02 | Phase 15 | Pending |
+| OPS-01 | Phase 15 | Complete |
+| OPS-02 | Phase 15 | Complete |
 | OPS-03 | Phase 17 | Pending |
 | OPS-04 | Phase 16 | Pending |
 | OPS-05 | Phase 16 | Pending |

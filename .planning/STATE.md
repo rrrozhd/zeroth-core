@@ -4,12 +4,12 @@ milestone: v1.1
 milestone_name: Production Readiness
 status: executing
 stopped_at: Phase 15 context gathered
-last_updated: "2026-04-07T12:27:19.127Z"
+last_updated: "2026-04-07T12:50:10.462Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 7
-  completed_phases: 4
-  total_plans: 14
+  completed_phases: 3
+  total_plans: 17
   completed_plans: 14
   percent: 11
 ---
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 13 — Regulus Economics Integration
+**Current focus:** Phase 15 — Webhooks, Approval SLA
 
 ## Current Position
 
-Phase: 15
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-07
+Phase: 15 (webhooks-approval-sla) — EXECUTING
+Plan: 2 of 3
+Status: Plan 01 complete, continuing
+Last activity: 2026-04-07 -- Phase 15 Plan 01 complete
 
-Progress: [=]░░░░░░░░░ 11% (v1.1)
+Progress: [████████░░] 82% (v1.1)
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [=]░░░░░░░░░ 11% (v1.1)
 | Phase 14 P02 | 215 | 2 tasks | 4 files |
 | Phase 14-memory-connectors-container-sandbox P03 | 285 | 2 tasks | 8 files |
 | Phase 14 P05 | 224 | 1 tasks | 4 files |
+| Phase 15-webhooks-approval-sla P01 | 352s | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,10 @@ Progress: [=]░░░░░░░░░ 11% (v1.1)
 - [Phase 14-memory-connectors-container-sandbox]: Elasticsearch uses NotFoundError exception for read/delete miss detection; no embedding needed for full-text search
 - [Phase 14]: Duck-typed settings (Any) in factory to avoid blocking on ZerothSettings; _BootstrapMemorySettings helper provides defaults
 - [Phase 14]: contextlib.suppress(ImportError) for optional connector modules from parallel agents
+- [Phase 15]: Event types stored as JSON array string in SQLite for subscription storage
+- [Phase 15]: Exponential backoff with full jitter for webhook delivery retry scheduling
+- [Phase 15]: All SLA fields nullable on existing models for backward compatibility
+- [Phase 15]: EscalationAction stored as string in graph models to avoid import dependency on webhooks
 
 ### Pending Todos
 
@@ -103,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T12:27:19.121Z
-Stopped at: Phase 15 context gathered
-Resume file: .planning/phases/15-webhooks-approval-sla/15-CONTEXT.md
+Last session: 2026-04-07T12:49:00Z
+Stopped at: Completed 15-01-PLAN.md
+Resume file: .planning/phases/15-webhooks-approval-sla/15-02-PLAN.md
