@@ -155,7 +155,7 @@ Plans:
 - [x] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies (completed 2026-04-07)
 - [x] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation (completed 2026-04-07)
 - [x] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS (completed 2026-04-07)
-- [ ] **Phase 18: Cross-Phase Integration Wiring** - Close worktree merge gaps in settings, bootstrap, and cost API (gap closure)
+- [x] **Phase 18: Cross-Phase Integration Wiring** - Close worktree merge gaps in settings, bootstrap, and cost API (gap closure) (completed 2026-04-08)
 
 ## Phase Details
 
@@ -285,11 +285,11 @@ Plans:
   4. `bootstrap_service()` passes real `ZerothSettings` (not stub) to the memory connector factory, enabling external backends
   5. `GET /v1/tenants/{id}/cost` routes respond correctly without double `/v1/v1/` prefix
   6. REQUIREMENTS.md traceability reflects accurate completion status for all v1.1 requirements
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 18-01-PLAN.md — DispatchSettings merge, ARQ pool + memory factory + cost_estimator bootstrap wiring, cost API prefix fix
-- [ ] 18-02-PLAN.md — InstrumentedProviderAdapter orchestrator wiring, REQUIREMENTS.md traceability cleanup
+- [x] 18-02-PLAN.md — InstrumentedProviderAdapter orchestrator wiring, REQUIREMENTS.md traceability cleanup
 
 ### 📋 v2.0 Zeroth Studio (Planned)
 
@@ -378,7 +378,7 @@ Plans:
 | 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 17. Deployment Packaging & Operations | v1.1 | 3/3 | Complete    | 2026-04-07 |
-| 18. Cross-Phase Integration Wiring | v1.1 | 1/2 | In Progress|  |
+| 18. Cross-Phase Integration Wiring | v1.1 | 2/2 | Complete   | 2026-04-08 |
 | 19. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
 | 20. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
 | 21. Studio Assets | v2.0 | 0/2 | Not started | - |
