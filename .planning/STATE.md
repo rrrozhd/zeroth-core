@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Completed 18-02-PLAN.md
-last_updated: "2026-04-08T08:56:59.027Z"
-last_activity: 2026-04-08
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-04-08T08:46:34.035Z"
+last_activity: 2026-04-08 -- Phase 18 execution started
 progress:
   total_phases: 8
-  completed_phases: 8
+  completed_phases: 7
   total_plans: 25
-  completed_plans: 25
+  completed_plans: 23
   percent: 88
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 18 (cross-phase-integration-wiring) — EXECUTING
-Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-04-08
+Plan: 1 of 2
+Status: Executing Phase 18
+Last activity: 2026-04-08 -- Phase 18 execution started
 
 Progress: [========]░░ 88% (v1.1)
 
@@ -64,7 +64,6 @@ Progress: [========]░░ 88% (v1.1)
 | Phase 16 P03 | 270 | 2 tasks | 6 files |
 | Phase 17 P02 | 198 | 2 tasks | 6 files |
 | Phase 17 P03 | 89 | 2 tasks | 7 files |
-| Phase 18-cross-phase-integration-wiring P02 | 105 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -110,7 +109,6 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 17]: v1_router with include_in_schema=True, compat_router with include_in_schema=False for clean OpenAPI spec
 - [Phase 17]: Regulus SDK via pre-built wheel in docker/regulus-sdk/ for Docker builds
 - [Phase 17]: Production entrypoint uses sync migrations + async uvicorn factory pattern
-- [Phase 18-cross-phase-integration-wiring]: Lazy import of InstrumentedProviderAdapter in _dispatch_node with try/finally restore to prevent state leakage
 
 ### Pending Todos
 
@@ -125,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-08T08:56:59.024Z
-Stopped at: Completed 18-02-PLAN.md
+Last session: 2026-04-07T18:27:43.413Z
+Stopped at: Completed 17-03-PLAN.md
 Resume file: None
