@@ -52,6 +52,7 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 - ✓ Readiness/liveness health probes with dependency checks — Phase 17
 - ✓ Horizontal worker scaling support (Postgres SKIP LOCKED + DispatchSettings) — Phase 16 + Phase 18 wiring
 - ✓ TLS/HTTPS support — Phase 17
+- ✓ Native LLM API parity: tool schemas, structured output, model parameters, MCP server integration — Phase 19
 
 ### Out of Scope
 
