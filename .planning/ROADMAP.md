@@ -302,8 +302,11 @@ Plans:
   4. An agent configured with `mcp_servers` discovers tools from MCP servers at startup and makes them available as callable tools during execution
   5. Existing agents without new fields continue to work identically (backward compatible)
 
+**Plans:** 3 plans
 Plans:
-- [ ] TBD (run /gsd:plan-phase 19 to break down)
+- [ ] 19-01-PLAN.md — Core data model extensions (ProviderRequest, ModelParams, ToolAttachmentManifest, adapter forwarding)
+- [ ] 19-02-PLAN.md — Runner wiring (response_format builder, _build_provider_request helper)
+- [ ] 19-03-PLAN.md — MCP server integration (MCPClientManager, tool discovery, runner lifecycle)
 
 ### 📋 v2.0 Zeroth Studio (Planned)
 
@@ -393,7 +396,7 @@ Plans:
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 17. Deployment Packaging & Operations | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 18. Cross-Phase Integration Wiring | v1.1 | 2/2 | Complete    | 2026-04-08 |
-| 19. Agent Node LLM API Parity | v1.2 | 0/0 | Not started | - |
+| 19. Agent Node LLM API Parity | v1.2 | 0/3 | Not started | - |
 | 20. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
 | 21. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
 | 22. Studio Assets | v2.0 | 0/2 | Not started | - |
