@@ -385,11 +385,15 @@ Plans:
 | 22. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |
 
 ### Phase 19: Agent Node LLM API Parity
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 18
-**Plans:** 0 plans
+**Goal**: Agent nodes expose full LLM API capabilities — native tool/function-calling schemas, structured output via response_format, per-node model parameters, and MCP server integration — so a graph node behaves like a direct LLM API call with governance.
+**Depends on**: Phase 18
+**Requirements**: API-01, API-02, API-03, API-04
+**Success Criteria** (what must be TRUE):
+  1. `ProviderRequest` carries `tools` (function schemas), `response_format`, `tool_choice`, and model params (`temperature`, `max_tokens`, `top_p`, `stop`, `seed`) to provider adapters
+  2. `ToolAttachmentManifest` converts to provider-native function-calling schemas and LiteLLMProviderAdapter forwards them in the API call
+  3. An agent with `output_model` set sends its JSON schema as native `response_format` to OpenAI/Anthropic; falls back to post-hoc validation for unsupported providers
+  4. An agent configured with `mcp_servers` discovers tools from MCP servers at startup and makes them available as callable tools during execution
+  5. Existing agents without new fields continue to work identically (backward compatible)
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 19 to break down)

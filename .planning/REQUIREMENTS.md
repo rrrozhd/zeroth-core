@@ -56,6 +56,13 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 - [x] **DEP-03**: OpenAPI spec auto-generated from FastAPI route definitions
 - [x] **DEP-04**: TLS/HTTPS support via reverse proxy or uvicorn SSL configuration
 
+### Agent Node LLM API Parity
+
+- [ ] **API-01**: ProviderRequest carries native tool/function-calling schemas to provider adapters; ToolAttachmentManifest converts to provider-native format
+- [ ] **API-02**: Agent nodes support native structured output via response_format (json_schema mode) for providers that support it, with post-hoc validation fallback
+- [ ] **API-03**: Agent nodes support per-node model parameters (temperature, max_tokens, top_p, stop, seed, tool_choice) forwarded to provider API
+- [ ] **API-04**: Agent nodes can declare MCP server connections; tools discovered at startup and callable during execution
+
 ## Future Requirements
 
 Deferred to subsequent milestones.
