@@ -46,11 +46,11 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 - ✓ Approval SLA timeout enforcement with configurable escalation (delegate, auto-reject, alert) and double-escalation prevention — Phase 15
 
 ### Active
-- [ ] Real message queue for durable distributed dispatch
+- ✓ Real message queue (ARQ/Redis) for durable distributed dispatch — Phase 16 + Phase 18 wiring
 - ✓ Containerized deployment (Dockerfile, docker-compose, config management) — Phase 17
 - ✓ API versioning and OpenAPI spec generation — Phase 17
 - ✓ Readiness/liveness health probes with dependency checks — Phase 17
-- [ ] Horizontal worker scaling support
+- ✓ Horizontal worker scaling support (Postgres SKIP LOCKED + DispatchSettings) — Phase 16 + Phase 18 wiring
 - ✓ TLS/HTTPS support — Phase 17
 
 ### Out of Scope
@@ -99,4 +99,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after Phase 17 completion — Deployment Packaging & Operations*
+*Last updated: 2026-04-08 after Phase 18 completion — Cross-Phase Integration Wiring (v1.1 milestone complete)*
