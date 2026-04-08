@@ -25,11 +25,11 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 - [ ] **ECON-01**: InstrumentedProviderAdapter wraps any ProviderAdapter and emits Regulus ExecutionEvent per LLM call
 - [ ] **ECON-02**: Token cost attributed per node, run, tenant, and deployment in audit records
 - [x] **ECON-03**: Per-tenant and per-deployment budget caps enforced via policy guard before execution
-- [ ] **ECON-04**: REST endpoints expose cumulative cost per tenant and deployment
+- [x] **ECON-04**: REST endpoints expose cumulative cost per tenant and deployment
 
 ### Memory Connectors
 
-- [ ] **MEM-01**: Redis-backed key-value memory connector replacing in-memory dict
+- [x] **MEM-01**: Redis-backed key-value memory connector replacing in-memory dict
 - [x] **MEM-02**: Redis-backed conversation/thread memory connector replacing in-memory store
 - [x] **MEM-03**: pgvector-backed semantic memory connector for agent context retrieval
 - [x] **MEM-04**: ChromaDB memory connector for vector similarity search
@@ -46,8 +46,8 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 - [x] **OPS-01**: Durable webhook notifications for run completion, approval needed, and failure events
 - [x] **OPS-02**: Approval SLA timeouts with escalation and delegation policies
 - [x] **OPS-03**: Readiness and liveness health probes with dependency checks (DB, Redis, Regulus)
-- [ ] **OPS-04**: Multi-worker horizontal scaling with shared Postgres lease store (code exists, settings not merged)
-- [ ] **OPS-05**: ARQ (Redis queue) wakeup notifications supplementing existing lease poller (code exists, bootstrap wiring not merged)
+- [x] **OPS-04**: Multi-worker horizontal scaling with shared Postgres lease store (code exists, settings not merged)
+- [x] **OPS-05**: ARQ (Redis queue) wakeup notifications supplementing existing lease poller (code exists, bootstrap wiring not merged)
 
 ### Deployment
 
@@ -104,8 +104,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ECON-01 | Phase 18 | Pending |
 | ECON-02 | Phase 18 | Pending |
 | ECON-03 | Phase 13 | Complete |
-| ECON-04 | Phase 18 | Pending |
-| MEM-01 | Phase 18 | Pending |
+| ECON-04 | Phase 18 | Complete |
+| MEM-01 | Phase 18 | Complete |
 | MEM-02 | Phase 14 | Complete |
 | MEM-03 | Phase 14 | Complete |
 | MEM-04 | Phase 14 | Complete |
@@ -116,8 +116,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OPS-01 | Phase 15 | Complete |
 | OPS-02 | Phase 15 | Complete |
 | OPS-03 | Phase 17 | Complete |
-| OPS-04 | Phase 18 | Pending |
-| OPS-05 | Phase 18 | Pending |
+| OPS-04 | Phase 18 | Complete |
+| OPS-05 | Phase 18 | Complete |
 | DEP-01 | Phase 17 | Complete |
 | DEP-02 | Phase 17 | Complete |
 | DEP-03 | Phase 17 | Complete |

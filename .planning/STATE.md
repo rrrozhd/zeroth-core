@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 ## Current Position
 
-Phase: 17
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-07
+Phase: 18 (cross-phase-integration-wiring) -- EXECUTING
+Plan: 1 of 2 -- COMPLETE
+Status: Executing Phase 18
+Last activity: 2026-04-08 -- Completed 18-01-PLAN.md
 
-Progress: [========]░░ 88% (v1.1)
+Progress: [=========]░ 92% (v1.1)
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Progress: [========]░░ 88% (v1.1)
 | Phase 16 P03 | 270 | 2 tasks | 6 files |
 | Phase 17 P02 | 198 | 2 tasks | 6 files |
 | Phase 17 P03 | 89 | 2 tasks | 7 files |
+| Phase 18-cross-phase-integration-wiring P01 | 193 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,9 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 17]: v1_router with include_in_schema=True, compat_router with include_in_schema=False for clean OpenAPI spec
 - [Phase 17]: Regulus SDK via pre-built wheel in docker/regulus-sdk/ for Docker builds
 - [Phase 17]: Production entrypoint uses sync migrations + async uvicorn factory pattern
+- [Phase 18]: request.app.state used instead of captured app.state for APIRouter-compatible route handlers
+- [Phase 18]: Redis client creation guarded by mode != disabled with ImportError fallback
+- [Phase 18]: CostEstimator creation nested inside regulus.enabled block
 
 ### Pending Todos
 
@@ -123,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T18:27:43.413Z
-Stopped at: Completed 17-03-PLAN.md
+Last session: 2026-04-08T08:50:30Z
+Stopped at: Completed 18-01-PLAN.md
 Resume file: None
