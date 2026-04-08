@@ -112,6 +112,10 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 17]: Production entrypoint uses sync migrations + async uvicorn factory pattern
 - [Phase 18-cross-phase-integration-wiring]: Lazy import of InstrumentedProviderAdapter in _dispatch_node with try/finally restore to prevent state leakage
 
+### Roadmap Evolution
+
+- Phase 19 added: Agent Node LLM API Parity — Native tool schemas, structured output, model parameters, and MCP server integration for agent nodes
+
 ### Pending Todos
 
 None yet.

@@ -383,3 +383,13 @@ Plans:
 | 20. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
 | 21. Studio Assets | v2.0 | 0/2 | Not started | - |
 | 22. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |
+
+### Phase 19: Agent Node LLM API Parity
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 18
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 19 to break down)
