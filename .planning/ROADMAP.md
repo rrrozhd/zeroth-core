@@ -3,8 +3,8 @@
 ## Milestones
 
 - ✅ **v1.0 Runtime Foundation** - Phases 1-9 (backend/runtime foundation complete)
-- 🚧 **v1.1 Production Readiness** - Phases 11-17 (in progress)
-- 📋 **v2.0 Zeroth Studio** - Phases 18-21 (planned)
+- 🚧 **v1.1 Production Readiness** - Phases 11-18 (in progress)
+- 📋 **v2.0 Zeroth Studio** - Phases 19-22 (planned)
 
 ## Phases
 
@@ -138,9 +138,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 10-01: Studio backend session, draft, revision, and lease foundations
-- [ ] 10-02: Frontend shell, routing, and canvas/inspector baseline
-- [ ] 10-03: Validation, contract-authoring UX, and autosave boundaries
+- [ ] 19-01: Studio backend session, draft, revision, and lease foundations
+- [ ] 19-02: Frontend shell, routing, and canvas/inspector baseline
+- [ ] 19-03: Validation, contract-authoring UX, and autosave boundaries
 
 </details>
 
@@ -155,6 +155,7 @@ Plans:
 - [x] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies (completed 2026-04-07)
 - [x] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation (completed 2026-04-07)
 - [x] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS (completed 2026-04-07)
+- [ ] **Phase 18: Cross-Phase Integration Wiring** - Close worktree merge gaps in settings, bootstrap, and cost API (gap closure)
 
 ## Phase Details
 
@@ -272,13 +273,29 @@ Plans:
 - [x] 17-02-PLAN.md — API versioning (/v1/ prefix), backward-compatible aliases, OpenAPI metadata
 - [x] 17-03-PLAN.md — Dockerfile, docker-compose.yml, Nginx TLS reverse proxy, production entrypoint
 
+### Phase 18: Cross-Phase Integration Wiring
+**Goal**: Close all worktree merge gaps by wiring DispatchSettings, ARQ pool, InstrumentedProviderAdapter, and memory factory into the production bootstrap path, and fix the cost API double-prefix bug.
+**Depends on**: Phase 11, Phase 13, Phase 14, Phase 16, Phase 17
+**Requirements**: ECON-01, ECON-02, ECON-04, MEM-01, MEM-06, OPS-04, OPS-05
+**Gap Closure:** Closes gaps from v1.1 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. `ZerothSettings` includes `DispatchSettings` as a nested field, and `ZEROTH_DISPATCH__ARQ_ENABLED` env var is respected
+  2. `bootstrap_service()` creates an ARQ pool when dispatch ARQ is enabled and stores it on `ServiceBootstrap`
+  3. `bootstrap_service()` wraps provider adapters with `InstrumentedProviderAdapter` so cost events are emitted on every LLM call
+  4. `bootstrap_service()` passes real `ZerothSettings` (not stub) to the memory connector factory, enabling external backends
+  5. `GET /v1/tenants/{id}/cost` routes respond correctly without double `/v1/v1/` prefix
+  6. REQUIREMENTS.md traceability reflects accurate completion status for all v1.1 requirements
+
+Plans:
+- [ ] 18-01-PLAN.md — Settings merge, bootstrap wiring, cost API fix, requirements cleanup
+
 ### 📋 v2.0 Zeroth Studio (Planned)
 
 **Milestone Goal:** Deliver the authoring, asset, environment, and execution UX needed to turn the backend runtime foundation into a full Studio product.
 
-### Phase 18: Studio Shell & Workflow Authoring
+### Phase 19: Studio Shell & Workflow Authoring
 **Goal**: Establish the Studio shell, canvas-first navigation, workflow drafts, and authoring-time contracts/validation UX.
-**Depends on**: Phase 17
+**Depends on**: Phase 18
 **Requirements**: STU-01, STU-02, AST-04, UX-01, UX-02
 **Success Criteria** (what must be TRUE):
   1. User can open a Studio shell with workflow rail, canvas, inspector, and mode switch
@@ -288,13 +305,13 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 18-01: Studio backend session, draft, revision, and lease foundations
-- [ ] 18-02: Frontend shell, routing, and canvas/inspector baseline
-- [ ] 18-03: Validation, contract-authoring UX, and autosave boundaries
+- [ ] 19-01: Studio backend session, draft, revision, and lease foundations
+- [ ] 19-02: Frontend shell, routing, and canvas/inspector baseline
+- [ ] 19-03: Validation, contract-authoring UX, and autosave boundaries
 
-### Phase 19: Studio Runtime, Executions, And Testing
+### Phase 20: Studio Runtime, Executions, And Testing
 **Goal**: Add execution timelines, test runs, and runtime/gateway views to Studio.
-**Depends on**: Phase 18
+**Depends on**: Phase 19
 **Requirements**: STU-03, STU-04, UX-03
 **Success Criteria** (what must be TRUE):
   1. User can run draft tests from Studio against persisted authoring snapshots
@@ -304,13 +321,13 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 19-01: Studio runtime gateway and query normalization
-- [ ] 19-02: Executions and tests views
-- [ ] 19-03: Node-scoped and run-scoped governance UX
+- [ ] 20-01: Studio runtime gateway and query normalization
+- [ ] 20-02: Executions and tests views
+- [ ] 20-03: Node-scoped and run-scoped governance UX
 
-### Phase 20: Studio Assets
+### Phase 21: Studio Assets
 **Goal**: Add reusable asset authoring for agents, executable units, and memory resources.
-**Depends on**: Phase 18
+**Depends on**: Phase 19
 **Requirements**: AST-01, AST-02, AST-03
 **Success Criteria** (what must be TRUE):
   1. User can browse and select reusable assets from Studio
@@ -320,12 +337,12 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 20-01: Asset models and backend persistence
-- [ ] 20-02: Asset slide-over UX and deep-edit flows
+- [ ] 21-01: Asset models and backend persistence
+- [ ] 21-02: Asset slide-over UX and deep-edit flows
 
-### Phase 21: Environments & Deployment UX
+### Phase 22: Environments & Deployment UX
 **Goal**: Add environment management and deployment-time bindings for Studio.
-**Depends on**: Phase 19, Phase 20
+**Depends on**: Phase 20, Phase 21
 **Requirements**: AST-05
 **Success Criteria** (what must be TRUE):
   1. User can switch current environment from the Studio header
@@ -335,8 +352,8 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 21-01: Environment registry and secret/binding management
-- [ ] 21-02: Header environment UX and deploy integration
+- [ ] 22-01: Environment registry and secret/binding management
+- [ ] 22-02: Header environment UX and deploy integration
 
 ## Progress
 
@@ -359,7 +376,8 @@ Plans:
 | 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 17. Deployment Packaging & Operations | v1.1 | 3/3 | Complete    | 2026-04-07 |
-| 18. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
-| 19. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
-| 20. Studio Assets | v2.0 | 0/2 | Not started | - |
-| 21. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |
+| 18. Cross-Phase Integration Wiring | v1.1 | 0/1 | Not started | - |
+| 19. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
+| 20. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
+| 21. Studio Assets | v2.0 | 0/2 | Not started | - |
+| 22. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |

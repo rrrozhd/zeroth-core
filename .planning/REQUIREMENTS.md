@@ -22,19 +22,19 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 ### Economics
 
-- [x] **ECON-01**: InstrumentedProviderAdapter wraps any ProviderAdapter and emits Regulus ExecutionEvent per LLM call
-- [x] **ECON-02**: Token cost attributed per node, run, tenant, and deployment in audit records
-- [ ] **ECON-03**: Per-tenant and per-deployment budget caps enforced via policy guard before execution
-- [x] **ECON-04**: REST endpoints expose cumulative cost per tenant and deployment
+- [ ] **ECON-01**: InstrumentedProviderAdapter wraps any ProviderAdapter and emits Regulus ExecutionEvent per LLM call
+- [ ] **ECON-02**: Token cost attributed per node, run, tenant, and deployment in audit records
+- [x] **ECON-03**: Per-tenant and per-deployment budget caps enforced via policy guard before execution
+- [ ] **ECON-04**: REST endpoints expose cumulative cost per tenant and deployment
 
 ### Memory Connectors
 
-- [x] **MEM-01**: Redis-backed key-value memory connector replacing in-memory dict
+- [ ] **MEM-01**: Redis-backed key-value memory connector replacing in-memory dict
 - [x] **MEM-02**: Redis-backed conversation/thread memory connector replacing in-memory store
 - [x] **MEM-03**: pgvector-backed semantic memory connector for agent context retrieval
 - [x] **MEM-04**: ChromaDB memory connector for vector similarity search
 - [x] **MEM-05**: Elasticsearch memory connector for full-text and hybrid search
-- [ ] **MEM-06**: Zeroth memory connectors bridged to GovernAI v0.3.0 ScopedMemoryConnector and AuditingMemoryConnector
+- [x] **MEM-06**: Zeroth memory connectors bridged to GovernAI v0.3.0 ScopedMemoryConnector and AuditingMemoryConnector
 
 ### Sandbox & Security
 
@@ -46,8 +46,8 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 - [x] **OPS-01**: Durable webhook notifications for run completion, approval needed, and failure events
 - [x] **OPS-02**: Approval SLA timeouts with escalation and delegation policies
 - [x] **OPS-03**: Readiness and liveness health probes with dependency checks (DB, Redis, Regulus)
-- [ ] **OPS-04**: Multi-worker horizontal scaling with shared Postgres lease store
-- [ ] **OPS-05**: ARQ (Redis queue) wakeup notifications supplementing existing lease poller
+- [ ] **OPS-04**: Multi-worker horizontal scaling with shared Postgres lease store (code exists, settings not merged)
+- [ ] **OPS-05**: ARQ (Redis queue) wakeup notifications supplementing existing lease poller (code exists, bootstrap wiring not merged)
 
 ### Deployment
 
@@ -101,23 +101,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LLM-02 | Phase 12 | Complete |
 | LLM-03 | Phase 12 | Complete |
 | LLM-04 | Phase 12 | Complete |
-| ECON-01 | Phase 13 | Complete |
-| ECON-02 | Phase 13 | Complete |
-| ECON-03 | Phase 13 | Pending |
-| ECON-04 | Phase 13 | Complete |
-| MEM-01 | Phase 14 | Complete |
+| ECON-01 | Phase 18 | Pending |
+| ECON-02 | Phase 18 | Pending |
+| ECON-03 | Phase 13 | Complete |
+| ECON-04 | Phase 18 | Pending |
+| MEM-01 | Phase 18 | Pending |
 | MEM-02 | Phase 14 | Complete |
 | MEM-03 | Phase 14 | Complete |
 | MEM-04 | Phase 14 | Complete |
 | MEM-05 | Phase 14 | Complete |
-| MEM-06 | Phase 14 | Pending |
+| MEM-06 | Phase 14 | Complete |
 | SBX-01 | Phase 14 | Complete |
 | SBX-02 | Phase 14 | Complete |
 | OPS-01 | Phase 15 | Complete |
 | OPS-02 | Phase 15 | Complete |
 | OPS-03 | Phase 17 | Complete |
-| OPS-04 | Phase 16 | Pending |
-| OPS-05 | Phase 16 | Pending |
+| OPS-04 | Phase 18 | Pending |
+| OPS-05 | Phase 18 | Pending |
 | DEP-01 | Phase 17 | Complete |
 | DEP-02 | Phase 17 | Complete |
 | DEP-03 | Phase 17 | Complete |
@@ -130,4 +130,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after v1.1 roadmap creation*
+*Last updated: 2026-04-08 after gap closure phase creation*
