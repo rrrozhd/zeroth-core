@@ -378,7 +378,7 @@ Plans:
 | 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 17. Deployment Packaging & Operations | v1.1 | 3/3 | Complete    | 2026-04-07 |
-| 18. Cross-Phase Integration Wiring | v1.1 | 2/2 | Complete   | 2026-04-08 |
+| 18. Cross-Phase Integration Wiring | v1.1 | 2/2 | Complete    | 2026-04-08 |
 | 19. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
 | 20. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
 | 21. Studio Assets | v2.0 | 0/2 | Not started | - |
