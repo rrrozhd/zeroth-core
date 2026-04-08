@@ -22,8 +22,8 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 ### Economics
 
-- [ ] **ECON-01**: InstrumentedProviderAdapter wraps any ProviderAdapter and emits Regulus ExecutionEvent per LLM call
-- [ ] **ECON-02**: Token cost attributed per node, run, tenant, and deployment in audit records
+- [x] **ECON-01**: InstrumentedProviderAdapter wraps any ProviderAdapter and emits Regulus ExecutionEvent per LLM call
+- [x] **ECON-02**: Token cost attributed per node, run, tenant, and deployment in audit records
 - [x] **ECON-03**: Per-tenant and per-deployment budget caps enforced via policy guard before execution
 - [x] **ECON-04**: REST endpoints expose cumulative cost per tenant and deployment
 
@@ -101,8 +101,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LLM-02 | Phase 12 | Complete |
 | LLM-03 | Phase 12 | Complete |
 | LLM-04 | Phase 12 | Complete |
-| ECON-01 | Phase 18 | Pending |
-| ECON-02 | Phase 18 | Pending |
+| ECON-01 | Phase 18 | Complete |
+| ECON-02 | Phase 18 | Complete |
 | ECON-03 | Phase 13 | Complete |
 | ECON-04 | Phase 18 | Complete |
 | MEM-01 | Phase 18 | Complete |
@@ -125,9 +125,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **Coverage:**
 - v1.1 requirements: 28 total
-- Mapped to phases: 28
+- Satisfied: 28
+- Partial: 0
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-08 after gap closure phase creation*
+*Last updated: 2026-04-08 after Phase 18 gap closure completion*
