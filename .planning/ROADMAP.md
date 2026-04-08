@@ -155,7 +155,7 @@ Plans:
 - [x] **Phase 15: Webhooks & Approval SLA** - Durable webhook delivery and approval escalation policies (completed 2026-04-07)
 - [x] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation (completed 2026-04-07)
 - [x] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS (completed 2026-04-07)
-- [x] **Phase 18: Cross-Phase Integration Wiring** - Close worktree merge gaps in settings, bootstrap, and cost API (gap closure) (completed 2026-04-08)
+- [ ] **Phase 18: Cross-Phase Integration Wiring** - Close worktree merge gaps in settings, bootstrap, and cost API (gap closure)
 
 ## Phase Details
 
@@ -285,36 +285,19 @@ Plans:
   4. `bootstrap_service()` passes real `ZerothSettings` (not stub) to the memory connector factory, enabling external backends
   5. `GET /v1/tenants/{id}/cost` routes respond correctly without double `/v1/v1/` prefix
   6. REQUIREMENTS.md traceability reflects accurate completion status for all v1.1 requirements
-**Plans:** 2/2 plans complete
+**Plans:** 1/2 plans executed
 
 Plans:
 - [x] 18-01-PLAN.md — DispatchSettings merge, ARQ pool + memory factory + cost_estimator bootstrap wiring, cost API prefix fix
-- [x] 18-02-PLAN.md — InstrumentedProviderAdapter orchestrator wiring, REQUIREMENTS.md traceability cleanup
-
-### Phase 19: Agent Node LLM API Parity
-**Goal**: Agent nodes expose full LLM API capabilities — native tool/function-calling schemas, structured output via response_format, per-node model parameters, and MCP server integration — so a graph node behaves like a direct LLM API call with governance.
-**Depends on**: Phase 18
-**Requirements**: API-01, API-02, API-03, API-04
-**Success Criteria** (what must be TRUE):
-  1. `ProviderRequest` carries `tools` (function schemas), `response_format`, `tool_choice`, and model params (`temperature`, `max_tokens`, `top_p`, `stop`, `seed`) to provider adapters
-  2. `ToolAttachmentManifest` converts to provider-native function-calling schemas and LiteLLMProviderAdapter forwards them in the API call
-  3. An agent with `output_model` set sends its JSON schema as native `response_format` to OpenAI/Anthropic; falls back to post-hoc validation for unsupported providers
-  4. An agent configured with `mcp_servers` discovers tools from MCP servers at startup and makes them available as callable tools during execution
-  5. Existing agents without new fields continue to work identically (backward compatible)
-
-**Plans:** 3 plans
-Plans:
-- [ ] 19-01-PLAN.md — Core data model extensions (ProviderRequest, ModelParams, ToolAttachmentManifest, adapter forwarding)
-- [ ] 19-02-PLAN.md — Runner wiring (response_format builder, _build_provider_request helper)
-- [ ] 19-03-PLAN.md — MCP server integration (MCPClientManager, tool discovery, runner lifecycle)
+- [ ] 18-02-PLAN.md — InstrumentedProviderAdapter orchestrator wiring, REQUIREMENTS.md traceability cleanup
 
 ### 📋 v2.0 Zeroth Studio (Planned)
 
 **Milestone Goal:** Deliver the authoring, asset, environment, and execution UX needed to turn the backend runtime foundation into a full Studio product.
 
-### Phase 20: Studio Shell & Workflow Authoring
+### Phase 19: Studio Shell & Workflow Authoring
 **Goal**: Establish the Studio shell, canvas-first navigation, workflow drafts, and authoring-time contracts/validation UX.
-**Depends on**: Phase 19
+**Depends on**: Phase 18
 **Requirements**: STU-01, STU-02, AST-04, UX-01, UX-02
 **Success Criteria** (what must be TRUE):
   1. User can open a Studio shell with workflow rail, canvas, inspector, and mode switch
@@ -324,13 +307,13 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 20-01: Studio backend session, draft, revision, and lease foundations
-- [ ] 20-02: Frontend shell, routing, and canvas/inspector baseline
-- [ ] 20-03: Validation, contract-authoring UX, and autosave boundaries
+- [ ] 19-01: Studio backend session, draft, revision, and lease foundations
+- [ ] 19-02: Frontend shell, routing, and canvas/inspector baseline
+- [ ] 19-03: Validation, contract-authoring UX, and autosave boundaries
 
-### Phase 21: Studio Runtime, Executions, And Testing
+### Phase 20: Studio Runtime, Executions, And Testing
 **Goal**: Add execution timelines, test runs, and runtime/gateway views to Studio.
-**Depends on**: Phase 20
+**Depends on**: Phase 19
 **Requirements**: STU-03, STU-04, UX-03
 **Success Criteria** (what must be TRUE):
   1. User can run draft tests from Studio against persisted authoring snapshots
@@ -340,13 +323,13 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 21-01: Studio runtime gateway and query normalization
-- [ ] 21-02: Executions and tests views
-- [ ] 21-03: Node-scoped and run-scoped governance UX
+- [ ] 20-01: Studio runtime gateway and query normalization
+- [ ] 20-02: Executions and tests views
+- [ ] 20-03: Node-scoped and run-scoped governance UX
 
-### Phase 22: Studio Assets
+### Phase 21: Studio Assets
 **Goal**: Add reusable asset authoring for agents, executable units, and memory resources.
-**Depends on**: Phase 20
+**Depends on**: Phase 19
 **Requirements**: AST-01, AST-02, AST-03
 **Success Criteria** (what must be TRUE):
   1. User can browse and select reusable assets from Studio
@@ -356,12 +339,12 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 22-01: Asset models and backend persistence
-- [ ] 22-02: Asset slide-over UX and deep-edit flows
+- [ ] 21-01: Asset models and backend persistence
+- [ ] 21-02: Asset slide-over UX and deep-edit flows
 
-### Phase 23: Environments & Deployment UX
+### Phase 22: Environments & Deployment UX
 **Goal**: Add environment management and deployment-time bindings for Studio.
-**Depends on**: Phase 21, Phase 22
+**Depends on**: Phase 20, Phase 21
 **Requirements**: AST-05
 **Success Criteria** (what must be TRUE):
   1. User can switch current environment from the Studio header
@@ -371,8 +354,8 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 23-01: Environment registry and secret/binding management
-- [ ] 23-02: Header environment UX and deploy integration
+- [ ] 22-01: Environment registry and secret/binding management
+- [ ] 22-02: Header environment UX and deploy integration
 
 ## Progress
 
@@ -395,9 +378,8 @@ Plans:
 | 15. Webhooks & Approval SLA | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 17. Deployment Packaging & Operations | v1.1 | 3/3 | Complete    | 2026-04-07 |
-| 18. Cross-Phase Integration Wiring | v1.1 | 2/2 | Complete    | 2026-04-08 |
-| 19. Agent Node LLM API Parity | v1.2 | 0/3 | Not started | - |
-| 20. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
-| 21. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
-| 22. Studio Assets | v2.0 | 0/2 | Not started | - |
-| 23. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |
+| 18. Cross-Phase Integration Wiring | v1.1 | 1/2 | In Progress|  |
+| 19. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
+| 20. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
+| 21. Studio Assets | v2.0 | 0/2 | Not started | - |
+| 22. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |

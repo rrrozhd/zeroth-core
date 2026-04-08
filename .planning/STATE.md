@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: executing
-stopped_at: Completed 18-02-PLAN.md
-last_updated: "2026-04-08T09:00:53.137Z"
+stopped_at: Completed 19-01-PLAN.md
+last_updated: "2026-04-08T10:58:10.380Z"
 last_activity: 2026-04-08
 progress:
   total_phases: 8
-  completed_phases: 8
+  completed_phases: 6
   total_plans: 25
-  completed_plans: 25
-  percent: 88
+  completed_plans: 23
+  percent: 92
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 18 — cross-phase-integration-wiring
+**Current focus:** Phase 17 — deployment-packaging-operations
 
 ## Current Position
 
-Phase: 18
-Plan: Not started
+Phase: 18 (cross-phase-integration-wiring) -- EXECUTING
+Plan: 2 of 2 -- COMPLETE
 Status: Ready to execute
 Last activity: 2026-04-08
 
-Progress: [========]░░ 88% (v1.1)
+Progress: [=========]░ 92% (v1.1)
 
 ## Performance Metrics
 
@@ -64,7 +64,8 @@ Progress: [========]░░ 88% (v1.1)
 | Phase 16 P03 | 270 | 2 tasks | 6 files |
 | Phase 17 P02 | 198 | 2 tasks | 6 files |
 | Phase 17 P03 | 89 | 2 tasks | 7 files |
-| Phase 18-cross-phase-integration-wiring P02 | 105 | 2 tasks | 3 files |
+| Phase 18-cross-phase-integration-wiring P01 | 193 | 2 tasks | 4 files |
+| Phase 19 P01 | 490 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -110,11 +111,10 @@ Progress: [========]░░ 88% (v1.1)
 - [Phase 17]: v1_router with include_in_schema=True, compat_router with include_in_schema=False for clean OpenAPI spec
 - [Phase 17]: Regulus SDK via pre-built wheel in docker/regulus-sdk/ for Docker builds
 - [Phase 17]: Production entrypoint uses sync migrations + async uvicorn factory pattern
-- [Phase 18-cross-phase-integration-wiring]: Lazy import of InstrumentedProviderAdapter in _dispatch_node with try/finally restore to prevent state leakage
-
-### Roadmap Evolution
-
-- Phase 19 added: Agent Node LLM API Parity — Native tool schemas, structured output, model parameters, and MCP server integration for agent nodes
+- [Phase 18]: request.app.state used instead of captured app.state for APIRouter-compatible route handlers
+- [Phase 18]: Redis client creation guarded by mode != disabled with ImportError fallback
+- [Phase 18]: CostEstimator creation nested inside regulus.enabled block
+- [Phase 19]: ModelParams defined in models.py (not provider.py) to avoid circular import, re-exported via provider.py
 
 ### Pending Todos
 
@@ -129,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-08T08:56:59.024Z
-Stopped at: Completed 18-02-PLAN.md
+Last session: 2026-04-08T10:58:10.377Z
+Stopped at: Completed 19-01-PLAN.md
 Resume file: None
