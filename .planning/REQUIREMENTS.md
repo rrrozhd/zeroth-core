@@ -16,7 +16,7 @@ Requirements for Zeroth Studio visual workflow authoring UI. Each maps to roadma
 - [x] **CANV-05**: User can auto-layout the graph in a readable DAG arrangement
 - [x] **CANV-06**: User can save and load workflow graphs via the authoring API
 - [x] **CANV-07**: User can undo and redo canvas operations (node add/move/delete, edge add/remove)
-- [ ] **CANV-08**: User can use keyboard shortcuts for common operations (delete, select-all, copy/paste, duplicate)
+- [x] **CANV-08**: User can use keyboard shortcuts for common operations (delete, select-all, copy/paste, duplicate)
 - [ ] **CANV-09**: User can navigate the canvas with pan, zoom, fit-to-view, and minimap
 - [x] **CANV-10**: User can work in a responsive three-panel layout (rail, canvas, inspector) with collapsible panels
 
@@ -44,7 +44,7 @@ Requirements for Zeroth Studio visual workflow authoring UI. Each maps to roadma
 - [ ] **AUTH-03**: User can attach tools and execution units to agent nodes as distinct connection types
 - [ ] **AUTH-04**: User can see data flow between nodes via typed port labels and hover tooltips
 - [ ] **AUTH-05**: User can trigger workflow execution and view per-node results (input/output/tokens/cost)
-- [ ] **AUTH-06**: User can see node validation indicators (missing fields, invalid connections, type mismatches)
+- [x] **AUTH-06**: User can see node validation indicators (missing fields, invalid connections, type mismatches)
 
 ### Versioning & Collaboration
 
@@ -94,7 +94,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CANV-05 | Phase 23 | Complete |
 | CANV-06 | Phase 22 | Complete |
 | CANV-07 | Phase 23 | Complete |
-| CANV-08 | Phase 23 | Pending |
+| CANV-08 | Phase 23 | Complete |
 | CANV-09 | Phase 22 | Pending |
 | CANV-10 | Phase 22 | Complete |
 | API-01 | Phase 22 | Complete |
@@ -113,7 +113,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-03 | Phase 24 | Pending |
 | AUTH-04 | Phase 24 | Pending |
 | AUTH-05 | Phase 24 | Pending |
-| AUTH-06 | Phase 23 | Pending |
+| AUTH-06 | Phase 23 | Complete |
 | COLLAB-01 | Phase 26 | Pending |
 | COLLAB-02 | Phase 26 | Pending |
 | INFRA-01 | Phase 22 | Complete |
