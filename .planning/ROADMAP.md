@@ -158,7 +158,7 @@ Plans:
 - [ ] **Phase 18: Cross-Phase Integration Wiring** - Close worktree merge gaps in settings, bootstrap, and cost API (gap closure)
 - [x] **Phase 19: Agent Node LLM API Parity** - ProviderRequest tool schemas, structured output, model params, MCP server connections (completed 2026-04-08)
 - [x] **Phase 20: Bootstrap Integration Wiring** - Wire MemoryConnectorResolver and BudgetEnforcer into AgentRunner (gap closure) (completed 2026-04-09)
-- [ ] **Phase 21: Health Probe Fix & Tech Debt** - Fix Regulus health check, Docker Compose env vars, missing re-exports (gap closure)
+- [x] **Phase 21: Health Probe Fix & Tech Debt** - Fix Regulus health check, Docker Compose env vars, missing re-exports (gap closure) (completed 2026-04-09)
 
 ## Phase Details
 
@@ -320,7 +320,7 @@ Plans:
   4. Phase 14 VERIFICATION.md updated to reflect fixes from Phase 18
 
 Plans:
-- [ ] 21-01: Regulus health fix, Docker Compose env vars, re-exports, stale verification cleanup
+- [x] 21-01: Regulus health fix, Docker Compose env vars, re-exports, stale verification cleanup
 
 ### 📋 v2.0 Zeroth Studio (Planned)
 
@@ -412,7 +412,7 @@ Plans:
 | 18. Cross-Phase Integration Wiring | v1.1 | 1/2 | In Progress|  |
 | 19. Agent Node LLM API Parity | v1.1 | 0/1 | Complete    | 2026-04-08 |
 | 20. Bootstrap Integration Wiring | v1.1 | 0/1 | Complete    | 2026-04-09 |
-| 21. Health Probe Fix & Tech Debt | v1.1 | 0/1 | Not started | - |
+| 21. Health Probe Fix & Tech Debt | v1.1 | 1/1 | Complete   | 2026-04-09 |
 | 22. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
 | 23. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
 | 24. Studio Assets | v2.0 | 0/2 | Not started | - |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
 status: verifying
-stopped_at: Phase 21 context gathered
-last_updated: "2026-04-09T09:37:44.908Z"
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-04-09T09:51:01.840Z"
 last_activity: 2026-04-09
 progress:
   total_phases: 10
-  completed_phases: 9
-  total_plans: 26
-  completed_plans: 26
+  completed_phases: 10
+  total_plans: 27
+  completed_plans: 27
   percent: 92
 ---
 
@@ -67,6 +67,7 @@ Progress: [=========]░ 92% (v1.1)
 | Phase 18-cross-phase-integration-wiring P01 | 193 | 2 tasks | 4 files |
 | Phase 19 P03 | 603 | 2 tasks | 7 files |
 | Phase 20 P01 | 367 | 3 tasks | 3 files |
+| Phase 21-health-probe-fix-tech-debt P01 | 250 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,7 @@ Progress: [=========]░ 92% (v1.1)
 - [Phase 19]: MCP tool calls routed by checking executable_unit_ref.startswith('mcp://') prefix
 - [Phase 20]: Dispatch-time injection pattern: save runner field originals before try, inject orchestrator values conditionally, restore in finally block
 - [Phase 20]: Used object | None typing for RuntimeOrchestrator memory_resolver/budget_enforcer to match existing field patterns and avoid import coupling
+- [Phase 21-health-probe-fix-tech-debt]: No changes to health.py -- existing getattr pattern works once RegulusClient.base_url property is added
 
 ### Pending Todos
 
@@ -134,6 +136,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-09T09:37:44.903Z
-Stopped at: Phase 21 context gathered
-Resume file: .planning/phases/21-health-probe-fix-tech-debt/21-CONTEXT.md
+Last session: 2026-04-09T09:51:01.836Z
+Stopped at: Completed 21-01-PLAN.md
+Resume file: None
