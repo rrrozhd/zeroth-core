@@ -44,7 +44,7 @@
 
 **Milestone Goal:** Build a visual workflow authoring UI for governed multi-agent systems, using Vue 3 + Vue Flow, with governance-first canvas patterns reimplemented for Zeroth's domain model.
 
-- [ ] **Phase 22: Canvas Foundation & Dev Infrastructure** - Vue app scaffold, basic canvas with node/edge editing, graph authoring REST API, Docker/Nginx serving
+- [x] **Phase 22: Canvas Foundation & Dev Infrastructure** - Vue app scaffold, basic canvas with node/edge editing, graph authoring REST API, Docker/Nginx serving (completed 2026-04-09)
 - [ ] **Phase 23: Canvas Editing UX** - Palette sidebar, inspector panel, auto-layout, undo/redo, keyboard shortcuts, validation indicators
 - [ ] **Phase 24: Execution & AI Authoring** - WebSocket real-time updates, workflow execution trigger, per-node results, model selector, prompt editor, tool attachment
 - [ ] **Phase 25: Governance Visualization** - Approval gates, audit trail, sandbox badges, RBAC-aware canvas, cost/budget display, environment switching
@@ -62,13 +62,13 @@
   3. User can navigate the canvas with pan, zoom, fit-to-view, and minimap
   4. User sees a responsive three-panel layout (workflow rail, canvas, inspector) with collapsible panels
   5. Studio frontend is served via Nginx alongside FastAPI in Docker, and frontend types are generated from the backend OpenAPI spec
-**Plans:** 0/5 plans executed
+**Plans:** 5/5 plans complete
 Plans:
-- [ ] 22-01-PLAN.md -- Vue 3 app scaffold, three-panel shell layout, Tailwind theming, node type definitions
-- [ ] 22-02-PLAN.md -- Studio graph authoring REST API with CRUD endpoints and node-types registry
-- [ ] 22-03-PLAN.md -- Interactive canvas with 8 custom node types, edge drawing, port validation, pan/zoom/minimap
-- [ ] 22-04-PLAN.md -- Workflow persistence: API client, Pinia stores, save/load cycle, WorkflowRail wiring
-- [ ] 22-05-PLAN.md -- Docker/Nginx multi-container deployment for Studio frontend
+- [x] 22-01-PLAN.md -- Vue 3 app scaffold, three-panel shell layout, Tailwind theming, node type definitions
+- [x] 22-02-PLAN.md -- Studio graph authoring REST API with CRUD endpoints and node-types registry
+- [x] 22-03-PLAN.md -- Interactive canvas with 8 custom node types, edge drawing, port validation, pan/zoom/minimap
+- [x] 22-04-PLAN.md -- Workflow persistence: API client, Pinia stores, save/load cycle, WorkflowRail wiring
+- [x] 22-05-PLAN.md -- Docker/Nginx multi-container deployment for Studio frontend
 **UI hint**: yes
 
 ### Phase 23: Canvas Editing UX
@@ -147,7 +147,7 @@ Phases execute in numeric order: 22 -> 23 -> 24 -> 25 -> 26
 | 19. Agent Node LLM API Parity | v1.1 | 3/3 | Complete | 2026-04-08 |
 | 20. Bootstrap Integration Wiring | v1.1 | 1/1 | Complete | 2026-04-09 |
 | 21. Health Probe Fix & Tech Debt | v1.1 | 1/1 | Complete | 2026-04-09 |
-| 22. Canvas Foundation & Dev Infrastructure | v2.0 | 0/5 | Planned    |  |
+| 22. Canvas Foundation & Dev Infrastructure | v2.0 | 5/5 | Complete   | 2026-04-09 |
 | 23. Canvas Editing UX | v2.0 | 0/? | Not started | - |
 | 24. Execution & AI Authoring | v2.0 | 0/? | Not started | - |
 | 25. Governance Visualization | v2.0 | 0/? | Not started | - |

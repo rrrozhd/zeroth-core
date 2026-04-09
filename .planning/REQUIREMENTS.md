@@ -53,7 +53,7 @@ Requirements for Zeroth Studio visual workflow authoring UI. Each maps to roadma
 
 ### Deployment & Infrastructure
 
-- [ ] **INFRA-01**: Studio frontend is served via Nginx alongside the existing FastAPI backend in the Docker deployment
+- [x] **INFRA-01**: Studio frontend is served via Nginx alongside the existing FastAPI backend in the Docker deployment
 - [ ] **INFRA-02**: Frontend types are generated from the backend OpenAPI spec to prevent type drift
 
 ## v2.1 Requirements
@@ -116,7 +116,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-06 | Phase 23 | Pending |
 | COLLAB-01 | Phase 26 | Pending |
 | COLLAB-02 | Phase 26 | Pending |
-| INFRA-01 | Phase 22 | Pending |
+| INFRA-01 | Phase 22 | Complete |
 | INFRA-02 | Phase 22 | Pending |
 
 **Coverage:**
