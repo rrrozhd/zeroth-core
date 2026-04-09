@@ -1,125 +1,52 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Production Readiness
-status: executing
-stopped_at: Phase 21 context gathered
-last_updated: "2026-04-09T09:55:23.757Z"
+milestone: v2.0
+milestone_name: Zeroth Studio
+status: planning
+stopped_at: Milestone v1.1 completed
+last_updated: "2026-04-09"
 last_activity: 2026-04-09
 progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 27
-  completed_plans: 27
-  percent: 92
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 10
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-06)
+See: .planning/PROJECT.md (updated 2026-04-09)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 21 — health-probe-fix-tech-debt
+**Current focus:** Planning v2.0 Zeroth Studio
 
 ## Current Position
 
-Phase: 21
+Phase: Not started
 Plan: Not started
-Status: Executing Phase 21
+Status: v1.1 shipped, v2.0 planning
 Last activity: 2026-04-09
 
-Progress: [=========]░ 92% (v1.1)
+Progress: [░░░░░░░░░░] 0% (v2.0)
 
 ## Performance Metrics
 
-**Velocity:**
+**Velocity (v1.1):**
 
-- Total plans completed: 13 (historical, pre-GSD)
-- Average duration: not tracked
-- Total execution time: not tracked
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1-9 | 13 | historical | historical |
-
-*Updated after each plan completion*
-| Phase 11-config-postgres-storage P01 | 266s | 2 tasks | 16 files |
-| Phase 11-config-postgres-storage P02 | 1523 | 2 tasks | 25 files |
-| Phase 11-config-postgres-storage P03 | 2403 | 2 tasks | 49 files |
-| Phase 12 P02 | 157 | 2 tasks | 3 files |
-| Phase 12-real-llm-providers-retry P03 | 296 | 3 tasks | 6 files |
-| Phase 13-regulus-economics-integration P01 | 346s | 2 tasks | 13 files |
-| Phase 13-regulus-economics-integration P03 | 306 | 2 tasks | 4 files |
-| Phase 14-memory-connectors-container-sandbox P04 | 371 | 2 tasks | 11 files |
-| Phase 14 P02 | 215 | 2 tasks | 4 files |
-| Phase 14-memory-connectors-container-sandbox P03 | 285 | 2 tasks | 8 files |
-| Phase 14 P05 | 224 | 1 tasks | 4 files |
-| Phase 15-webhooks-approval-sla P02 | 413s | 2 tasks | 9 files |
-| Phase 15-webhooks-approval-sla P03 | 858 | 2 tasks | 9 files |
-| Phase 16 P02 | 218 | 2 tasks | 6 files |
-| Phase 16 P03 | 270 | 2 tasks | 6 files |
-| Phase 17 P02 | 198 | 2 tasks | 6 files |
-| Phase 17 P03 | 89 | 2 tasks | 7 files |
-| Phase 18-cross-phase-integration-wiring P01 | 193 | 2 tasks | 4 files |
-| Phase 19 P03 | 603 | 2 tasks | 7 files |
-| Phase 20 P01 | 367 | 3 tasks | 3 files |
+- Total plans completed: 30
+- Phases: 11 (Phases 11-21)
+- Timeline: 4 days (2026-04-06 to 2026-04-09)
+- Commits: 168
+- Files changed: 350 (+47,444 / -3,273 lines)
 
 ## Accumulated Context
 
 ### Decisions
 
-- GovernAI: switched from local path to GitHub commit pin (7452de4) — required before Dockerfile phase
-- Regulus: SDK-level integration only — companion service, not embedded
-- Storage: Postgres for production, SQLite retained for dev/test — repos stay synchronous (psycopg2/psycopg3 sync, NOT asyncpg)
-- Studio UI (Phase 10): paused — v1.1 production hardening takes priority; Studio renumbered to Phases 18-21
-- Sandbox: sidecar architecture required — API container must never mount Docker socket
-- MQ: ARQ is wakeup notification only — Postgres lease remains authoritative queue
-- [Phase 11-config-postgres-storage]: Pydantic-settings with YamlConfigSettingsSource for unified config (env > .env > YAML priority)
-- [Phase 11-config-postgres-storage]: Runtime-checkable Protocol for AsyncDatabase/AsyncConnection enables isinstance checks
-- [Phase 11-config-postgres-storage]: Alembic initial migration consolidates all 10 tables from 7 repositories
-- [Phase 11-config-postgres-storage]: All repositories and callers converted to async AsyncDatabase protocol; Alembic migrations run at startup via sync run_migrations()
-- [Phase 11-config-postgres-storage]: All tests converted to async with Alembic-migrated fixtures; testcontainers Postgres integration tests added; migration schema fixed with missing columns
-- [Phase 12]: Full jitter exponential backoff for provider retry; transient error classification via litellm exception types
-- [Phase 12]: Token audit trail: NodeAuditRecord.token_usage wired from ProviderResponse through AgentRunner
-- [Phase 12]: Live tests gated behind @pytest.mark.live; default pytest excludes them via addopts
-- [Phase 13]: Lazy import for InstrumentedProviderAdapter in econ/__init__.py to avoid circular imports
-- [Phase 13]: CostEstimator wraps litellm.cost_per_token with try/except returning Decimal(0) for unknown models
-- [Phase 13]: RegulusClient.stop() calls flush_once() then stop() on transport for clean shutdown
-- [Phase 13-regulus-economics-integration]: BudgetEnforcer import conditional (try/except ImportError) for parallel plan execution
-- [Phase 13-regulus-economics-integration]: Cost endpoints use app.state for Regulus config rather than bootstrap Protocol
-- [Phase 14-memory-connectors-container-sandbox]: asyncio.run() bridge for sync-to-async sidecar dispatch in SandboxManager
-- [Phase 14-memory-connectors-container-sandbox]: Per-execution --internal Docker network for untrusted sandbox isolation
-- [Phase 14]: Upsert semantics for KV write preserving created_at; sorted-set timestamps for thread ordering
-- [Phase 14-memory-connectors-container-sandbox]: PgvectorMemoryConnector uses conn_factory callable for flexible async connection management
-- [Phase 14-memory-connectors-container-sandbox]: Elasticsearch uses NotFoundError exception for read/delete miss detection; no embedding needed for full-text search
-- [Phase 14]: Duck-typed settings (Any) in factory to avoid blocking on ZerothSettings; _BootstrapMemorySettings helper provides defaults
-- [Phase 14]: contextlib.suppress(ImportError) for optional connector modules from parallel agents
-- [Phase 15]: WebhookDeliveryWorker uses semaphore-based bounded concurrency matching RunWorker pattern
-- [Phase 15]: WEBHOOK_ADMIN permission auto-included in ADMIN role via set(Permission)
-- [Phase 15]: Dead-letter replay creates fresh delivery with reset attempt_count
-- [Phase 15-webhooks-approval-sla]: SLA checker uses optional WebhookService injection to avoid circular imports
-- [Phase 15-webhooks-approval-sla]: Webhook emission is fire-and-forget with exception logging (never blocks main flow)
-- [Phase 15-webhooks-approval-sla]: ApprovalRepository.write extended to persist SLA columns for efficient overdue queries
-- [Phase 16]: ARQ wakeup is fire-and-forget: enqueue_wakeup never raises, logs on failure
-- [Phase 16]: RunWorker._release_to_pending uses synchronous repo calls matching existing sync RunRepository pattern
-- [Phase 16]: ARQ exports guarded by try/except ImportError so dispatch works without arq installed
-- [Phase 16]: ARQ pool wired at bootstrap, wakeup enqueued after run creation and approval continuation, SIGTERM triggers graceful shutdown
-- [Phase 17]: Route registration functions accept FastAPI | APIRouter union type for dual registration
-- [Phase 17]: v1_router with include_in_schema=True, compat_router with include_in_schema=False for clean OpenAPI spec
-- [Phase 17]: Regulus SDK via pre-built wheel in docker/regulus-sdk/ for Docker builds
-- [Phase 17]: Production entrypoint uses sync migrations + async uvicorn factory pattern
-- [Phase 18]: request.app.state used instead of captured app.state for APIRouter-compatible route handlers
-- [Phase 18]: Redis client creation guarded by mode != disabled with ImportError fallback
-- [Phase 18]: CostEstimator creation nested inside regulus.enabled block
-- [Phase 19]: MCP imports lazy inside start() to avoid import-time dependency on mcp SDK
-- [Phase 19]: Tool name collisions resolved via server_name__tool_name namespacing prefix
-- [Phase 19]: MCP tool calls routed by checking executable_unit_ref.startswith('mcp://') prefix
-- [Phase 20]: Dispatch-time injection pattern: save runner field originals before try, inject orchestrator values conditionally, restore in finally block
-- [Phase 20]: Used object | None typing for RuntimeOrchestrator memory_resolver/budget_enforcer to match existing field patterns and avoid import coupling
+See: .planning/PROJECT.md Key Decisions table
 
 ### Pending Todos
 
@@ -127,13 +54,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 11] GovernAI git ref must be verified before Phase 13 or Phase 17 (whichever comes first)
-- [Phase 13] Regulus TelemetryTransport flush-on-SIGTERM behavior unverified — needs spike during Phase 13 planning
-- [Phase 14] Sandbox sidecar API surface needs design spike before implementation tasks
-- [Phase 16] ARQ 0.26 PyPI version not confirmed — verify before adding to pyproject.toml
+None — fresh milestone.
 
 ## Session Continuity
 
-Last session: 2026-04-09T09:37:44.903Z
-Stopped at: Phase 21 context gathered
-Resume file: .planning/phases/21-health-probe-fix-tech-debt/21-CONTEXT.md
+Last session: 2026-04-09
+Stopped at: Milestone v1.1 completed, v2.0 not started
+Resume: Run `/gsd:new-milestone` to start v2.0 requirements
