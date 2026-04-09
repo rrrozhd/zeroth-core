@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Production Readiness
-status: executing
-stopped_at: Completed 19-03-PLAN.md
-last_updated: "2026-04-08T11:22:00.410Z"
-last_activity: 2026-04-08
+status: verifying
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-04-09T09:34:00.812Z"
+last_activity: 2026-04-09
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 25
-  completed_plans: 25
+  total_phases: 10
+  completed_phases: 9
+  total_plans: 26
+  completed_plans: 26
   percent: 92
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 17 — deployment-packaging-operations
+**Current focus:** Phase 20 — bootstrap-integration-wiring
 
 ## Current Position
 
-Phase: 19
+Phase: 21
 Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-08
+Status: Phase complete — ready for verification
+Last activity: 2026-04-09
 
 Progress: [=========]░ 92% (v1.1)
 
@@ -66,6 +66,7 @@ Progress: [=========]░ 92% (v1.1)
 | Phase 17 P03 | 89 | 2 tasks | 7 files |
 | Phase 18-cross-phase-integration-wiring P01 | 193 | 2 tasks | 4 files |
 | Phase 19 P03 | 603 | 2 tasks | 7 files |
+| Phase 20 P01 | 367 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,8 @@ Progress: [=========]░ 92% (v1.1)
 - [Phase 19]: MCP imports lazy inside start() to avoid import-time dependency on mcp SDK
 - [Phase 19]: Tool name collisions resolved via server_name__tool_name namespacing prefix
 - [Phase 19]: MCP tool calls routed by checking executable_unit_ref.startswith('mcp://') prefix
+- [Phase 20]: Dispatch-time injection pattern: save runner field originals before try, inject orchestrator values conditionally, restore in finally block
+- [Phase 20]: Used object | None typing for RuntimeOrchestrator memory_resolver/budget_enforcer to match existing field patterns and avoid import coupling
 
 ### Pending Todos
 
@@ -131,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-08T11:12:05.148Z
-Stopped at: Completed 19-03-PLAN.md
+Last session: 2026-04-09T09:28:17.819Z
+Stopped at: Completed 20-01-PLAN.md
 Resume file: None
