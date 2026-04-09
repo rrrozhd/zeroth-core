@@ -100,4 +100,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-08 after Phase 18 completion — Cross-Phase Integration Wiring (v1.1 milestone complete)*
+*Last updated: 2026-04-09 after Phase 20 completion — Bootstrap Integration Wiring (MemoryConnectorResolver and BudgetEnforcer wired into AgentRunner dispatch path)*
