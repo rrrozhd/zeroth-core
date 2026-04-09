@@ -8,13 +8,25 @@ Zeroth is a governed medium-code platform for building, running, and deploying p
 
 Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
 
+## Current Milestone: v2.0 Zeroth Studio
+
+**Goal:** Build a visual workflow authoring UI for governed multi-agent systems, using Vue 3 + Vue Flow, informed by n8n's canvas patterns but reimplemented for Zeroth's governance-first domain model.
+
+**Target features:**
+- Visual graph editor (Vue Flow canvas) with node placement, edge drawing, auto-layout
+- Graph authoring API (REST/WS) bridging Studio frontend to Zeroth's backend
+- Studio shell with workflow rail, canvas area, and inspector panel
+- Reusable asset authoring (agents, execution units, approval gates, memory resources)
+- Environment management and deployment-time bindings
+
 ## Current State
 
 **Shipped:** v1.1 Production Readiness (2026-04-09)
 **Codebase:** ~22K LOC source + ~18K LOC tests (Python)
 **Tech stack:** Python / FastAPI / Pydantic / SQLAlchemy / Alembic / LiteLLM / ARQ / Docker
+**Frontend stack (v2.0):** Vue 3 / Vite / Pinia / Vue Flow / dagre / CodeMirror 6
 
-The platform is production-viable: real LLM providers, economic controls, external memory, durable webhooks, horizontal scaling, and containerized deployment are all wired and verified. The next milestone focuses on Studio UI for visual workflow authoring.
+The platform is production-viable: real LLM providers, economic controls, external memory, durable webhooks, horizontal scaling, and containerized deployment are all wired and verified. v2.0 adds Studio UI for visual workflow authoring.
 
 ## Requirements
 
@@ -57,6 +69,8 @@ The platform is production-viable: real LLM providers, economic controls, extern
 
 Mature Python backend with 280+ tests, lint clean, broad pytest coverage. GovernAI v0.3.0-dev pinned from GitHub for memory, secrets, capability policy, agent spec, and tool manifest modules. Regulus companion service provides LLM economics telemetry. All v1.1 requirements verified via milestone audit with zero gaps.
 
+**v2.0 design reference:** n8n's frontend (SUL-licensed, not forkable) studied for canvas patterns, shell layout, and inspector UX. MIT libraries adopted directly: @vue-flow/core, @dagrejs/dagre, CodeMirror 6. Our canvas must be governance-aware (approval gates, audit decorators, sandbox indicators, RBAC) — a clean reimplementation, not a port.
+
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
@@ -65,6 +79,8 @@ Mature Python backend with 280+ tests, lint clean, broad pytest coverage. Govern
 | Regulus integrated via SDK, not embedded | Separation of concerns — economics is a companion service | ✓ Good — fail-open pattern works well |
 | Postgres as production storage, SQLite retained for dev/test | Production needs vs developer experience | ✓ Good — dual backend via env var |
 | Studio UI deferred to v2.0 | Backend must be production-viable before adding frontend | ✓ Good — v1.1 shipped solid |
+| Vue 3 + Vue Flow for Studio | Same stack as n8n reference; Vue Flow is purpose-built for Vue, MIT-licensed | — Pending |
+| n8n as design reference only | SUL license prevents forking; tight coupling to n8n backend makes extraction impractical | ✓ Good |
 | LiteLLM as provider abstraction layer | Routes to 100+ models without per-provider adapters | ✓ Good — unified retry/token capture |
 | Worktree isolation for parallel phase development | Independent progress on subsystems | ⚠️ Revisit — creates integration wiring gaps |
 | Bootstrap wiring as dedicated integration phase | Connects independently developed subsystems | ✓ Good — effective gap closure pattern |
@@ -95,4 +111,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-09 after v1.1 Production Readiness milestone*
+*Last updated: 2026-04-09 after v2.0 Zeroth Studio milestone start*
