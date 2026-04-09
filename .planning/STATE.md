@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Zeroth Studio
-status: planning
-stopped_at: Milestone v1.1 completed
+status: ready_to_plan
+stopped_at: Roadmap created for v2.0
 last_updated: "2026-04-09"
 last_activity: 2026-04-09
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 0
-  total_plans: 10
+  total_plans: 0
   completed_plans: 0
   percent: 0
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-09)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Planning v2.0 Zeroth Studio
+**Current focus:** Phase 22 - Canvas Foundation & Dev Infrastructure
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-09 — Milestone v2.0 started
+Phase: 22 of 26 (Canvas Foundation & Dev Infrastructure)
+Plan: --
+Status: Ready to plan
+Last activity: 2026-04-09 -- Roadmap created for v2.0 Zeroth Studio (5 phases, 31 requirements)
 
 Progress: [░░░░░░░░░░] 0% (v2.0)
 
@@ -48,16 +48,21 @@ Progress: [░░░░░░░░░░] 0% (v2.0)
 
 See: .planning/PROJECT.md Key Decisions table
 
+Recent:
+- Vue 3 + Vue Flow for Studio (same stack as n8n reference, MIT-licensed)
+- n8n as design reference only (SUL license prevents forking)
+- REST-only in Phase 22, WebSocket introduced in Phase 24
+
 ### Pending Todos
 
 None yet.
 
 ### Blockers/Concerns
 
-None — fresh milestone.
+None -- fresh milestone.
 
 ## Session Continuity
 
 Last session: 2026-04-09
-Stopped at: Milestone v1.1 completed, v2.0 not started
-Resume: Run `/gsd:new-milestone` to start v2.0 requirements
+Stopped at: Roadmap created, ready to plan Phase 22
+Resume: Run `/gsd:plan-phase 22`

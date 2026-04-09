@@ -87,43 +87,43 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CANV-01 | — | Pending |
-| CANV-02 | — | Pending |
-| CANV-03 | — | Pending |
-| CANV-04 | — | Pending |
-| CANV-05 | — | Pending |
-| CANV-06 | — | Pending |
-| CANV-07 | — | Pending |
-| CANV-08 | — | Pending |
-| CANV-09 | — | Pending |
-| CANV-10 | — | Pending |
-| API-01 | — | Pending |
-| API-02 | — | Pending |
-| API-03 | — | Pending |
-| API-04 | — | Pending |
-| GOV-01 | — | Pending |
-| GOV-02 | — | Pending |
-| GOV-03 | — | Pending |
-| GOV-04 | — | Pending |
-| GOV-05 | — | Pending |
-| GOV-06 | — | Pending |
-| GOV-07 | — | Pending |
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| AUTH-05 | — | Pending |
-| AUTH-06 | — | Pending |
-| COLLAB-01 | — | Pending |
-| COLLAB-02 | — | Pending |
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
+| CANV-01 | Phase 22 | Pending |
+| CANV-02 | Phase 22 | Pending |
+| CANV-03 | Phase 23 | Pending |
+| CANV-04 | Phase 23 | Pending |
+| CANV-05 | Phase 23 | Pending |
+| CANV-06 | Phase 22 | Pending |
+| CANV-07 | Phase 23 | Pending |
+| CANV-08 | Phase 23 | Pending |
+| CANV-09 | Phase 22 | Pending |
+| CANV-10 | Phase 22 | Pending |
+| API-01 | Phase 22 | Pending |
+| API-02 | Phase 24 | Pending |
+| API-03 | Phase 22 | Pending |
+| API-04 | Phase 24 | Pending |
+| GOV-01 | Phase 25 | Pending |
+| GOV-02 | Phase 25 | Pending |
+| GOV-03 | Phase 25 | Pending |
+| GOV-04 | Phase 25 | Pending |
+| GOV-05 | Phase 25 | Pending |
+| GOV-06 | Phase 25 | Pending |
+| GOV-07 | Phase 25 | Pending |
+| AUTH-01 | Phase 24 | Pending |
+| AUTH-02 | Phase 24 | Pending |
+| AUTH-03 | Phase 24 | Pending |
+| AUTH-04 | Phase 24 | Pending |
+| AUTH-05 | Phase 24 | Pending |
+| AUTH-06 | Phase 23 | Pending |
+| COLLAB-01 | Phase 26 | Pending |
+| COLLAB-02 | Phase 26 | Pending |
+| INFRA-01 | Phase 22 | Pending |
+| INFRA-02 | Phase 22 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 31 total
-- Mapped to phases: 0
-- Unmapped: 31 ⚠️
+- Mapped to phases: 31
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-09*
-*Last updated: 2026-04-09 after initial definition*
+*Last updated: 2026-04-09 after roadmap creation*
