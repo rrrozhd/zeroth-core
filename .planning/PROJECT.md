@@ -49,10 +49,11 @@ Teams can author and operate governed multi-agent workflows without sacrificing 
 - ✓ Real message queue (ARQ/Redis) for durable distributed dispatch — Phase 16 + Phase 18 wiring
 - ✓ Containerized deployment (Dockerfile, docker-compose, config management) — Phase 17
 - ✓ API versioning and OpenAPI spec generation — Phase 17
-- ✓ Readiness/liveness health probes with dependency checks — Phase 17
+- ✓ Readiness/liveness health probes with dependency checks — Phase 17 + Phase 21 Regulus health fix
 - ✓ Horizontal worker scaling support (Postgres SKIP LOCKED + DispatchSettings) — Phase 16 + Phase 18 wiring
 - ✓ TLS/HTTPS support — Phase 17
 - ✓ Native LLM API parity: tool schemas, structured output, model parameters, MCP server integration — Phase 19
+- ✓ Health probe fix, Docker Compose Regulus env vars, agent_runtime re-exports, stale verification cleanup — Phase 21
 
 ### Out of Scope
 
