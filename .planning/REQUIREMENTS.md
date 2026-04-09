@@ -14,7 +14,7 @@ Requirements for Zeroth Studio visual workflow authoring UI. Each maps to roadma
 - [ ] **CANV-03**: User can browse and search available node types in a categorized sidebar palette
 - [ ] **CANV-04**: User can view and edit selected node properties in an inspector panel
 - [ ] **CANV-05**: User can auto-layout the graph in a readable DAG arrangement
-- [ ] **CANV-06**: User can save and load workflow graphs via the authoring API
+- [x] **CANV-06**: User can save and load workflow graphs via the authoring API
 - [ ] **CANV-07**: User can undo and redo canvas operations (node add/move/delete, edge add/remove)
 - [ ] **CANV-08**: User can use keyboard shortcuts for common operations (delete, select-all, copy/paste, duplicate)
 - [x] **CANV-09**: User can navigate the canvas with pan, zoom, fit-to-view, and minimap
@@ -54,7 +54,7 @@ Requirements for Zeroth Studio visual workflow authoring UI. Each maps to roadma
 ### Deployment & Infrastructure
 
 - [ ] **INFRA-01**: Studio frontend is served via Nginx alongside the existing FastAPI backend in the Docker deployment
-- [ ] **INFRA-02**: Frontend types are generated from the backend OpenAPI spec to prevent type drift
+- [x] **INFRA-02**: Frontend types are generated from the backend OpenAPI spec to prevent type drift
 
 ## v2.1 Requirements
 
@@ -92,7 +92,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CANV-03 | Phase 23 | Pending |
 | CANV-04 | Phase 23 | Pending |
 | CANV-05 | Phase 23 | Pending |
-| CANV-06 | Phase 22 | Pending |
+| CANV-06 | Phase 22 | Complete |
 | CANV-07 | Phase 23 | Pending |
 | CANV-08 | Phase 23 | Pending |
 | CANV-09 | Phase 22 | Complete |
@@ -117,7 +117,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COLLAB-01 | Phase 26 | Pending |
 | COLLAB-02 | Phase 26 | Pending |
 | INFRA-01 | Phase 22 | Pending |
-| INFRA-02 | Phase 22 | Pending |
+| INFRA-02 | Phase 22 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 31 total
