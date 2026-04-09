@@ -1,565 +1,686 @@
-# Architecture Research
+# Architecture Patterns
 
-**Domain:** Governed multi-agent platform — production readiness integration
-**Researched:** 2026-04-06
-**Confidence:** HIGH (based on direct source inspection of both codebases)
+**Domain:** Visual workflow authoring UI (Zeroth Studio) integrated with existing governed multi-agent platform
+**Researched:** 2026-04-09
+
+## Recommended Architecture
+
+### High-Level Overview
+
+```
+Browser (Vue 3 SPA)
+  |
+  +-- Nginx (TLS termination, static files, reverse proxy)
+  |     |
+  |     +-- /studio/*  -->  Vue SPA static assets (index.html fallback)
+  |     +-- /v1/*      -->  FastAPI backend (REST API)
+  |     +-- /v2/*      -->  FastAPI backend (Studio authoring API)
+  |     +-- /ws/*      -->  FastAPI WebSocket (canvas events)
+  |     +-- /health/*  -->  FastAPI health probes
+  |
+  +-- FastAPI (existing service + new studio routes)
+        |
+        +-- Existing v1 API (runs, approvals, audit, cost, webhooks)
+        +-- New v2 Studio API (graph authoring, asset CRUD, environments)
+        +-- New WebSocket hub (canvas sync, execution status, validation)
+        +-- Existing storage layer (Postgres/SQLite, Redis, ARQ)
+```
+
+### Component Boundaries
+
+| Component | Responsibility | Communicates With |
+|-----------|---------------|-------------------|
+| **Nginx** | TLS termination, static file serving, reverse proxy, WebSocket upgrade | Browser, FastAPI |
+| **Vue SPA** | Visual graph editor, inspector panel, workflow rail, asset forms | Nginx (REST + WS) |
+| **FastAPI v1 API** | Existing deployment-bound runtime API (unchanged) | Storage, ARQ, Regulus |
+| **FastAPI v2 Studio API** | Graph authoring CRUD, asset management, environment config, validation | GraphRepository, Storage |
+| **WebSocket Hub** | Real-time canvas events, validation feedback, execution status | Pinia stores (client), GraphRepository (server) |
+| **GraphRepository** | Persistence layer for versioned graph documents (existing) | AsyncDatabase |
 
 ---
 
-## Standard Architecture
+## Decision 1: Serve Vue App from FastAPI or Separate?
 
-### System Overview
+**Recommendation: Nginx serves static files; FastAPI serves only API.**
 
-Current state (modular monolith, single process):
+### Rationale
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         HTTP / API Layer (FastAPI)                       │
-│  run_api  approval_api  audit_api  contracts_api  admin_api              │
-├─────────────────────────────────────────────────────────────────────────┤
-│              Bootstrap / Composition Root (ServiceBootstrap)             │
-├──────────┬──────────────────────────────────────┬───────────────────────┤
-│ Dispatch │        Orchestration Engine           │  Service Domains      │
-│  Worker  │  (RuntimeOrchestrator._drive loop)    │  graph / deployments  │
-│  Lease   │                                       │  contracts / audit    │
-│ Manager  │  agent_runtime  execution_units        │  approvals / runs     │
-│          │  conditions     policy                 │  guardrails           │
-│          │  mappings       secrets                │  observability        │
-│          │  memory                                │                       │
-├──────────┴──────────────────────────────────────┴───────────────────────┤
-│                         Storage Layer                                    │
-│  SQLiteDatabase (WAL)    RedisConfig    GovernAI Redis Stores            │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+The existing architecture already has Nginx as the TLS-terminating reverse proxy in front of FastAPI. Adding static file serving to Nginx is trivial and keeps FastAPI focused on API logic. FastAPI's `StaticFiles` mount works but adds unnecessary load to the Python process for serving assets that Nginx handles far more efficiently.
 
-Target state (v1.1, still modular monolith — new modules, new backends):
+### Implementation
+
+Vite builds the Vue SPA to a `dist/` directory. The Docker build copies this into a volume that Nginx serves. Nginx handles SPA routing via `try_files $uri /index.html` for all `/studio/` paths.
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                  HTTP / API Layer (FastAPI + versioning)                 │
-│  run_api  approval_api  audit_api  contracts_api  admin_api              │
-│  webhook_api  health_api (readiness/liveness)                            │
-├─────────────────────────────────────────────────────────────────────────┤
-│              Bootstrap / Composition Root (ServiceBootstrap)             │
-│              + ConfigLoader (pydantic-settings)                          │
-├──────────┬───────────────────────────────────────────────────────────────┤
-│ Dispatch │        Orchestration Engine                                   │
-│  Worker  │  (RuntimeOrchestrator._drive loop)                            │
-│  +MQ     │                                                               │
-│  Lease   │  agent_runtime  execution_units (+ Docker sandbox)            │
-│ Manager  │    + LLM adapters  conditions  policy                         │
-│  +PG     │    + Regulus hook  mappings     secrets                       │
-│          │    + retry/backoff memory (+ Redis/vector connectors)         │
-├──────────┴───────────────────────────────────────────────────────────────┤
-│     New Modules       │  Modified Domains   │  External Services          │
-│  llm_providers/       │  storage/ (+PG)     │  Regulus backend (econ_plane)│
-│  econ/ (Regulus glue) │  dispatch/ (+MQ)    │  OpenAI API                 │
-│  webhooks/            │  agent_runtime/     │  Anthropic API              │
-│  health/              │  memory/            │  Redis (external)           │
-│                       │  execution_units/   │  Postgres                   │
-│                       │  service/ (+vers.)  │  Docker daemon              │
-│                       │  observability/     │  Message queue (Redis/SQS)  │
-├───────────────────────┴─────────────────────┴────────────────────────────┤
-│                           Storage Layer                                   │
-│  PostgresDatabase  SQLiteDatabase (dev/test)  Redis  VectorStore          │
-└──────────────────────────────────────────────────────────────────────────┘
+# Updated nginx.conf structure
+location /studio/ {
+    alias /usr/share/nginx/html/studio/;
+    try_files $uri $uri/ /studio/index.html;
+}
+
+location /v1/ {
+    proxy_pass http://zeroth:8000;
+    # ... existing proxy headers
+}
+
+location /v2/ {
+    proxy_pass http://zeroth:8000;
+    # ... same proxy headers
+}
+
+location /ws/ {
+    proxy_pass http://zeroth:8000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_read_timeout 3600s;
+}
 ```
+
+### Why NOT FastAPI StaticFiles
+
+- FastAPI is single-process (uvicorn) -- serving static assets wastes its event loop
+- Nginx can serve static files with zero-copy sendfile, gzip, and caching headers
+- Existing Nginx container is already deployed; no new infrastructure needed
+- Clear separation: Nginx = static + proxy, FastAPI = API only
+
+### Why NOT Separate Origins (CORS)
+
+- Adds CORS complexity for every API call and WebSocket connection
+- Separate deployment pipelines for frontend and backend
+- Cookie/auth token management becomes harder
+- Same-origin via Nginx reverse proxy is simpler and more secure
 
 ---
 
-## Component Classification: New vs Modified
+## Decision 2: REST vs GraphQL vs Hybrid for Graph Authoring API
 
-### New Modules (create from scratch)
+**Recommendation: REST-only under `/v2/studio/` prefix.**
 
-| Module | Path | Purpose |
-|--------|------|---------|
-| `llm_providers` | `src/zeroth/llm_providers/` | Concrete OpenAI and Anthropic `ProviderAdapter` implementations, retry policy, model fallback |
-| `econ` | `src/zeroth/econ/` | Regulus SDK glue: `ExecutionEvent` builder, `join_key_context` wiring, budget cap enforcer, tenant cost attribution |
-| `webhooks` | `src/zeroth/webhooks/` | Outgoing webhook dispatch for run completion and approval events |
-| `health` | `src/zeroth/health/` | Readiness and liveness probe logic with dependency checks (DB, Redis, MQ) |
+### Rationale
 
-### Modified Modules (extend existing code)
+The existing platform is 100% REST with OpenAPI. GraphQL adds a dependency (Strawberry/Ariadne), a new query language for the team to learn, and a different error handling model -- all for marginal benefit. The graph authoring domain has predictable, resource-oriented operations (CRUD on graphs, nodes, edges, assets) that map cleanly to REST.
 
-| Module | What Changes | Scope |
-|--------|-------------|-------|
-| `storage/` | Add `PostgresDatabase` alongside `SQLiteDatabase`; repository protocol abstraction | Medium — new file, existing repos untouched initially |
-| `agent_runtime/` | Add token/usage fields to `ProviderResponse`; add `InstrumentedProviderAdapter` wrapper; fix default thread store | Medium — provider.py + models.py |
-| `dispatch/` | Add message queue backend option for distributed workers; `LeaseManager` with Postgres backend | Medium — worker.py + lease.py |
-| `memory/` | Add `RedisMemoryConnector` and `VectorMemoryConnector` implementing existing `MemoryConnector` protocol | Low — protocol already defined |
-| `execution_units/` | Harden Docker sandbox as default for untrusted units (Phase 8A completion) | Low — sandbox.py |
-| `service/` | Add API versioning prefix (`/v1/`), register webhook and health routes, add `webhook_notifier` to bootstrap | Medium — app.py + bootstrap.py |
-| `observability/` | Wire real Prometheus/OTEL exporter instead of in-memory only | Low — metrics.py |
-| `approvals/` | Add SLA timeout policy, escalation rules | Low — new models + service extension |
-| `secrets/` | Add secrets manager integration (AWS SSM / Vault option) alongside `EnvSecretProvider` | Low — provider.py |
-| `guardrails/` | Add budget cap enforcement via Regulus backend query | Low — new check in rate_limit flow |
+GraphQL's main advantage (reducing over-fetching in deeply nested queries) does not apply here. A graph document is fetched as a whole (it is a single Pydantic model stored as a JSON blob). There is no N+1 problem because the graph is already denormalized.
 
-### Infrastructure / Packaging (new files at repo root)
+### v2 Studio API Surface
 
-| Artifact | Purpose |
-|----------|---------|
-| `Dockerfile` | Multi-stage build for production image |
-| `docker-compose.yml` | Local dev stack: zeroth + postgres + redis + regulus |
-| `.env.example` | Environment variable documentation |
-| `src/zeroth/config.py` | Unified pydantic-settings `ZerothConfig` replacing scattered `from_env()` calls |
+```
+# Graph authoring
+GET    /v2/studio/graphs                      # List graphs
+POST   /v2/studio/graphs                      # Create graph
+GET    /v2/studio/graphs/{id}                  # Get graph (latest version)
+GET    /v2/studio/graphs/{id}/versions/{ver}   # Get specific version
+PUT    /v2/studio/graphs/{id}                  # Update draft graph
+POST   /v2/studio/graphs/{id}/publish          # Publish graph
+POST   /v2/studio/graphs/{id}/clone            # Clone to new draft
+DELETE /v2/studio/graphs/{id}                  # Archive graph
+GET    /v2/studio/graphs/{id}/diff/{v1}/{v2}   # Diff two versions
+
+# Node operations (convenience endpoints over graph mutations)
+POST   /v2/studio/graphs/{id}/nodes            # Add node
+PUT    /v2/studio/graphs/{id}/nodes/{nid}      # Update node
+DELETE /v2/studio/graphs/{id}/nodes/{nid}      # Remove node
+PATCH  /v2/studio/graphs/{id}/nodes/{nid}/position  # Move node (canvas drag)
+
+# Edge operations
+POST   /v2/studio/graphs/{id}/edges            # Add edge
+PUT    /v2/studio/graphs/{id}/edges/{eid}      # Update edge
+DELETE /v2/studio/graphs/{id}/edges/{eid}      # Remove edge
+
+# Validation
+POST   /v2/studio/graphs/{id}/validate         # Validate graph
+
+# Asset catalog (reusable components)
+GET    /v2/studio/assets/node-types             # Available node types
+GET    /v2/studio/assets/contracts              # Available contracts
+GET    /v2/studio/assets/policies               # Available policies
+
+# Environment management
+GET    /v2/studio/environments                  # List environments
+POST   /v2/studio/environments                  # Create environment
+PUT    /v2/studio/environments/{id}             # Update environment
+```
+
+### Why NOT GraphQL
+
+- Existing codebase is 100% REST; GraphQL would be a foreign paradigm
+- Graph document is a denormalized JSON blob -- no over-fetching problem
+- OpenAPI spec generation works out of the box with FastAPI
+- No subscriptions needed (WebSocket hub handles real-time)
+- Adds Strawberry/Ariadne dependency and learning curve for zero gain
+
+### Mapping to Existing Pydantic Models
+
+The v2 Studio API uses the **exact same Pydantic models** from `zeroth.graph.models` (Graph, Node, Edge). No translation layer is needed. The Studio API is a thin REST wrapper around `GraphRepository` operations:
+
+| Studio API Operation | Backend Implementation |
+|---------------------|----------------------|
+| Create graph | `GraphRepository.create(Graph(...))` |
+| Update draft | `GraphRepository.save(graph)` |
+| Publish | `GraphRepository.publish(graph_id)` |
+| Clone | `GraphRepository.clone_published_to_draft(graph_id)` |
+| Add node | Load graph, append node to `graph.nodes`, save |
+| Move node | Load graph, update node position in `DisplayMetadata`, save |
+| Add edge | Load graph, append edge to `graph.edges`, save |
+| Validate | `GraphValidator.validate(graph)` |
+| Diff | `GraphRepository.diff(graph_id, v1, v2)` |
+
+The critical insight: graphs are stored as a single JSON document. Node/edge CRUD endpoints are **convenience APIs** that load the graph, mutate it in memory, re-validate, and save. They do NOT correspond to separate database tables.
 
 ---
 
-## Integration Points
+## Decision 3: WebSocket Architecture for Real-Time Canvas Updates
 
-### 1. Real LLM Providers → agent_runtime
+**Recommendation: Single WebSocket connection per canvas session, topic-based message routing.**
 
-The `ProviderAdapter` protocol is already the correct abstraction. No changes needed to orchestrator or runner — only the adapter implementation changes.
+### Architecture
 
 ```
-agent_runtime/runner.py (AgentRunner)
-    → ProviderAdapter.ainvoke(ProviderRequest)
-        → [NEW] OpenAIProviderAdapter  — wraps openai.AsyncOpenAI
-        → [NEW] AnthropicProviderAdapter  — wraps anthropic.AsyncAnthropic
-        → [EXISTING] GovernedLLMProviderAdapter  — kept for GovernAI model refs
+Client (Vue SPA)                          Server (FastAPI)
+  |                                          |
+  +-- connect /ws/studio/{graph_id} -------> WebSocket endpoint
+  |     (JWT in query param or first msg)    |
+  |                                          +-- Authenticate
+  |                                          +-- Register in ConnectionManager
+  |                                          |
+  +-- { type: "node:move", ... } ----------> Process mutation
+  |                                          +-- Update GraphRepository
+  |                                          +-- Broadcast to other clients
+  |                                          |
+  <-- { type: "graph:updated", ... } ------- Broadcast
+  <-- { type: "validation:result", ... } --- Push validation results
+  <-- { type: "execution:status", ... } ---- Push execution status
 ```
 
-The `ProviderResponse` model needs a new `usage` field added:
+### Message Protocol
+
+```typescript
+// Client -> Server
+interface ClientMessage {
+  type: "node:move" | "node:add" | "edge:add" | "edge:remove"
+        | "graph:save" | "graph:validate" | "ping";
+  payload: Record<string, unknown>;
+  seq: number;  // Client sequence number for ack
+}
+
+// Server -> Client
+interface ServerMessage {
+  type: "graph:updated" | "graph:saved" | "validation:result"
+        | "execution:status" | "error" | "ack" | "pong";
+  payload: Record<string, unknown>;
+  seq: number;      // Server sequence number
+  ack_seq?: number; // Acknowledges client seq
+}
+```
+
+### Why Single WebSocket (Not REST Polling)
+
+- Node drag operations generate rapid position updates (10-30/sec during drag)
+- Validation results should appear immediately after edge changes
+- Execution status needs to stream without polling delay
+- Future multi-user collaboration requires broadcast capability
+
+### Why NOT Full CRDT/OT Collaboration (Yet)
+
+Multi-user real-time co-editing (like Google Docs) requires CRDTs or Operational Transforms. This is extremely complex for graph structures and is NOT needed for v2.0. The WebSocket hub supports:
+
+1. **Single-user real-time**: Instant validation feedback, execution status
+2. **Presence awareness**: Show who else has the graph open (read-only indicator)
+3. **Optimistic locking**: Last-write-wins with conflict detection on save
+
+Full collaboration can be added later by upgrading the WebSocket protocol without changing the architecture.
+
+### Connection Manager (Server-Side)
 
 ```python
-class ProviderResponse(BaseModel):
-    ...
-    usage: TokenUsage | None = None   # NEW: prompt_tokens, completion_tokens, model
+class StudioConnectionManager:
+    """Manages WebSocket connections grouped by graph_id."""
+    
+    def __init__(self):
+        self._connections: dict[str, list[WebSocket]] = {}  # graph_id -> connections
+    
+    async def connect(self, graph_id: str, websocket: WebSocket, principal: Principal):
+        await websocket.accept()
+        self._connections.setdefault(graph_id, []).append(websocket)
+    
+    async def broadcast(self, graph_id: str, message: dict, exclude: WebSocket | None = None):
+        for ws in self._connections.get(graph_id, []):
+            if ws != exclude:
+                await ws.send_json(message)
 ```
 
-`AgentRunner` records this usage into the `NodeAuditRecord` and passes it to the econ module.
-
-### 2. Regulus SDK → econ module → agent_runtime + audit
-
-Regulus uses a fire-and-forget telemetry pattern: `TelemetryTransport` batches events to the Regulus backend over a background thread. Integration is non-blocking.
-
-```
-AgentRunner.run()
-    → provider.ainvoke(request) → ProviderResponse (with usage)
-    → [NEW] econ.record_node_execution(run_id, node_id, tenant_id, usage)
-        → econ_instrumentation.track_execution(ExecutionEvent)
-            → TelemetryTransport (background thread → Regulus backend HTTP)
-    → audit.record_node_execution(...)  [existing, unchanged]
-```
-
-The `econ` module is a thin adapter. It maps Zeroth concepts to Regulus concepts:
-
-| Zeroth concept | Regulus concept |
-|----------------|-----------------|
-| `run_id` | `join_key` |
-| `node_id` + `deployment_ref` | `capability_id` |
-| `model_provider` + `model_name` | `implementation_id` |
-| `tenant_id` | included in `ExecutionEvent.metadata` |
-| `TokenUsage` from ProviderResponse | `token_cost_usd` (after pricing lookup) |
-
-Budget enforcement is a separate concern from telemetry. The `guardrails` module is the right home for a pre-execution budget cap check. It calls the Regulus backend `GET /capabilities/{id}/budget` (or uses a locally-cached spend figure) before allowing a node to execute.
-
-The `InstrumentedProviderAdapter` pattern (wrapper around real adapters) is cleaner than patching:
-
-```python
-class InstrumentedProviderAdapter:
-    """Wraps any ProviderAdapter, capturing usage for Regulus telemetry."""
-    def __init__(self, inner: ProviderAdapter, econ_client: EconClient): ...
-    async def ainvoke(self, request: ProviderRequest) -> ProviderResponse:
-        response = await self.inner.ainvoke(request)
-        await self.econ_client.record(request, response)
-        return response
-```
-
-This keeps LLM providers and Regulus instrumentation fully decoupled.
-
-### 3. Postgres → storage module
-
-The repository pattern is already abstraction-ready. The path of least resistance is:
-
-1. Add `src/zeroth/storage/postgres.py` with a `PostgresDatabase` that exposes the same `transaction()` context manager and `apply_migrations()` interface as `SQLiteDatabase`.
-2. Migrate high-contention tables first: `runs`, `run_checkpoints`, `lease_records`, `rate_limit_buckets`, `quota_records`.
-3. Keep `GraphRepository`, `ContractRegistry`, `DeploymentRepository` on SQLite (read-heavy, rarely mutated).
-4. Add a database selector in `ZerothConfig`: `storage.backend = sqlite | postgres`.
-
-The bootstrap factory (`bootstrap_service()`) passes the database instance to repositories. Switching the database there switches all downstream repos cleanly — no repository code changes needed for read/write operations that already go through the `transaction()` context manager.
-
-SQLAlchemy Core (not ORM) is the right Postgres client: it supports async, matches the existing "raw SQL" style in repositories, and avoids ORM overhead on a data model this specialized.
-
-### 4. Message Queue → dispatch module
-
-The current `RunWorker` poll loop uses SQLite `LeaseManager` for distributed coordination. For multi-worker horizontal scaling with a real MQ:
-
-```
-[API] POST /runs
-    → RunRepository.create(status=PENDING)
-    → [NEW] MQPublisher.publish("run.pending", run_id)  [optional: fire-and-forget]
-
-[Worker] MQConsumer.subscribe("run.pending")
-    → claim run via LeaseManager (still needed for crash recovery)
-    → RuntimeOrchestrator._drive()
-```
-
-The MQ is an acceleration layer, not a replacement for the lease system. Leases remain authoritative for crash recovery and deduplication. Redis Streams is the lowest-friction choice given Redis is already a dependency. SQS/RabbitMQ are valid alternatives with the same integration shape.
-
-The `RunWorker` interface stays unchanged. A `MQRunWorker` subclass overrides `poll_loop()` to consume from the queue instead of polling SQLite.
-
-### 5. Redis/Vector Memory Connectors → memory module
-
-The `MemoryConnector` protocol is already defined. Adding durable connectors is straightforward:
-
-```python
-class RedisKeyValueConnector(MemoryConnector):
-    def __init__(self, redis_client, key_prefix: str): ...
-
-class VectorMemoryConnector(MemoryConnector):
-    def __init__(self, vector_client, collection: str): ...
-```
-
-Wire in `bootstrap_service()` based on `ZerothConfig.memory.backend`. The `InMemoryConnectorRegistry` stays for development/test.
-
-### 6. Docker Sandbox → execution_units module
-
-Phase 8A left hardened Docker as non-default. The change is contained in `sandbox.py`: make `SandboxStrictnessMode.STRICT` the default for `ExecutableUnitNode` with no explicit strictness config. This is a single-line policy change guarded behind `ZerothConfig.sandbox.require_docker = true`.
-
-### 7. Webhooks → webhooks module + service layer
-
-```
-RuntimeOrchestrator._drive() completes run
-    → run.status = COMPLETED
-    → [NEW] webhook_notifier.notify(RunCompletedEvent, tenant_id)
-        → WebhookRepository.get_subscriptions(tenant_id, event_type)
-        → async HTTP POST to each registered endpoint
-
-ApprovalService.create_pending()
-    → [NEW] webhook_notifier.notify(ApprovalPendingEvent, tenant_id)
-```
-
-The notifier is injected into the orchestrator and approval service via bootstrap. Webhook subscriptions are stored in a new `webhook_subscriptions` table. Delivery uses exponential backoff with a dead-letter store (max 5 retries).
-
-### 8. Health Probes → health module + service layer
-
-```
-GET /health/ready
-    → health.check_all()
-        → db.ping() (Postgres or SQLite)
-        → redis.ping()
-        → mq.ping() (if enabled)
-        → regulus_backend.ping() (optional, non-blocking)
-    → 200 OK or 503 Service Unavailable
-
-GET /health/live
-    → shallow check (process alive, worker running)
-    → always 200 unless worker stopped
-```
-
-### 9. Configuration → config module
-
-Replace the current scattered `from_env()` methods with a single `ZerothConfig` using `pydantic-settings`:
-
-```python
-class ZerothConfig(BaseSettings):
-    storage: StorageConfig       # backend, pg_dsn, sqlite_path
-    redis: RedisConfig           # existing config promoted here
-    auth: AuthConfig             # api_keys, bearer — replaces JSON blobs
-    guardrails: GuardrailConfig  # existing config promoted here
-    regulus: RegulusConfig       # base_url, enabled, budget_enforcement
-    mq: MessageQueueConfig       # backend, connection_string
-    sandbox: SandboxConfig       # require_docker, strictness_default
-    webhooks: WebhookConfig      # delivery_timeout, max_retries
-```
-
-Bootstrap reads `ZerothConfig.from_env()` once and threads values through to all modules. This eliminates the "multiple scattered env var readers" problem and enables config validation at startup.
+For horizontal scaling (multiple uvicorn workers), broadcast messages go through Redis pub/sub -- the existing Redis infrastructure is already deployed.
 
 ---
 
-## Data Flow Changes
+## Decision 4: Vue Frontend Structure
 
-### Run Execution with Telemetry (v1.1)
+**Recommendation: Feature-sliced architecture organized by domain, not by technical layer.**
 
-```
-POST /runs
-    ↓ auth + RBAC + guardrails (rate limit, quota, [NEW] budget cap)
-    ↓ RunRepository.create(PENDING)
-    ↓ [NEW, optional] MQPublisher.publish("run.pending")
-    ↓
-RunWorker.poll_loop() (or MQ consumer)
-    ↓ LeaseManager.claim_pending()
-    ↓ RuntimeOrchestrator._drive()
-        per AgentNode:
-            ↓ PolicyGuard.evaluate()
-            ↓ AgentRunner.run()
-                ↓ PromptAssembler.assemble()
-                ↓ [NEW] InstrumentedProviderAdapter.ainvoke()
-                    ↓ OpenAIProviderAdapter / AnthropicProviderAdapter
-                    ↓ → ProviderResponse (with TokenUsage)
-                    ↓ [NEW] econ.record_node_execution() → Regulus backend (async)
-            ↓ AuditRepository.append(NodeAuditRecord + token_usage)
-            ↓ RunRepository.put(checkpoint)
-    ↓ run.status = COMPLETED
-    ↓ [NEW] webhook_notifier.notify(RunCompletedEvent)
-    ↓ LeaseManager.release_lease()
-```
-
-### Approval Flow with Webhooks (v1.1)
+### Directory Structure
 
 ```
-Orchestrator hits HumanApprovalNode
-    ↓ ApprovalService.create_pending()
-    ↓ [NEW] webhook_notifier.notify(ApprovalPendingEvent)
-    ↓ run.status = WAITING_APPROVAL
-    ↓ [NEW, if SLA configured] SLATimeoutPolicy schedules escalation
+studio/                          # Vue 3 SPA root
+  src/
+    app/                         # App shell, routing, global providers
+      App.vue
+      router.ts
+      main.ts
+    
+    features/                    # Feature modules (domain-driven)
+      canvas/                    # Graph canvas (Vue Flow wrapper)
+        components/
+          CanvasView.vue         # Main canvas component wrapping VueFlow
+          CanvasNode.vue         # Custom node renderer (governance decorators)
+          CanvasEdge.vue         # Custom edge renderer
+          CanvasMinimap.vue
+          CanvasControls.vue
+        composables/
+          useCanvasMapping.ts    # Maps Zeroth Graph <-> Vue Flow elements
+          useCanvasOperations.ts # Node/edge CRUD with undo/redo
+          useCanvasDrag.ts       # Drag-drop from node palette
+          useAutoLayout.ts       # Dagre-based auto-layout
+        stores/
+          canvasStore.ts         # Canvas-specific state (zoom, selection, mode)
+        types/
+          canvas.ts
+      
+      inspector/                 # Right-side property inspector
+        components/
+          InspectorPanel.vue
+          NodeInspector.vue      # Edit selected node properties
+          EdgeInspector.vue      # Edit selected edge properties
+          AgentConfig.vue        # Agent node configuration
+          ApprovalConfig.vue     # Approval node configuration
+          ExecUnitConfig.vue     # Executable unit configuration
+        composables/
+          useInspector.ts
+      
+      workflow-rail/             # Left sidebar: workflow list + navigation
+        components/
+          WorkflowRail.vue
+          WorkflowList.vue
+          WorkflowCard.vue
+        stores/
+          workflowListStore.ts
+      
+      validation/                # Graph validation feedback
+        components/
+          ValidationPanel.vue
+          ValidationBadge.vue
+        composables/
+          useValidation.ts
+      
+      execution/                 # Execution monitoring
+        components/
+          ExecutionPanel.vue
+          ExecutionTimeline.vue
+        composables/
+          useExecution.ts
+      
+      environments/              # Environment management
+        components/
+          EnvironmentEditor.vue
+        stores/
+          environmentStore.ts
+    
+    shared/                      # Cross-cutting, no business logic
+      api/
+        client.ts               # Axios/fetch wrapper for REST API
+        websocket.ts            # WebSocket client with reconnection
+        types.ts                # API response types (generated from OpenAPI)
+      ui/
+        Button.vue
+        Modal.vue
+        CodeEditor.vue          # CodeMirror 6 wrapper
+      composables/
+        useAuth.ts
+        useToast.ts
+      stores/
+        graphStore.ts           # Central graph document state (Pinia)
+        authStore.ts            # Auth state
+    
+    types/                       # Shared TypeScript types
+      graph.ts                  # Mirrors zeroth.graph.models Pydantic schema
+      api.ts
+```
 
-External reviewer: POST /approvals/{id}/resolve
-    ↓ ApprovalService.resolve()
-    ↓ run re-queued via schedule_continuation
-    ↓ [NEW] webhook_notifier.notify(ApprovalResolvedEvent)
+### Why Feature-Sliced Over Flat Technical Layers
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Feature-sliced (recommended)** | Co-locates related code, scales with features, clear ownership | Shared code needs explicit boundary |
+| Flat layers (`/components`, `/stores`, `/composables`) | Simple for small apps | Everything in one folder at scale, unclear dependencies |
+| Full FSD (7 layers) | Very rigorous | Overengineered for a team of 1-3, high ceremony |
+
+Feature-sliced is the pragmatic middle ground: organized by domain (canvas, inspector, validation) with a `shared/` layer for truly cross-cutting concerns.
+
+### Critical Composable: `useCanvasMapping`
+
+The most important piece of frontend architecture. Maps between Zeroth's `Graph` Pydantic model and Vue Flow's internal representation:
+
+```typescript
+// Zeroth Graph model (from backend)
+interface ZerothGraph {
+  graph_id: string;
+  nodes: ZerothNode[];  // AgentNode | ExecutableUnitNode | HumanApprovalNode
+  edges: ZerothEdge[];
+  // ...
+}
+
+// Vue Flow model (canvas rendering)
+interface VueFlowNode {
+  id: string;
+  type: string;           // 'agent' | 'executable_unit' | 'human_approval'
+  position: { x: number, y: number };
+  data: { zerothNode: ZerothNode };  // Embed full node data for inspector
+}
+
+// useCanvasMapping bridges these bidirectionally
+function useCanvasMapping(graph: Ref<ZerothGraph>) {
+  const vfNodes = computed(() => graph.value.nodes.map(toVueFlowNode));
+  const vfEdges = computed(() => graph.value.edges.map(toVueFlowEdge));
+  
+  function applyVueFlowChange(changes: NodeChange[]) {
+    // Update Zeroth graph from Vue Flow events (position, selection)
+  }
+  
+  return { vfNodes, vfEdges, applyVueFlowChange };
+}
+```
+
+### State Management: Pinia with Graph as Single Source of Truth
+
+```
+graphStore (Pinia)          -- THE source of truth for graph document
+  |
+  +-- canvasStore           -- Canvas viewport state (zoom, pan, selection)
+  +-- workflowListStore     -- List of graphs for rail sidebar
+  +-- environmentStore      -- Environment config
+  
+useCanvasMapping            -- Reactive bridge: graphStore <-> Vue Flow
+useCanvasOperations         -- Mutation API with undo/redo history
+```
+
+The `graphStore` holds the authoritative `Graph` object. Canvas mutations go through `useCanvasOperations` which updates the store and optionally sends WebSocket messages. The canvas reactively re-renders from the store via `useCanvasMapping`.
+
+---
+
+## Decision 5: Build and Deployment Integration
+
+**Recommendation: Multi-stage Docker build; Vite builds in Node stage, output copied to Nginx stage.**
+
+### Updated Dockerfile Strategy
+
+```dockerfile
+# Stage 1: Build Vue SPA
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app/studio
+COPY studio/package.json studio/package-lock.json ./
+RUN npm ci
+COPY studio/ ./
+RUN npm run build  # Output: /app/studio/dist/
+
+# Stage 2: Build Python backend (existing, unchanged)
+FROM python:3.12-slim AS backend-builder
+# ... existing builder stage ...
+
+# Stage 3: Runtime
+FROM python:3.12-slim
+# ... existing runtime setup ...
+COPY --from=backend-builder /app/.venv /app/.venv
+COPY --from=backend-builder /app/src /app/src
+
+# Copy built SPA into Nginx-served directory
+COPY --from=frontend-builder /app/studio/dist /app/studio-dist
+```
+
+### Updated docker-compose.yml
+
+```yaml
+services:
+  zeroth:
+    build: .
+    # ... existing config unchanged ...
+
+  nginx:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
+      # Mount built SPA assets from zeroth container or build context
+    depends_on:
+      - zeroth
+```
+
+Two viable approaches for getting built assets to Nginx:
+
+1. **Shared volume** (recommended for simplicity): The zeroth container copies `studio-dist` to a shared Docker volume on startup. Nginx serves from that volume.
+2. **Build Nginx image with assets baked in**: A separate Dockerfile for Nginx that includes the SPA in the image.
+
+Option 1 is simpler and avoids a second custom image build.
+
+### Development Workflow
+
+```bash
+# Backend (existing)
+uv sync && uv run uvicorn zeroth.service.entrypoint:app_factory --factory --reload
+
+# Frontend (new)
+cd studio && npm run dev  # Vite dev server on :5173, proxies API to :8000
+
+# vite.config.ts proxy configuration
+export default defineConfig({
+  server: {
+    proxy: {
+      '/v1': 'http://localhost:8000',
+      '/v2': 'http://localhost:8000',
+      '/ws': { target: 'ws://localhost:8000', ws: true },
+      '/health': 'http://localhost:8000',
+    }
+  },
+  base: '/studio/',
+})
+```
+
+This gives hot module replacement (HMR) for the frontend while the backend runs natively.
+
+---
+
+## Patterns to Follow
+
+### Pattern 1: Optimistic UI with Server Reconciliation
+
+**What:** Apply canvas changes immediately in the UI, then persist to backend. If the backend rejects (validation failure), roll back the UI change.
+
+**When:** All canvas operations (node add/move/delete, edge connect/disconnect).
+
+**Why:** Canvas interactions must feel instant (< 16ms). Waiting for a server round-trip on every node drag would make the UI unusable.
+
+```typescript
+// useCanvasOperations.ts
+async function moveNode(nodeId: string, position: Position) {
+  // 1. Optimistic: update store immediately
+  graphStore.updateNodePosition(nodeId, position);
+  
+  // 2. Debounced: send to server (batch position updates during drag)
+  debouncedSync(() => {
+    api.patch(`/v2/studio/graphs/${graphId}/nodes/${nodeId}/position`, { position });
+  });
+}
+```
+
+### Pattern 2: Command Pattern for Undo/Redo
+
+**What:** Every canvas mutation is a reversible command object. Undo pops the command stack and applies the inverse.
+
+**When:** Node add/remove, edge add/remove, node property changes.
+
+```typescript
+interface CanvasCommand {
+  execute(): void;
+  undo(): void;
+  description: string;
+}
+
+class AddNodeCommand implements CanvasCommand {
+  constructor(private graph: Graph, private node: ZerothNode) {}
+  execute() { this.graph.nodes.push(this.node); }
+  undo() { this.graph.nodes = this.graph.nodes.filter(n => n.node_id !== this.node.node_id); }
+}
+```
+
+### Pattern 3: Debounced Auto-Save with Dirty Tracking
+
+**What:** Track whether the graph has unsaved changes. Auto-save after a period of inactivity (e.g., 2 seconds). Show "Saving..." / "Saved" indicator.
+
+**When:** Any graph mutation.
+
+**Why:** Prevents data loss without overwhelming the server with saves on every keystroke.
+
+### Pattern 4: Governance-Aware Node Rendering
+
+**What:** Custom Vue Flow node components that visually indicate governance state -- approval gates show a shield icon, sandboxed nodes show a lock, nodes with policy bindings show a badge.
+
+**When:** All node rendering in the canvas.
+
+**Why:** This is Zeroth's differentiator from n8n. The canvas must make governance visible, not hidden in config panels.
+
+---
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Dual Source of Truth for Graph State
+
+**What:** Storing the graph document separately in both the Pinia store and Vue Flow's internal state, with manual synchronization between them.
+
+**Why bad:** Synchronization bugs cause the canvas and inspector to show different data. Changes in one are not reflected in the other.
+
+**Instead:** Pinia `graphStore` is the single source of truth. Vue Flow receives computed props derived from the store. Vue Flow events write back to the store through `useCanvasOperations`.
+
+### Anti-Pattern 2: Per-Field REST Endpoints for Graph Mutations
+
+**What:** Creating individual REST endpoints for every possible graph field mutation (node name, node instruction, edge condition expression, etc.).
+
+**Why bad:** The graph is a single JSON document. Dozens of fine-grained endpoints create a huge API surface that is hard to maintain and version.
+
+**Instead:** Use coarse-grained endpoints: update the entire node, or update the entire graph. The frontend batches changes. Node/edge convenience endpoints are the minimum viable granularity.
+
+### Anti-Pattern 3: WebSocket for All API Operations
+
+**What:** Routing CRUD operations through WebSocket instead of REST.
+
+**Why bad:** WebSocket has no built-in request/response semantics, no status codes, no caching, no OpenAPI spec generation. Error handling is ad-hoc.
+
+**Instead:** REST for CRUD (create, read, update, delete). WebSocket for push notifications (validation results, execution status, presence). The canvas can send rapid position updates via WebSocket as a performance optimization, but graph saves go through REST.
+
+### Anti-Pattern 4: Putting Graph Layout in the Backend
+
+**What:** Computing auto-layout (dagre) on the server side.
+
+**Why bad:** Layout is a UI concern. The backend should not know about pixel positions. Layout computation is fast in the browser. Sending layout requests to the server adds latency for no reason.
+
+**Instead:** Dagre runs in the browser. Node positions are stored in `DisplayMetadata` on the graph model and persisted, but layout computation is client-only.
+
+---
+
+## New vs Modified Components
+
+### New Components (Studio-Specific)
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `studio_api.py` | `src/zeroth/service/studio_api.py` | v2 REST routes for graph authoring |
+| `studio_ws.py` | `src/zeroth/service/studio_ws.py` | WebSocket hub for canvas events |
+| `connection_manager.py` | `src/zeroth/service/connection_manager.py` | WebSocket connection tracking |
+| `studio/` | `studio/` (project root) | Entire Vue SPA (new directory) |
+
+### Modified Components (Existing)
+
+| Component | Modification |
+|-----------|-------------|
+| `service/app.py` | Add v2 router, mount WebSocket endpoint |
+| `graph/models.py` | Add `position` field to `DisplayMetadata` for canvas coordinates |
+| `docker-compose.yml` | Add studio volume mount to Nginx |
+| `docker/nginx/nginx.conf` | Add `/studio/`, `/v2/`, `/ws/` locations |
+| `Dockerfile` | Add Node.js frontend build stage |
+
+### Unchanged Components
+
+Everything in `v1/` remains untouched. The runtime API, orchestrator, approvals, audit, cost, webhooks, dispatch -- all unchanged. The Studio API is a new surface that reads/writes the same `GraphRepository`.
+
+---
+
+## Data Flow: End-to-End Graph Authoring
+
+```
+1. User opens Studio (/studio/)
+   -> Nginx serves Vue SPA (index.html)
+   -> Vue app loads, authenticates, fetches graph list
+      GET /v2/studio/graphs -> graphStore.setGraphList(response)
+
+2. User selects a graph
+   -> GET /v2/studio/graphs/{id} -> graphStore.setCurrentGraph(response)
+   -> useCanvasMapping computes Vue Flow nodes/edges from graphStore
+   -> Vue Flow renders the canvas
+   -> WebSocket connects to /ws/studio/{graph_id}
+
+3. User drags a node
+   -> Vue Flow emits onNodeDragStop
+   -> useCanvasOperations.moveNode() updates graphStore (optimistic)
+   -> WebSocket sends { type: "node:move", ... } (debounced)
+   -> Server updates graph, broadcasts to other clients
+
+4. User adds an edge
+   -> Vue Flow emits onConnect
+   -> useCanvasOperations.addEdge() updates graphStore (optimistic)
+   -> REST POST /v2/studio/graphs/{id}/edges
+   -> Server validates graph (edge creates cycle? missing contracts?)
+   -> WebSocket pushes { type: "validation:result", ... }
+   -> ValidationPanel shows issues if any
+
+5. User clicks "Publish"
+   -> REST POST /v2/studio/graphs/{id}/publish
+   -> Server runs full validation via GraphValidator
+   -> If valid: graph status -> PUBLISHED, response 200
+   -> If invalid: response 422 with validation issues
+   -> UI shows success/failure
+
+6. User clicks "Deploy" (links to existing v1 deployment flow)
+   -> Existing deployment machinery creates a deployment from the published graph
 ```
 
 ---
 
-## Recommended Project Structure (additions only)
+## Build Order (Dependency-Aware)
 
-```
-src/zeroth/
-├── config.py                    # [NEW] ZerothConfig (pydantic-settings)
-├── llm_providers/               # [NEW] Real LLM provider adapters
-│   ├── __init__.py
-│   ├── openai.py                # OpenAIProviderAdapter (async)
-│   ├── anthropic.py             # AnthropicProviderAdapter (async)
-│   ├── retry.py                 # Exponential backoff + model fallback
-│   └── errors.py
-├── econ/                        # [NEW] Regulus SDK integration
-│   ├── __init__.py
-│   ├── client.py                # EconClient wrapping econ_instrumentation
-│   ├── models.py                # TokenUsage, CostEvent, BudgetResult
-│   ├── adapter.py               # InstrumentedProviderAdapter
-│   └── budget.py                # BudgetEnforcer (pre-execution cap check)
-├── webhooks/                    # [NEW] Outgoing webhook notifications
-│   ├── __init__.py
-│   ├── models.py                # WebhookSubscription, WebhookDelivery, event types
-│   ├── repository.py            # SQLite/PG-backed subscription store
-│   ├── notifier.py              # WebhookNotifier (async, with retry)
-│   └── errors.py
-├── health/                      # [NEW] Readiness / liveness probes
-│   ├── __init__.py
-│   ├── checks.py                # HealthCheck protocol + implementations
-│   └── service.py               # HealthService orchestrates checks
-├── storage/
-│   ├── sqlite.py                # [EXISTING, unchanged]
-│   ├── postgres.py              # [NEW] PostgresDatabase (SQLAlchemy Core async)
-│   ├── redis.py                 # [EXISTING, minor: promote to ZerothConfig]
-│   └── migrations/              # [NEW] Shared migration registry
-├── agent_runtime/
-│   ├── provider.py              # [MODIFY] ProviderResponse + TokenUsage field
-│   └── runner.py                # [MODIFY] Record usage in audit, inject econ client
-├── dispatch/
-│   ├── worker.py                # [MODIFY] MQRunWorker subclass option
-│   └── lease.py                 # [MODIFY] PostgresLeaseManager option
-├── memory/
-│   ├── connectors.py            # [MODIFY] Add RedisMemoryConnector, VectorMemoryConnector
-├── service/
-│   ├── app.py                   # [MODIFY] Add /v1 prefix, register health + webhook routes
-│   ├── bootstrap.py             # [MODIFY] Add webhook_notifier, econ_client, config loader
-│   └── health_api.py            # [NEW] /health/ready + /health/live
-│   └── webhook_api.py           # [NEW] CRUD for webhook subscriptions
-```
+Recommended implementation sequence based on component dependencies:
 
----
+1. **Backend: v2 Studio REST API** -- Thin CRUD wrapper around existing `GraphRepository`. No frontend dependency. Can be tested with curl/httpie immediately.
 
-## Architectural Patterns
+2. **Frontend: App shell + Router + API client** -- Skeleton Vue app with Vite, basic routing, API client configured with proxy. No canvas yet.
 
-### Pattern 1: Protocol-Boundary Extension
+3. **Frontend: Graph store + Canvas** -- Pinia graphStore, `useCanvasMapping`, basic Vue Flow rendering of a graph fetched from v2 API. This is the core integration point.
 
-**What:** All new capabilities plug into existing protocol boundaries — `ProviderAdapter`, `MemoryConnector`, `SecretProvider` — without modifying consumers.
-**When to use:** LLM providers, memory connectors, secret backends — anything with an existing protocol.
-**Trade-offs:** Existing tests remain valid. New implementations are independently testable. No orchestrator or runner changes needed.
+4. **Backend: WebSocket hub** -- Connection manager, message protocol. Tested independently with wscat.
 
-### Pattern 2: Decorator / Wrapper Adapter for Cross-Cutting Concerns
+5. **Frontend: Canvas operations + Inspector** -- Node/edge CRUD, inspector panel, undo/redo. Depends on canvas and WebSocket.
 
-**What:** `InstrumentedProviderAdapter` wraps any `ProviderAdapter` to add telemetry without the LLM adapter knowing about Regulus, and without the runner knowing about telemetry.
-**When to use:** Regulus integration, retry policy, circuit breaker — any concern that applies orthogonally to all providers.
-**Trade-offs:** Keeps provider adapters and instrumentation fully decoupled. Can stack multiple decorators (retry → instrument → actual provider).
+6. **Frontend: Governance decorators** -- Custom node renderers showing approval gates, sandbox badges, policy indicators. Depends on canvas.
 
-```python
-# In bootstrap_service():
-raw_adapter = OpenAIProviderAdapter(client=openai_client)
-retry_adapter = RetryProviderAdapter(raw_adapter, policy=node.retry_policy)
-final_adapter = InstrumentedProviderAdapter(retry_adapter, econ_client=econ_client)
-```
+7. **Frontend: Workflow rail + Validation panel** -- List view, validation feedback. Can be built in parallel with step 5-6.
 
-### Pattern 3: Configuration-Driven Backend Selection
-
-**What:** `ZerothConfig` selects storage backend, MQ backend, memory connector backend. Bootstrap reads config once and wires the right implementation. No conditional logic in domain modules.
-**When to use:** Postgres vs SQLite, Redis MQ vs SQS, Redis memory vs in-memory.
-**Trade-offs:** Clean separation between "what to build" and "which backend to use". Enables SQLite for test, Postgres for production without code changes.
-
-### Pattern 4: Fire-and-Forget Telemetry
-
-**What:** Regulus `TelemetryTransport` runs a background daemon thread with an in-process queue. `track_execution()` enqueues and returns immediately. The background thread batches and flushes to the Regulus backend.
-**When to use:** The Regulus integration is inherently this pattern — don't fight it.
-**Trade-offs:** Non-blocking, no LLM latency impact. If Regulus backend is down, events are dropped after the buffer fills (not a correctness concern for Zeroth). Telemetry is best-effort, not transactional.
-
----
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Embedding Regulus Backend Inside Zeroth
-
-**What people do:** Deploy the `econ_plane` FastAPI server as part of the Zeroth process or as an embedded ASGI sub-app.
-**Why it's wrong:** Regulus is a separate service with its own database (Postgres), its own worker (connector workers), and its own scaling requirements. Embedding it creates a single-failure-domain dependency on a service that should be independently operable.
-**Do this instead:** Regulus runs as a companion Docker container. Zeroth uses the SDK (`econ_instrumentation`) to emit telemetry. SDK transport handles connection failures gracefully (drops events rather than blocking Zeroth).
-
-### Anti-Pattern 2: Adding Provider Logic to the Orchestrator
-
-**What people do:** Put OpenAI/Anthropic retry logic, rate limit handling, or token counting directly in `RuntimeOrchestrator._drive()`.
-**Why it's wrong:** The orchestrator is already the most complex module (774 lines, fragile state machine). Adding provider concerns mixes execution scheduling with IO concerns and makes both harder to test.
-**Do this instead:** `RetryProviderAdapter` and `InstrumentedProviderAdapter` wrap the raw provider adapter in the bootstrap. The orchestrator only knows about `ProviderAdapter.ainvoke()`.
-
-### Anti-Pattern 3: Replacing SQLite Repositories Wholesale
-
-**What people do:** Rewrite all 20 repositories to target Postgres, changing repository method signatures and migration schemas everywhere.
-**Why it's wrong:** Breaks 280 tests, requires coordinated changes across every domain module, and is unnecessary — most repositories are read-heavy and SQLite performs fine for graph/contract/deployment data.
-**Do this instead:** Migrate only high-contention tables (runs, leases, rate limits) to Postgres. Keep the `PostgresDatabase` and `SQLiteDatabase` behind the same interface so the repository layer is unchanged.
-
-### Anti-Pattern 4: Synchronous Regulus Budget Checks on Every Node
-
-**What people do:** Call the Regulus backend on every node execution to check the current spend against budget, blocking the orchestrator until the HTTP call returns.
-**Why it's wrong:** Adds 50-200ms of HTTP latency per node. The orchestrator runs synchronously through the `_drive()` loop — a slow external call stalls the entire run.
-**Do this instead:** Cache budget state locally (TTL 60 seconds) in `BudgetEnforcer`. Refresh asynchronously in the background. Use the cached value for per-node checks. This turns a blocking HTTP call into a memory lookup.
-
----
-
-## Suggested Build Order
-
-Dependencies drive this order. Each phase delivers a working, tested increment.
-
-### Phase 1: Foundation (config + storage backend)
-**Rationale:** Everything downstream depends on unified config and the ability to use Postgres.
-
-1. `src/zeroth/config.py` — `ZerothConfig` with pydantic-settings; replaces scattered `from_env()` calls
-2. `src/zeroth/storage/postgres.py` — `PostgresDatabase` with same interface as `SQLiteDatabase`
-3. Migrate `RunRepository` and `LeaseManager` to support both backends (backend injected, not hardcoded)
-4. Migrate `guardrails/rate_limit.py` tables to Postgres backend
-5. Update `bootstrap_service()` to read from `ZerothConfig`
-
-**Outputs:** Postgres-capable storage layer; unified config; 280 tests still green on SQLite.
-
-### Phase 2: Real LLM Providers + Retry
-**Rationale:** Core platform value — nothing works without real LLMs. Retry is essential for production reliability.
-
-1. `src/zeroth/llm_providers/openai.py` — `OpenAIProviderAdapter`
-2. `src/zeroth/llm_providers/anthropic.py` — `AnthropicProviderAdapter`
-3. `src/zeroth/llm_providers/retry.py` — `RetryProviderAdapter` (exponential backoff, model fallback)
-4. Add `TokenUsage` to `ProviderResponse` in `agent_runtime/provider.py`
-5. Update `AgentRunner` to propagate usage to audit records
-6. Wire via bootstrap; no orchestrator changes
-
-**Outputs:** Real LLM execution; retry with backoff; token usage in audit records.
-
-### Phase 3: Regulus Integration
-**Rationale:** Depends on Phase 2 (need `TokenUsage` from real providers).
-
-1. `src/zeroth/econ/models.py` — `TokenUsage`, `CostEvent`
-2. `src/zeroth/econ/client.py` — `EconClient` wrapping `econ_instrumentation`
-3. `src/zeroth/econ/adapter.py` — `InstrumentedProviderAdapter`
-4. `src/zeroth/econ/budget.py` — `BudgetEnforcer` with local cache
-5. Wire `InstrumentedProviderAdapter` in bootstrap (stacks on top of retry adapter)
-6. Add budget cap pre-execution check to `GuardrailChecker` in `guardrails/`
-
-**Outputs:** Token/cost telemetry flowing to Regulus; budget enforcement per tenant.
-
-### Phase 4: Memory Connectors + Container Sandbox
-**Rationale:** Independent from phases 2-3; unblocks persistent agent memory and safe code execution.
-
-1. `src/zeroth/memory/redis_connector.py` — `RedisKeyValueConnector`, `RedisThreadConnector`
-2. `src/zeroth/memory/vector_connector.py` — `VectorMemoryConnector` (pluggable vector client)
-3. Fix `AgentRunner` default thread store (use `RepositoryThreadStateStore` by default)
-4. Complete Phase 8A: make Docker sandbox default in `execution_units/sandbox.py` when `ZerothConfig.sandbox.require_docker = true`
-
-**Outputs:** Durable agent memory; container-isolated code execution.
-
-### Phase 5: Webhooks + Approval SLA
-**Rationale:** Depends on stable run lifecycle (phases 1-2). Independent from Regulus.
-
-1. `src/zeroth/webhooks/models.py`, `repository.py`, `notifier.py`
-2. Wire `WebhookNotifier` into `RuntimeOrchestrator` (on run completion) and `ApprovalService` (on pending/resolved)
-3. Add SLA timeout policy to `ApprovalService` (schedule escalation timer)
-4. Register `service/webhook_api.py` routes for subscription management
-
-**Outputs:** Outgoing webhooks for run and approval events; approval escalation.
-
-### Phase 6: MQ + Horizontal Scaling
-**Rationale:** Depends on Postgres lease backend (Phase 1) and stable dispatch semantics.
-
-1. `MQPublisher` and `MQConsumer` in `dispatch/` (Redis Streams as default backend)
-2. `MQRunWorker` subclass that consumes from queue instead of polling
-3. Wire via `ZerothConfig.mq.backend`
-4. Test horizontal worker scaling (multiple workers competing for leases)
-
-**Outputs:** Queue-backed dispatch; horizontal worker scaling support.
-
-### Phase 7: Health Probes + Deployment Packaging
-**Rationale:** Can start any time; must be last before production deployment.
-
-1. `src/zeroth/health/` — readiness/liveness checks
-2. Register `/health/ready` and `/health/live` routes
-3. `Dockerfile` — multi-stage build
-4. `docker-compose.yml` — zeroth + postgres + redis + regulus-backend
-5. API versioning prefix (`/v1/`) in `app.py`
-6. OpenAPI spec generation verification
-
-**Outputs:** Container image; deployable stack; health probes; versioned API.
-
----
-
-## Integration Points Summary
-
-| Boundary | Direction | Pattern | Notes |
-|----------|-----------|---------|-------|
-| `llm_providers` → `agent_runtime` | Plugin | `ProviderAdapter` protocol | No orchestrator changes |
-| `econ` → `agent_runtime` | Wrapper | `InstrumentedProviderAdapter` decorator | Fire-and-forget telemetry |
-| `econ` → Regulus backend | Outbound HTTP | `TelemetryTransport` (background thread) | Best-effort, non-blocking |
-| `econ` → `guardrails` | In-process call | `BudgetEnforcer` with TTL cache | Pre-execution cap check |
-| `storage/postgres` → all repositories | Backend swap | Same `transaction()` interface | Injected via bootstrap |
-| `dispatch` → MQ backend | Consumer/publisher | `MQRunWorker` subclass | Redis Streams default |
-| `memory` → Redis/vector | Plugin | `MemoryConnector` protocol | Protocol already defined |
-| `webhooks` → external HTTP | Outbound | Async POST with retry | Triggered by orchestrator + approvals |
-| `health` → all backends | Probe | `HealthCheck` protocol | DB + Redis + MQ + Regulus |
-| `service` → `webhooks` + `health` | Route registration | FastAPI router | Same pattern as existing APIs |
-
-### Internal Dependency Additions
-
-```
-econ/ → agent_runtime/ (reads TokenUsage from ProviderResponse)
-econ/ → guardrails/ (BudgetEnforcer plugs into guardrail checks)
-webhooks/ → runs/ (subscribe to run state transitions)
-webhooks/ → approvals/ (subscribe to approval events)
-health/ → storage/ + redis + dispatch/ (probe dependencies)
-config.py → everything (replaces scattered from_env() calls)
-```
-
----
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| Single process (dev) | SQLite + in-memory MQ (poll loop) + InMemory connectors |
-| 2-8 worker processes | Postgres + SQLite lease backend + Redis Streams MQ |
-| 10+ workers / multi-host | Postgres for all state + Redis Streams + external vector store |
-| High tenant count | Per-tenant Postgres schema or row-level isolation; Regulus budget checks critical |
-
-**First bottleneck:** SQLite write contention under multiple concurrent runs. Postgres migration (Phase 1) resolves this.
-
-**Second bottleneck:** Single-process worker poll interval. MQ consumer (Phase 6) eliminates polling latency and enables true horizontal scaling.
-
-**Third bottleneck:** Synchronous per-node budget checks. Resolved by `BudgetEnforcer` TTL cache (Phase 3).
-
----
+8. **Deployment: Docker multi-stage build** -- Integrate Vite build into Dockerfile, update Nginx config. Last because it is mechanical.
 
 ## Sources
 
-- Direct source inspection: `src/zeroth/agent_runtime/provider.py`, `src/zeroth/service/bootstrap.py`, `src/zeroth/orchestrator/runtime.py`, `src/zeroth/dispatch/worker.py`, `src/zeroth/storage/sqlite.py`, `src/zeroth/guardrails/`
-- Direct source inspection: `/Users/dondoe/coding/regulus/sdk/python/econ_instrumentation/` — `__init__.py`, `schemas.py`, `client.py`, `transport.py`, `integrations/openai.py`, `integrations/anthropic.py`
-- Codebase planning documents: `.planning/codebase/ARCHITECTURE.md`, `STACK.md`, `INTEGRATIONS.md`, `CONCERNS.md`, `STRUCTURE.md`
-- Project context: `.planning/PROJECT.md` (v1.1 milestone requirements)
-
----
-
-*Architecture research for: Zeroth v1.1 production readiness — integration of new capabilities into existing modular monolith*
-*Researched: 2026-04-06*
+- [Vue Flow documentation](https://vueflow.dev/)
+- [Vue Flow GitHub](https://github.com/bcakmakoglu/vue-flow)
+- [n8n Canvas Architecture (DeepWiki)](https://deepwiki.com/n8n-io/n8n/6.2-workflow-canvas-and-node-management)
+- [n8n Frontend Architecture (DeepWiki)](https://deepwiki.com/gwolf999/n8n/3-frontend-architecture)
+- [Feature-Sliced Design for Vue](https://feature-sliced.design/blog/vue-application-architecture)
+- [Vue Best Practices 2026](https://onehorizon.ai/blog/vue-best-practices-in-2026-architecting-for-speed-scale-and-sanity)
+- [FastAPI WebSocket docs](https://fastapi.tiangolo.com/advanced/websockets/)
+- [FastAPI Static Files docs](https://fastapi.tiangolo.com/tutorial/static-files/)
+- [Serving Vue from FastAPI](https://dimmaski.com/serve-vue-fastapi/)

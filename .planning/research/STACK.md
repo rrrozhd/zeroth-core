@@ -1,248 +1,232 @@
 # Stack Research
 
-**Domain:** Production-readiness additions to a governed multi-agent platform (Python/FastAPI)
-**Researched:** 2026-04-06
-**Confidence:** HIGH (current versions verified via PyPI/official sources; integration approach cross-checked against existing codebase)
+**Domain:** Visual workflow editor frontend (Zeroth Studio) + graph authoring API additions to existing Python/FastAPI backend
+**Researched:** 2026-04-09
+**Confidence:** HIGH (versions verified via npm/official sources; integration with existing FastAPI backend cross-checked)
 
 ---
 
-## Existing Stack (Do Not Duplicate)
+## Existing Backend Stack (Do Not Duplicate)
 
-The following is already present and must not be replaced:
+Already present and validated through v1.1 -- no changes needed for Studio:
 
 | Technology | Version | Role |
 |------------|---------|------|
-| Python | >=3.12 | Primary language |
-| FastAPI | >=0.115 | HTTP API framework |
-| Pydantic | >=2.10 | Validation, settings |
-| Uvicorn | >=0.30 | ASGI server |
-| redis | >=5.0.0 | Distributed runtime state (GovernAI-backed stores) |
-| PyJWT[crypto] | >=2.10 | JWT bearer verification |
-| httpx | >=0.27 | Async HTTP client |
-| governai | git@7452de4 | Core governance engine (GovernedLLM, stores, audit) |
-| SQLite | stdlib | Current persistence layer (dev/test retained) |
+| Python | >=3.12 | Backend language |
+| FastAPI | >=0.115 | REST API + WebSocket support (built-in) |
+| Pydantic | >=2.10 | Validation, settings, API schemas |
+| SQLAlchemy | >=2.0.49 | ORM / query builder |
+| asyncpg | >=0.31.0 | Async Postgres driver |
+| Redis | >=5.0.0 | Distributed state, pub/sub for WS fan-out |
+| Uvicorn | >=0.30 | ASGI server (HTTP + WebSocket) |
 
 ---
 
-## Recommended Stack — New Additions Only
+## Frontend Stack -- New Additions
 
-### LLM Provider Integration
+### Core Framework (Already Decided)
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| `langchain-openai` | >=0.3.12 | ChatOpenAI for GovernedLLM.from_chat_openai() | GovernAI's `GovernedLLM` wraps LangChain chat models; `from_chat_openai()` is its only named constructor. GovernAI already depends on `langchain>=1.2.10` and `langchain-openai>=1.1.10` transitively — pinning explicitly ensures version clarity in Zeroth's own pyproject.toml |
-| `langchain-anthropic` | >=0.3.0 | ChatAnthropic for GovernedLLM wrapping | GovernAI's `GovernedLLM` accepts any LangChain chat model; langchain-anthropic provides `ChatAnthropic` which slots in identically to ChatOpenAI. No direct Anthropic SDK calls needed at the Zeroth layer |
-| `openai` | >=2.20,<3.0 | Direct OpenAI SDK (for Regulus instrumentation) | Regulus' `econ_instrumentation` `integrations[integrations]` extra pins `openai>=1.40,<2.0` but the SDK is now at v2.x — verify compatibility with Regulus pinned range before adding to Zeroth's deps |
-| `anthropic` | >=0.87,<1.0 | Direct Anthropic SDK (for Regulus instrumentation) | Same rationale as openai; Regulus pins `anthropic>=0.34,<1.0`, current is 0.89 — within range |
+| Vue 3 | 3.5.x | UI framework | Composition API, excellent TypeScript support, same ecosystem as n8n reference design. Vue 3.5+ required for VueUse 14.x compatibility |
+| Vite | 8.x | Build tool + dev server | Current major version. Uses Rolldown/Oxc for faster builds. First-class Vue plugin via `@vitejs/plugin-vue`. HMR for instant feedback during canvas development |
+| Pinia | 3.0.x | State management | Official Vue state library. v3 drops deprecated APIs, requires Vue 3 + TypeScript 5. Stores for workflow graph state, selection state, inspector state, canvas viewport |
+| TypeScript | 5.x | Type safety | Required by Pinia 3. Type-safe node definitions, edge contracts, and API layer reduce runtime errors in graph editor logic |
 
-**Confidence:** HIGH for langchain-openai/anthropic (verified against GovernAI source). MEDIUM for direct SDK versions (Regulus pin ranges need re-verification when GovernAI commit is updated).
-
-**Integration note:** Do not bypass GovernedLLM to call LLM providers directly from Zeroth. GovernedLLM is the normalization layer. Add `langchain-openai` and `langchain-anthropic` as explicit deps in Zeroth's pyproject.toml so they are not implicitly pinned only through GovernAI.
+**Confidence:** HIGH (versions verified via npm April 2026).
 
 ---
 
-### Regulus Economics SDK
+### Graph Editor Core (Already Decided)
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| `econ-instrumentation-sdk` | 0.1.1 (local path) | Token metering, cost attribution per node/run/tenant, budget enforcement | This is the Regulus SDK at `/Users/dondoe/coding/regulus/sdk/python/`. Add as local path dep in dev (`file:///...`) or package as a wheel for production. The SDK is async-safe (ContextVar-based), uses httpx for transport, and its Pydantic models (`ExecutionEvent`, `OutcomeEvent`) align with Zeroth's data model conventions |
+| `@vue-flow/core` | 1.48.x | Interactive flow canvas | Purpose-built Vue 3 flowchart library. Handles pan/zoom, node drag, edge drawing, minimap, controls. MIT licensed. Same library n8n uses. 95 dependents on npm -- active ecosystem |
+| `@dagrejs/dagre` | 3.0.0 | Automatic graph layout | Directed acyclic graph layout algorithm. Use for auto-layout button and initial workflow rendering. v3.0.0 is the actively maintained fork (released March 2026). Do NOT use the legacy `dagre` package |
+| `codemirror` | 6.0.x | Code/config editing | Modular editor for JSON config, Python snippets in node inspector. Use `@codemirror/lang-json`, `@codemirror/lang-python` for language support. Active maintenance (last updated April 2026) |
 
-**Integration pattern:**
-- Use `econ_instrumentation.configure(InstrumentationConfig(...))` at app startup via FastAPI lifespan
-- Wrap each agent node execution with `track_execution(join_key=run_id, capability_id=node_id)` context manager
-- Use `instrument_openai_async_client` / `instrument_anthropic_async_client` for auto-capture if using provider SDKs directly
-- `InstrumentationConfig.base_url` points to the companion Regulus FastAPI backend (not embedded in Zeroth)
-- Env vars: `ECP_BASE_URL`, `ECP_ENABLED`, `ECP_CAPTURE_CONTENT`
+**Confidence:** HIGH (versions verified via npm).
 
-**Confidence:** HIGH (code-verified from local Regulus SDK source).
+**Note on vue-codemirror wrappers:** Skip `vue-codemirror` and `vue-codemirror6` wrapper libraries. CodeMirror 6's `EditorView` API is straightforward to wrap in a Vue composable (`useCodeMirror`) with `onMounted`/`onUnmounted` lifecycle hooks. Avoids a dependency that adds abstraction without meaningful value. The wrapper is ~30 lines of code.
 
 ---
 
-### Production Storage — Postgres
+### Component Library: Reka UI + Tailwind CSS 4
+
+**Recommendation: Reka UI (headless) + Tailwind CSS 4 (styling)**
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| `sqlalchemy` | >=2.0.49,<3.0 | Async ORM / query builder for Postgres | Industry standard for Python + Postgres. v2.0 has first-class asyncio support. Zeroth's existing custom SQLite layer uses versioned migrations and raw SQL — SQLAlchemy's migration + ORM sits above this cleanly. The modular monolith pattern calls for a single engine shared across all repository adapters |
-| `asyncpg` | >=0.31.0 | Async Postgres driver (backend for SQLAlchemy async) | Fastest Python Postgres driver (binary protocol, C-implemented). Required by `create_async_engine("postgresql+asyncpg://...")`. Outperforms psycopg3 for raw throughput; psycopg3 offers more Pythonic API but asyncpg is the standard SQLAlchemy async backend |
-| `alembic` | >=1.18.4 | Schema migrations for Postgres | Standard companion to SQLAlchemy. Initialize with `alembic init -t async` for async-engine compatibility. Run migrations at startup or as a separate step — do NOT auto-migrate in production |
+| `reka-ui` | 2.9.x | Headless accessible UI primitives | 40+ unstyled components (Dialog, Dropdown, Tabs, Tooltip, Popover, Select). WAI-ARIA compliant out of the box. Headless means full visual control -- critical for a custom design system like a graph editor. 590K weekly downloads, actively maintained. Formerly Radix Vue |
+| `tailwindcss` | 4.x | Utility-first CSS | v4 has first-party Vite plugin (`@tailwindcss/vite`) -- no PostCSS config needed. 5x faster full builds, 100x faster incremental. Pairs naturally with headless components since you control all styling |
+| `@tailwindcss/vite` | 4.x | Vite integration | Direct Vite plugin integration, no postcss.config.js needed |
 
-**Pattern:**
+**Why NOT Element Plus:**
+- Opinionated design system (Material-ish) clashes with building a custom graph editor UI. You fight the component styles constantly
+- Heavier bundle (~300KB gzip for full import). Tree-shaking helps but still larger than headless
+- Less flexible for the unique UI patterns a workflow editor needs (split panes, custom panels, floating toolbars)
+
+**Why NOT Naive UI:**
+- Better than Element Plus for customization but still styled -- you're paying for CSS you'll override
+- Smaller community than Element Plus, smaller than Reka UI's weekly downloads
+- TypeScript support is good but Reka UI + Tailwind gives equivalent DX with less bundle weight
+
+**Why headless (Reka UI) wins for graph editors:**
+- Workflow editors need custom chrome: floating panels, contextual toolbars, minimap overlays, node palettes
+- Pre-styled components fight your layout. Headless components give you behavior (focus trap, keyboard nav, ARIA) without visual opinions
+- n8n built their own design system (`@n8n/design-system`) for exactly this reason -- pre-built UI kits don't fit workflow editors well
+
+**Confidence:** HIGH (Reka UI version verified; Tailwind v4 Vite integration verified via official docs).
+
+---
+
+### WebSocket: Native FastAPI WebSocket + VueUse `useWebSocket`
+
+**Recommendation: No additional WebSocket library needed.**
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| FastAPI WebSocket (backend) | built-in | Server-side WS endpoint | FastAPI has native WebSocket support via Starlette. No library needed. `@app.websocket("/ws/workflow/{id}")` handles connection lifecycle. Use existing Redis pub/sub for multi-worker fan-out (already in stack) |
+| `@vueuse/core` `useWebSocket` (frontend) | 14.2.x | Reactive WS client with auto-reconnect | VueUse's `useWebSocket` composable provides reactive `data`, `status`, `send()` with built-in `autoReconnect`, `heartbeat`, and typed message handling. No separate reconnecting-websocket library needed |
+
+**Why NOT reconnecting-websocket:** Last published 6 years ago (v4.4.0). VueUse's `useWebSocket` provides the same auto-reconnect capability with Vue-native reactivity and active maintenance.
+
+**Why NOT Socket.IO:** Adds a custom protocol layer and requires a Socket.IO server (not native WebSocket). FastAPI's native WebSocket + VueUse covers all needs without the overhead. Socket.IO's room/namespace features are overkill -- Zeroth's workflow-scoped channels map directly to WebSocket URL paths.
+
+**WebSocket architecture for Studio:**
+
 ```
-Postgres repositories (new) → AsyncSession (SQLAlchemy 2) → asyncpg → Postgres
-SQLite repositories (existing) → SQLiteDatabase wrapper → SQLite (dev/test only)
-```
-
-Zeroth's existing `Migration` dataclass system is for SQLite only. For Postgres, Alembic is the replacement. The two can coexist during transition: SQLite for local dev, Postgres for production, controlled by a `ZEROTH_DB_BACKEND=sqlite|postgres` config flag.
-
-**Confidence:** HIGH (versions verified via PyPI; SQLAlchemy 2.0.49 released 2026-04-03, alembic 1.18.4 released 2026-02-10, asyncpg 0.31.0 current).
-
----
-
-### Message Queue — Durable Distributed Dispatch
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `arq` | >=0.26 | Async Redis-backed distributed task queue | Zeroth already has Redis as a required dependency. ARQ is async-native (asyncio from the ground up), requires no new infrastructure beyond Redis already in place, and integrates with FastAPI's lifespan pattern cleanly. The existing `RunWorker` poll-loop maps directly to an ARQ worker function. ARQ's job deduplication prevents duplicate execution analogous to Zeroth's current LeaseManager |
-
-**Why not Celery:** Celery is sync-first and requires spawning separate processes. Zeroth's async FastAPI runtime would need `celery --pool gevent` workarounds. ARQ runs worker coroutines on the same asyncio event loop as the app.
-
-**Why not Dramatiq:** Dramatiq supports RabbitMQ + Redis but adds a broker abstraction layer. Zeroth doesn't need broker flexibility — Redis is locked in via GovernAI. ARQ's simpler surface area reduces integration risk.
-
-**Why not plain Redis Streams:** ARQ wraps Redis Streams/sorted sets with a clean Python API for job scheduling, retries, priorities, and timeouts. Building this from raw Redis commands would duplicate ARQ's battle-tested logic.
-
-**Integration note:** The existing `LeaseManager` and `RunWorker` can be refactored to emit jobs via `arq.ArqRedis.enqueue_job()` and consume them in an ARQ worker class. The current SQLite-based dispatch (durable lease store) continues for dev; ARQ provides the production-grade distributed queue.
-
-**Confidence:** MEDIUM (ARQ versions not verified against PyPI in this session; logic-verified as right choice given constraints).
-
----
-
-### External Memory Connectors
-
-#### Redis (already present — extend for memory)
-
-The existing `redis>=5.0.0` dependency is already used for GovernAI runtime stores. Extending it for external agent memory (key-value, conversation history) requires no new package — only new Redis key namespacing and TTL strategy.
-
-**Pattern:** Use `zeroth:memory:{tenant_id}:{thread_id}` key prefix with configurable TTL. Implement as a new `RedisMemoryConnector` module that implements GovernAI's memory interface.
-
-#### Vector Store
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `pgvector` | >=0.4.2 | Vector similarity search in Postgres | Zeroth is already adding Postgres (above). pgvector adds a native Postgres extension, keeping the infrastructure footprint minimal — no separate vector database service (Pinecone, Weaviate, Qdrant) needed for MVP. pgvector-python supports asyncpg and SQLAlchemy natively. For production scale requiring dedicated vector DB, this is easily swapped |
-
-**Confidence:** HIGH (pgvector 0.4.2 verified as current on PyPI April 2026; async support confirmed via pgvector-python GitHub).
-
-**What NOT to use:** Do not add `langchain-postgres` as a vector store dependency. It bundles LangChain's `PGVectorStore` which pulls in LangChain community packages Zeroth does not otherwise need. Use `pgvector` directly with SQLAlchemy models instead.
-
----
-
-### Retry & Resilience
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `tenacity` | >=9.1.4 | Provider-aware retry with exponential backoff and jitter | Standard Python retry library, async-native via `AsyncRetrying`. The existing GovernAI `GovernedLLM` does not implement retry internally — retries belong in Zeroth's provider adapter layer. Tenacity's `retry_if_exception_type`, `wait_exponential_jitter`, and `stop_after_attempt` compose cleanly into a `ProviderRetryPolicy` per provider/model |
-
-**Pattern:**
-```python
-from tenacity import AsyncRetrying, retry_if_exception_type, wait_exponential_jitter, stop_after_attempt
-
-async for attempt in AsyncRetrying(
-    retry=retry_if_exception_type((RateLimitError, APITimeoutError)),
-    wait=wait_exponential_jitter(initial=1, max=60),
-    stop=stop_after_attempt(5),
-):
-    with attempt:
-        response = await llm.ainvoke(messages)
+Browser                    FastAPI                      Redis
+  |                          |                           |
+  |-- WS /ws/workflow/123 -->|                           |
+  |                          |-- SUBSCRIBE workflow:123 ->|
+  |                          |                           |
+  |<-- graph delta ---------|<-- PUBLISH workflow:123 ---|
+  |                          |                           |
 ```
 
-**Confidence:** HIGH (tenacity 9.1.4 verified as current release on PyPI February 2026; async support verified via official docs).
+- One WS connection per open workflow
+- JSON messages with `{type: "node_moved"|"edge_added"|"config_changed", payload: {...}}`
+- Backend validates mutations against governance rules before broadcasting
+- Redis pub/sub enables multi-worker scaling (already in stack from v1.1)
+
+**Confidence:** HIGH (FastAPI WebSocket is Starlette built-in; VueUse version verified via npm).
 
 ---
 
-### Container-Based Sandbox
+### HTTP Client: ky
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| `docker` (docker SDK for Python) | >=7.1.0 | Spawn and exec into isolated containers for untrusted execution units | The existing Phase 8A sandbox uses `subprocess` + `tempdir`. Hardening requires full container isolation. Docker SDK provides `container.exec_run()` for command execution inside a running container, `containers.run()` for one-shot containers, and resource limit parameters (CPU, memory, network). This maps directly to Zeroth's `ExecutionUnit` interface |
+| `ky` | latest | HTTP client for REST API calls | ~2KB gzip. Wraps native Fetch API with retry, timeout, hooks (interceptors), and JSON shortcuts. TypeScript-first. Lighter than Axios (no XMLHttpRequest polyfill). Perfect for a modern Vite/Vue 3 app that only targets modern browsers |
 
-**Container security posture:**
-- Use `network_disabled=True`, `read_only=True` (with explicit tmpfs mounts) for untrusted units
-- Set `mem_limit`, `cpu_quota`, `pids_limit` to cap runaway processes
-- Base image: `python:3.12-slim` — minimal attack surface
-- Do NOT mount the host Docker socket inside agent containers (privilege escalation vector)
+**Why NOT Axios:** Axios is 13KB+ gzip, uses XMLHttpRequest under the hood (legacy API), and carries polyfill weight. `ky` provides the same DX (interceptors, retry, JSON handling) at ~15% of the bundle size using native Fetch.
 
-**Why not nsjail:** nsjail requires Linux-specific syscalls and a separate binary install, making it non-portable across macOS dev and Linux prod. Docker SDK provides the same namespace/cgroup isolation with cross-platform tooling.
+**Why NOT ofetch:** Poor TypeScript support and lacks interceptor/plugin system. Not suitable for an API layer that needs auth token injection and error normalization.
 
-**Why not gVisor:** gVisor provides stronger isolation but requires a custom Docker runtime (`runsc`) that adds significant operational complexity. Appropriate for multi-tenant public execution — overkill for Zeroth's internal governed agents where identity/RBAC already constrains who submits execution units.
+**API layer pattern:**
 
-**Confidence:** MEDIUM (Docker SDK 7.1.0 verified via docs.docker.com; security posture from community best practices, not official benchmark).
+```typescript
+// src/api/client.ts
+import ky from 'ky'
 
----
+export const api = ky.create({
+  prefixUrl: '/api/v1',
+  hooks: {
+    beforeRequest: [(req) => {
+      req.headers.set('Authorization', `Bearer ${useAuthStore().token}`)
+    }],
+    afterResponse: [async (_req, _opts, res) => {
+      if (res.status === 401) useAuthStore().logout()
+    }]
+  }
+})
 
-### Containerized Deployment
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Docker multi-stage build | — | Production image packaging | Standard pattern: `builder` stage with `uv sync`, `runtime` stage with slim base. Zeroth's `uv` dependency management maps cleanly to Docker layer caching |
-| `docker-compose` v2 | >=2.27 | Local development orchestration | Compose v2 (`docker compose` not `docker-compose`) is the current standard. Services: `zeroth`, `postgres`, `redis`, optional `regulus`. Use `depends_on` with `condition: service_healthy` for startup ordering |
-| Traefik or Nginx | latest | TLS termination proxy | FastAPI docs and production guides recommend terminating TLS at the proxy, not in Uvicorn directly. Traefik handles Let's Encrypt automatically; Nginx is simpler for static cert deployment. Both are valid — choose based on operational preference |
-
-**Confidence:** HIGH (standard containerization patterns, well-documented).
-
----
-
-### Observability Additions
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `structlog` | >=25.0 | Structured JSON logging | Zeroth currently uses stdlib `logging`. Structlog wraps stdlib logging with a processor pipeline that emits JSON for production log aggregators (Datadog, CloudWatch, Loki). Async-safe via contextvars integration. Required for observability at production scale — plain text logs don't parse well at volume |
-
-**Confidence:** MEDIUM (structlog version estimated; async+FastAPI integration pattern well-documented from multiple 2025-2026 sources).
-
----
-
-### API Versioning and OpenAPI
-
-No new library needed. FastAPI's built-in `APIRouter` with prefix `/v1` handles API versioning. `app.openapi()` generates OpenAPI 3.1 spec automatically — expose it at `/openapi.json`. For multi-version support, mount separate routers:
-
-```python
-app.include_router(v1_router, prefix="/v1")
-app.include_router(v2_router, prefix="/v2")  # future
+// src/api/workflows.ts
+export const workflowApi = {
+  list: () => api.get('workflows').json<Workflow[]>(),
+  get: (id: string) => api.get(`workflows/${id}`).json<Workflow>(),
+  create: (data: CreateWorkflow) => api.post('workflows', { json: data }).json<Workflow>(),
+}
 ```
 
-**Confidence:** HIGH (FastAPI built-in, no new dependency).
+**Confidence:** MEDIUM (ky is well-established but version not pinned -- check npm for latest at install time).
 
 ---
 
-### Webhook / Callback Notifications
+### Utility Library
 
-No new library needed. Use `httpx.AsyncClient` (already in pyproject.toml) from within FastAPI `BackgroundTasks` for outgoing webhook delivery. For reliable delivery with retry, wrap in tenacity (already above). For high-volume production, promote to ARQ job (also above).
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| `@vueuse/core` | 14.2.x | Vue composition utilities | Essential composables: `useWebSocket` (WS client), `useDebounceFn` (canvas events), `useResizeObserver` (panel resizing), `useLocalStorage` (UI preferences), `useDraggable` (node palette DnD), `useEventListener` (keyboard shortcuts). Requires Vue 3.5+ |
 
-**Confidence:** HIGH (httpx already present; pattern well-documented).
+**Confidence:** HIGH (version verified via npm).
 
 ---
 
-### Health Probes
+### Testing Stack
 
-No new library needed. Extend the existing `GET /health` endpoint with dependency checks: Postgres connectivity, Redis ping, GovernAI runtime state. Return structured JSON with per-dependency status for readiness vs. liveness distinction:
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| `vitest` | 4.x | Unit + component tests | Vite-native test runner. Zero-config with Vite projects. Same transform pipeline as dev server. Supports Vue SFC testing via `@vitejs/plugin-vue` |
+| `@vue/test-utils` | latest | Vue component mounting | Official Vue test library. `mount()`, `shallowMount()`, props/emits assertions. Required for testing Vue Flow wrapper components and inspector panels |
+| `@vitest/browser` + `playwright` | 4.x / 1.59.x | Browser-mode component tests | For canvas/graph tests that need real DOM (Vue Flow relies on getBoundingClientRect, ResizeObserver). JSDOM can't simulate these. Use Vitest browser mode with Playwright provider for the ~30% of tests that need real rendering |
+| `@playwright/test` | 1.59.x | E2E tests | Full browser E2E for critical workflows: create workflow, add node, draw edge, save. Separate from Vitest -- runs against dev server. Use for smoke tests, not exhaustive coverage |
 
-```json
-{"status": "ready", "dependencies": {"postgres": "ok", "redis": "ok", "regulus": "degraded"}}
-```
+**Testing strategy:**
+- **70% Vitest + JSDOM:** Store logic, composables, API layer, utility functions, simple component rendering
+- **20% Vitest browser mode (Playwright):** Vue Flow canvas interactions, drag-and-drop, resize behavior
+- **10% Playwright E2E:** Critical user journeys (create workflow end-to-end, deploy workflow)
 
-**Confidence:** HIGH (FastAPI built-in, no new dependency).
+**Why Vitest over Jest:** Vitest shares Vite's transform pipeline. Jest requires separate Babel/TypeScript config. With a Vite project, Vitest is zero-config and 2-5x faster for Vue SFCs.
+
+**Confidence:** HIGH (Vitest 4.x, Playwright 1.59.x verified via npm).
+
+---
+
+### Additional Critical Libraries
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| `@vueuse/core` | 14.2.x | See Utility Library section above | |
+| `vue-router` | 4.x | Client-side routing | Studio needs routes: `/workflows`, `/workflows/:id/edit`, `/settings`, `/environments`. Official Vue router |
+| `splitpanes` | 3.x | Resizable panel layout | MIT licensed. Vue 3 compatible. For the three-pane Studio layout (workflow rail \| canvas \| inspector). Simpler than building custom resize handles. Used in VS Code-style layouts |
+| `@iconify/vue` | 4.x | Icon system | Unified icon API accessing 200K+ icons from 150+ icon sets. Load only used icons (tree-shakeable). Better than bundling an entire icon font. Works with Tailwind classes |
+| `nanoid` | 5.x | Client-side ID generation | URL-safe unique IDs for nodes/edges created in the browser before server persistence. 130 bytes gzip. Cryptographically strong. Used for optimistic UI -- node gets a temp ID immediately, server confirms or replaces |
+
+**Confidence:** MEDIUM (versions estimated from latest npm; verify at install time).
 
 ---
 
 ## Installation
 
 ```bash
-# LLM provider integration (add to pyproject.toml dependencies)
-uv add langchain-openai>=0.3.12
-uv add langchain-anthropic>=0.3.0
+# Initialize Vue 3 project
+npm create vite@latest studio -- --template vue-ts
+cd studio
 
-# Regulus SDK (local path dep)
-uv add "econ-instrumentation-sdk @ file:///Users/dondoe/coding/regulus/sdk/python"
+# Core framework (already in template)
+npm install vue@3.5 pinia@3 vue-router@4
 
-# Postgres + ORM + migrations
-uv add "sqlalchemy>=2.0.49,<3.0"
-uv add asyncpg>=0.31.0
-uv add alembic>=1.18.4
+# Graph editor
+npm install @vue-flow/core @dagrejs/dagre
 
-# Vector store (Postgres extension bridge)
-uv add pgvector>=0.4.2
+# UI components + styling
+npm install reka-ui
+npm install -D tailwindcss @tailwindcss/vite
 
-# Message queue
-uv add arq>=0.26
+# Code editor
+npm install codemirror @codemirror/lang-json @codemirror/lang-python @codemirror/theme-one-dark
 
-# Retry
-uv add tenacity>=9.1.4
+# HTTP + WebSocket (via VueUse)
+npm install ky @vueuse/core
 
-# Container sandbox
-uv add docker>=7.1.0
+# Layout + icons + IDs
+npm install splitpanes @iconify/vue nanoid
 
-# Structured logging
-uv add structlog>=25.0
+# Testing
+npm install -D vitest @vue/test-utils @vitest/browser @playwright/test happy-dom
+npx playwright install chromium
 ```
 
 ---
@@ -251,13 +235,17 @@ uv add structlog>=25.0
 
 | Recommended | Alternative | Why Not |
 |-------------|-------------|---------|
-| `asyncpg` | `psycopg3` | psycopg3 is more Pythonic but asyncpg is the default SQLAlchemy async backend; switching would require `postgresql+psycopg` URL scheme and psycopg3 async extra — adds setup friction with no benefit over asyncpg for Zeroth's workload |
-| `arq` | `celery` | Celery is sync-first; async integration requires process-based workers. Zeroth is a pure asyncio service and adding celery workers would require a separate process pool and broker config (RabbitMQ or Redis with separate Celery-specific key namespacing) |
-| `arq` | `dramatiq` | Dramatiq requires a separate broker process (or Redis in a different mode). ARQ reuses the same Redis instance Zeroth already depends on with zero new infrastructure |
-| `pgvector` | Pinecone / Weaviate | External vector DB services add network latency, new auth credentials, and separate operational surface. pgvector runs inside Postgres (already added) — same infra, same ops model |
-| `docker` SDK | `nsjail` | nsjail requires Linux-only syscall capabilities and a separate binary — incompatible with macOS dev workflow. Docker SDK works identically across dev (macOS Docker Desktop) and prod (Linux) |
-| `tenacity` | `backoff` | `backoff` is older, less maintained, and doesn't have native async support as a first-class feature. Tenacity has `AsyncRetrying` natively |
-| `structlog` | stdlib logging only | Stdlib logging produces unstructured text. JSON logs are required for production log aggregators and correlation ID tracing at scale |
+| Reka UI (headless) | Element Plus | Opinionated styling fights custom graph editor UI. Heavier bundle. Not suitable for floating panels and canvas overlays |
+| Reka UI (headless) | Naive UI | Still styled -- you override CSS constantly. Smaller ecosystem than Reka UI (by weekly downloads) |
+| Reka UI (headless) | Vuetify 3 | Material Design opinions even stronger than Element Plus. Massive bundle. Wrong aesthetic for a dev-tool/IDE-style UI |
+| Tailwind CSS 4 | UnoCSS | UnoCSS is faster but Tailwind 4 closed the performance gap significantly. Tailwind has broader ecosystem (plugins, examples, component libraries). Reka UI docs assume Tailwind |
+| `ky` | Axios | 6x larger bundle, XMLHttpRequest-based. No advantage for modern-browser-only SPA |
+| `ky` | `ofetch` | Weak TypeScript support, no interceptors. Not suitable for auth-injecting API layer |
+| VueUse `useWebSocket` | Socket.IO | Custom protocol overhead, requires server-side Socket.IO. FastAPI native WS + VueUse covers all needs |
+| VueUse `useWebSocket` | `reconnecting-websocket` | Unmaintained (6 years). VueUse provides same auto-reconnect with Vue reactivity |
+| Vitest browser mode | Cypress component testing | Cypress is slower, requires separate runner, and component testing is still experimental. Vitest browser mode is first-class |
+| `splitpanes` | Custom CSS resize | Keyboard accessibility, min/max constraints, and persistent sizes are non-trivial. splitpanes handles all of these |
+| `@iconify/vue` | Font Awesome | FA requires loading entire icon font. Iconify loads individual SVGs on demand |
 
 ---
 
@@ -265,38 +253,37 @@ uv add structlog>=25.0
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Direct OpenAI/Anthropic SDK calls bypassing GovernedLLM | Loses normalization, tool-call extraction, and governance instrumentation that GovernedLLM provides | `GovernedLLM.from_chat_openai()` or `GovernedLLM(ChatAnthropic(...))` |
-| `langchain-postgres` PGVectorStore | Pulls in LangChain community packages (langchain-community) not otherwise needed; adds ~15 transitive deps for a feature Zeroth can implement with `pgvector` + SQLAlchemy directly | `pgvector>=0.4.2` with SQLAlchemy `Vector` column type |
-| `celery` | Not async-native; process-based workers conflict with Zeroth's single asyncio event loop design | `arq` |
-| Dedicated vector DB (Pinecone, Qdrant, Weaviate) | Separate infrastructure + operational overhead for MVP. pgvector handles 99% of governed agent use cases at Zeroth's expected scale | `pgvector` extension on existing Postgres |
-| Mounting Docker socket inside agent containers | Privilege escalation — any agent with socket access can spawn arbitrary containers on the host | Pass execution parameters as environment variables; never expose `/var/run/docker.sock` to untrusted containers |
-| `alembic autogenerate` in production with `--autogenerate` | Auto-diff migrations can generate destructive statements (DROP COLUMN) unexpectedly | Review all generated migrations before applying; run `alembic check` in CI |
-| TLS termination inside Uvicorn (`--ssl-certfile`) | Certificate rotation requires app restart; proxy-level termination allows zero-downtime cert renewal | Traefik or Nginx in front of Uvicorn on plain HTTP |
+| `vue-codemirror` / `vue-codemirror6` wrappers | Unnecessary abstraction over CodeMirror 6's already-clean API. Adds a dependency for ~30 lines of composable code | Write a `useCodeMirror` composable directly |
+| Socket.IO | Adds custom protocol + server dependency. FastAPI's native WebSocket is sufficient | FastAPI WebSocket + VueUse `useWebSocket` |
+| Vuex | Deprecated in favor of Pinia for Vue 3. Pinia 3 is the official recommendation | Pinia 3 |
+| Element Plus / Vuetify / Naive UI | Pre-styled component libraries fight a custom graph editor's visual requirements | Reka UI (headless) + Tailwind CSS 4 |
+| `dagre` (legacy package) | Unmaintained. Only `@dagrejs/dagre` receives updates (v3.0.0 March 2026) | `@dagrejs/dagre` |
+| `reconnecting-websocket` | Unmaintained (last release 2020). Security risk | VueUse `useWebSocket` with `autoReconnect: true` |
+| Lodash (full) | 70KB+ for utilities VueUse and native JS already provide (debounce, throttle, cloneDeep via structuredClone) | VueUse composables + native JS |
+| Server-Sent Events (SSE) for canvas sync | SSE is server-to-client only. Canvas editing requires bidirectional communication (client sends mutations, server broadcasts) | WebSocket (bidirectional) |
+| GraphQL | Adds schema layer + codegen complexity. Zeroth's REST API is well-defined with OpenAPI. Graph queries don't justify the tooling overhead for this domain | REST + OpenAPI + `ky` |
+| Electron / Tauri | Desktop wrapper adds build complexity. Web-only is an explicit project constraint | Browser-only SPA |
 
 ---
 
-## Stack Patterns by Variant
+## Backend Additions for Studio API
 
-**If running locally (dev/test):**
-- Use SQLite (existing) — no Postgres needed
-- Use Redis via Docker or local install
-- Skip ARQ — existing RunWorker poll loop is sufficient
-- Regulus SDK can disable transport (`ECP_ENABLED=false`)
-- Docker sandbox optional (subprocess sandbox remains active)
+No new Python packages needed. All capabilities exist in the current stack:
 
-**If running in production (Docker Compose):**
-- Use Postgres with asyncpg via SQLAlchemy 2
-- Use Redis with ARQ for distributed dispatch
-- Enable Regulus SDK with `ECP_BASE_URL` pointing to companion service
-- Enable Docker sandbox backend (requires Docker socket accessible to Zeroth container)
-- Enable structlog JSON output
-- TLS termination at Traefik/Nginx layer
+| Capability | Existing Technology | Notes |
+|------------|-------------------|-------|
+| REST endpoints for graph CRUD | FastAPI + Pydantic | New routers under `/api/v1/studio/` |
+| WebSocket for real-time sync | FastAPI (Starlette WebSocket) | Built-in. Add `@app.websocket()` routes |
+| Multi-worker WS fan-out | Redis pub/sub | Already in stack. Use `redis.pubsub()` for cross-worker broadcast |
+| CORS for dev server | FastAPI CORSMiddleware | Already configured. Add Vite dev server origin |
+| Static file serving (production) | FastAPI StaticFiles or Nginx | Serve built Vue app. Nginx preferred for production |
+| API schema generation | FastAPI OpenAPI | Auto-generated. Frontend can use generated types |
 
-**If horizontal scaling:**
-- ARQ workers can run as separate containers (`arq zeroth.dispatch.worker.WorkerSettings`)
-- Postgres connection pool via SQLAlchemy's `pool_size` / `max_overflow`
-- Redis cluster or Redis Sentinel for HA
-- Lease coordination for workers remains valid (arq's job deduplication replaces SQLite-based lease)
+**Key integration point:** Generate TypeScript types from FastAPI's OpenAPI schema. Use `openapi-typescript` (npm) to auto-generate `src/api/types.ts` from `/openapi.json`. This keeps frontend types in sync with backend Pydantic models without manual duplication.
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| `openapi-typescript` | latest | Generate TS types from OpenAPI spec | Dev dependency. Run as build step: `npx openapi-typescript http://localhost:8000/openapi.json -o src/api/types.ts`. Ensures type safety between Python Pydantic models and TypeScript API layer |
 
 ---
 
@@ -304,37 +291,39 @@ uv add structlog>=25.0
 
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| `sqlalchemy>=2.0.49` | `asyncpg>=0.31.0` | Use `create_async_engine("postgresql+asyncpg://...")` |
-| `sqlalchemy>=2.0.49` | `alembic>=1.18.4` | Alembic 1.18 supports SQLAlchemy 2.0 async via `run_sync` pattern |
-| `pgvector>=0.4.2` | `asyncpg>=0.31.0` | Use `pgvector.asyncpg` module; call `register_vector(conn)` on connection |
-| `pgvector>=0.4.2` | `sqlalchemy>=2.0.49` | Use `from pgvector.sqlalchemy import Vector` column type |
-| `langchain-openai>=0.3.12` | `governai@7452de4` | GovernAI pins `langchain-openai>=1.1.10` — version floor from GovernAI, ceiling from Zeroth |
-| `langchain-anthropic>=0.3.0` | `governai@7452de4` | GovernAI does not pin langchain-anthropic; verify no conflicts after `uv sync` |
-| `econ-instrumentation-sdk==0.1.1` | `pydantic>=2.7` | SDK pins `pydantic>=2.7.0`; Zeroth pins `pydantic>=2.10` — compatible |
-| `econ-instrumentation-sdk==0.1.1` | `httpx>=0.27` | Both require `httpx>=0.27` — no conflict |
-| `arq>=0.26` | `redis>=5.0.0` | ARQ uses redis-py under the hood; Zeroth's existing `redis>=5.0.0` dep covers this |
-| `docker>=7.1.0` | Python 3.12 | Docker SDK 7.x requires Python >=3.9; compatible |
+| `vue@3.5.x` | `pinia@3.0.x` | Pinia 3 requires Vue 3, TypeScript 5 |
+| `vue@3.5.x` | `@vueuse/core@14.x` | VueUse 14 requires Vue 3.5+ |
+| `vue@3.5.x` | `@vue-flow/core@1.48.x` | Vue Flow requires Vue 3 |
+| `vue@3.5.x` | `reka-ui@2.9.x` | Reka UI requires Vue 3.4+ |
+| `vite@8.x` | `vitest@4.x` | Vitest 4.x aligns with Vite 8 transform pipeline |
+| `vite@8.x` | `@tailwindcss/vite@4.x` | First-party Vite plugin |
+| `vite@8.x` | `@vitejs/plugin-vue` | Official Vue Vite plugin, always compatible with latest Vite |
+| `@vue-flow/core@1.48.x` | `@dagrejs/dagre@3.0.0` | Vue Flow's auto-layout examples use dagre. No tight coupling -- dagre computes positions, Vue Flow renders |
+| `vitest@4.x` | `@vue/test-utils` | Standard pairing. Vue Test Utils is test-runner agnostic |
+| `vitest@4.x` | `@vitest/browser` + `playwright@1.59.x` | Vitest browser mode uses Playwright as provider |
 
 ---
 
 ## Sources
 
-- GovernAI source at `/Users/dondoe/coding/governai/governai/integrations/llm.py` — GovernedLLM implementation, LangChain dependency (HIGH confidence)
-- Regulus SDK source at `/Users/dondoe/coding/regulus/sdk/python/` — econ_instrumentation interface, config, transport (HIGH confidence)
-- PyPI asyncpg — version 0.31.0 confirmed current (HIGH confidence)
-- PyPI SQLAlchemy — version 2.0.49 released 2026-04-03 (HIGH confidence)
-- PyPI alembic — version 1.18.4 released 2026-02-10 (HIGH confidence)
-- PyPI pgvector — version 0.4.2 confirmed current April 2026 (HIGH confidence)
-- PyPI tenacity — version 9.1.4 released 2026-02-07 (HIGH confidence)
-- PyPI openai — version 2.30.0 released 2026-03-25 (HIGH confidence)
-- PyPI anthropic — version 0.89.0 released 2026-04-03 (HIGH confidence)
-- Docker SDK docs (docker-py.readthedocs.io) — version 7.1.0 (HIGH confidence)
-- WebSearch: ARQ vs Celery vs Dramatiq async FastAPI 2025 comparison — ARQ recommendation for async-native Redis queue (MEDIUM confidence — no direct PyPI version verification)
-- WebSearch: structlog FastAPI production 2025-2026 — structlog async-safe via contextvars confirmed (MEDIUM confidence)
-- WebSearch: pgvector asyncpg async support — `pgvector.asyncpg` module confirmed (HIGH confidence)
-- WebSearch: nsjail vs Docker vs gVisor sandbox comparison 2025 — Docker recommendation for cross-platform portability (MEDIUM confidence)
+- [npm @vue-flow/core](https://www.npmjs.com/package/@vue-flow/core) -- v1.48.2 confirmed (HIGH confidence)
+- [npm @dagrejs/dagre](https://www.npmjs.com/package/@dagrejs/dagre) -- v3.0.0 confirmed (HIGH confidence)
+- [npm vitest](https://www.npmjs.com/package/vitest) -- v4.1.3 confirmed (HIGH confidence)
+- [npm playwright](https://www.npmjs.com/package/playwright) -- v1.59.1 confirmed (HIGH confidence)
+- [npm pinia](https://www.npmjs.com/package/pinia) -- v3.0.4 confirmed (HIGH confidence)
+- [npm @vueuse/core](https://www.npmjs.com/package/@vueuse/core) -- v14.2.1 confirmed (HIGH confidence)
+- [Reka UI GitHub](https://github.com/unovue/reka-ui) -- v2.9.0 confirmed, headless primitives (HIGH confidence)
+- [Tailwind CSS v4 announcement](https://tailwindcss.com/blog/tailwindcss-v4) -- Vite plugin, performance improvements (HIGH confidence)
+- [Vite 8 announcement](https://vite.dev/blog/announcing-vite7) -- v8.0.7 current, Rolldown-based (HIGH confidence)
+- [FastAPI WebSocket docs](https://fastapi.tiangolo.com/advanced/websockets/) -- native Starlette WS support (HIGH confidence)
+- [VueUse useWebSocket](https://vueuse.org/core/usewebsocket/) -- auto-reconnect, reactive API (HIGH confidence)
+- [Vue Testing docs](https://vuejs.org/guide/scaling-up/testing) -- Vitest + Vue Test Utils recommended (HIGH confidence)
+- [n8n Frontend Architecture (DeepWiki)](https://deepwiki.com/n8n-io/n8n/6.1-server-and-api-architecture) -- design system patterns reference (MEDIUM confidence)
+- [npm-compare component libraries](https://npm-compare.com/ant-design-vue,bootstrap-vue,element-plus,naive-ui,vuetify) -- download comparisons (MEDIUM confidence)
+- [Axios vs ky 2026](https://www.pkgpulse.com/blog/axios-vs-ky-2026) -- bundle size and feature comparison (MEDIUM confidence)
+- [CodeMirror changelog](https://codemirror.net/docs/changelog/) -- active maintenance confirmed (HIGH confidence)
 
 ---
 
-*Stack research for: Zeroth v1.1 Production Readiness*
-*Researched: 2026-04-06*
+*Stack research for: Zeroth v2.0 Studio Frontend*
+*Researched: 2026-04-09*

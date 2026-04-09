@@ -1,214 +1,237 @@
-# Feature Research
+# Feature Landscape: Zeroth Studio Visual Workflow Editor
 
-**Domain:** Governed multi-agent AI workflow platform (production readiness milestone)
-**Researched:** 2026-04-06
-**Confidence:** HIGH (primary context from codebase + Regulus SDK inspection; supplemented by current web research)
-
----
-
-## Context: What Already Exists
-
-Zeroth has a mature Phases 1-9 foundation. This research covers only the production-readiness gap (v1.1 milestone). The existing capability set includes: graph authoring/versioning, runtime orchestration with loop guards, agent runtime with ProviderAdapter protocol, subprocess/tempdir sandbox, human approval system, per-node audit trail (digest-chained), identity/RBAC/tenant isolation, SQLite-backed durable dispatch (lease-based), Prometheus-compatible metrics, correlation IDs, and admin controls.
+**Domain:** Visual workflow authoring UI for governed multi-agent AI platform
+**Researched:** 2026-04-09
+**Confidence:** HIGH (cross-referenced 6 competing platforms, n8n architecture deep dive, official docs)
 
 ---
 
-## Feature Landscape
+## Context: What Already Exists (Backend)
 
-### Table Stakes (Platform is Not Production-Viable Without These)
+Zeroth v1.1 shipped a complete governed backend: graph-based workflow modeling with validation and versioning, runtime orchestration with approvals/memory/durable dispatch, identity/RBAC/governance evidence/audit trails, 100+ LLM models via LiteLLM with token economics (Regulus), external memory connectors, container sandboxing, webhooks, and containerized deployment. The Studio milestone adds a visual authoring frontend on top of this existing backend.
 
-Features that are non-negotiable for a governed AI workflow platform to be called "production-ready." Operators and buyers will reject the platform outright if any of these are absent.
+**Chosen stack:** Vue 3 / Vite / Pinia / Vue Flow / dagre / CodeMirror 6 (already decided in PROJECT.md).
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **Real LLM provider adapters (OpenAI, Anthropic)** | Platform is worthless without real AI calls. `DeterministicProviderAdapter` is test-only. `ProviderAdapter` protocol already exists — this is filling it in. | MEDIUM | OpenAI and Anthropic Python SDKs are stable and well-documented. The `GovernedLLMProviderAdapter` wrapper exists; need concrete classes that resolve credentials via `SecretProvider` and return `ProviderResponse`. OpenAI SDK has built-in `max_retries` and exponential backoff; Anthropic SDK similarly. Token usage fields (`prompt_tokens`, `completion_tokens`) are in standard SDK responses. |
-| **Token/cost capture per node invocation** | Without recording token usage, there is no cost attribution, no budget enforcement, and no accountability. This is the economic instrumentation foundation everything else rests on. | LOW-MEDIUM | `ProviderResponse` model must gain `usage` fields (prompt_tokens, completion_tokens, cost_usd). Regulus `ExecutionEvent` schema already defines `token_cost_usd`, `latency_ms`, `capability_id`. Capture at `AgentRunner.run()` time, write to audit record and emit to Regulus SDK. |
-| **Budget enforcement per tenant/deployment** | Without spend caps, a misbehaving workflow can generate unbounded API costs. This is the first question enterprise procurement asks. | MEDIUM | Implemented as a pre-flight check in `GuardrailConfig` (analogous to existing `QuotaEnforcer`). Requires Regulus SDK `track_execution` + Regulus backend budget query, or a local spend accumulator in `RunRepository`. Hard caps block run creation; soft caps log warnings. Per-tenant, per-deployment granularity required. |
-| **Production storage backend (Postgres)** | SQLite write contention blocks horizontal scaling. Single-writer SQLite caps throughput at ~50-200 writes/second — unacceptable under concurrent multi-run workloads. | HIGH | Zeroth's custom `SQLiteDatabase` + raw SQL pattern means no ORM migration: repository classes need a `PostgresDatabase` alternative that shares the same `transaction()` / `apply_migrations()` interface. asyncpg + SQLAlchemy 2.0 async engine is the standard FastAPI/Postgres stack in 2025-2026. Keep SQLite for dev/test; Postgres is the production default. Critical-path tables first: runs, run_checkpoints, leases, audit, rate_limit_buckets, quotas. Graph/contract/deployment tables can follow. |
-| **Hardened container sandbox (Phase 8A completion)** | Executing untrusted LLM-generated code in LOCAL mode with no resource constraints is a critical security gap. Without Docker enforcement, the platform cannot run production executable units safely. | MEDIUM | `DockerSandboxConfig` and `SandboxManager` already exist. Phase 8A is explicitly tracked as incomplete. Need: make Docker the default strictness mode for `UNTRUSTED` manifests; enforce CPU/memory limits via Docker flags; add network isolation (no-network by default); complete `AdmissionController` digest verification end-to-end. Do not introduce Kata/gVisor — Docker is sufficient for the milestone. |
-| **Containerized deployment (Dockerfile + docker-compose)** | No Dockerfile exists. Platform cannot be deployed reproducibly without one. Every production environment needs this. | LOW | Single-stage or two-stage Python Dockerfile targeting Python 3.12. `docker-compose.yml` with zeroth (uvicorn), postgres, redis services. `.dockerignore` to exclude dev artifacts. Environment variable documentation for all required vars. Non-root user, health check in Dockerfile. |
-| **Readiness and liveness health probes** | Kubernetes, docker-compose healthchecks, and load balancers all need `/health/live` and `/health/ready`. Missing probes = orchestrator cannot detect crashed workers. | LOW | `GET /health/live` — returns 200 if process is up. `GET /health/ready` — checks database connectivity, Redis ping, and Postgres connectivity; returns 200 only if all dependencies are responding. Already have a basic health endpoint; needs dependency-aware readiness check. |
-| **TLS/HTTPS support** | API keys and bearer tokens travel in plaintext over HTTP today. Unacceptable for any production deployment. | LOW | Zeroth should not terminate TLS itself (that's a reverse proxy concern) but must document the requirement and provide a Caddy or Nginx config in the docker-compose. Optionally expose uvicorn SSL args via config. CONCERNS.md flags this explicitly. |
-| **Webhook/callback notifications** | Long-running workflows complete asynchronously. Callers need push notifications for run completion and approval events rather than polling. This is table stakes for async workflow platforms (every competitor — LangSmith, Temporal, Prefect — provides this). | MEDIUM | `WebhookConfig` per deployment or per run: URL, secret (HMAC-SHA256 signing), event types (run.completed, run.failed, approval.pending, approval.resolved). Delivery via httpx async POST with retry. Dead-letter on repeated failure. Signed payload for security. |
-| **API versioning** | Without explicit versioning, any API change breaks existing callers. Production platforms must version their API surface. | LOW | URL-based versioning (`/api/v1/`) is the standard FastAPI pattern. FastAPI router prefixes make this mechanical. Requires mounting existing routes under `/api/v1/`. OpenAPI spec auto-generates correct versioned docs. |
-| **OpenAPI spec generation** | Required for SDK generation, documentation, client integration, and enterprise onboarding. FastAPI generates this automatically — it just needs to be exposed and not disabled. | LOW | FastAPI already generates `/openapi.json`. Needs: correct metadata (title, version, contact), schema names cleaned up, security scheme documented (API key + bearer), spec cached, and a `/docs` endpoint enabled or explicitly disabled per environment. |
+---
 
-### Differentiators (Competitive Advantage)
+## Table Stakes
 
-Features that distinguish Zeroth from commodity alternatives. These advance the "governed, accountable, economically-controlled" value proposition.
+Features users expect from any visual workflow editor in 2025-2026. Missing any of these makes the editor feel broken or incomplete. Every platform in the space (n8n, Dify, Langflow, Flowise, Rivet, ComfyUI) ships all of these.
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| **Regulus SDK integration (cost attribution per node/run/tenant)** | Zeroth becomes the only governed agent platform with first-class LLM economics — not just token counts but cost attribution at node granularity with AER (Agent Efficiency Ratio). This is a unique capability no commodity platform offers. | MEDIUM | Regulus `econ_instrumentation` SDK already has `track_execution()`, `ExecutionEvent`, `instrument_openai_client()` / `instrument_anthropic_client()` (auto-instrumentation hooks). Integration: call `configure()` at bootstrap, emit `ExecutionEvent` after each agent node completes, join on `run_id` as `join_key`. Cost flows to Regulus backend (companion service). Zeroth stores `cost_usd`, `prompt_tokens`, `completion_tokens` locally in audit records for governance evidence. |
-| **Provider-aware retry with model fallback** | Most platforms have basic retry. Zeroth can route on failure: primary model fails → cheaper fallback model → different provider. Tied to economic governance (fallback to cheaper model is a cost decision). | MEDIUM | `RetryPolicy` model already exists in `src/zeroth/agent_runtime/models.py`. Needs: provider error classification (rate-limit vs auth vs transient), per-provider backoff timing (OpenAI: respect Retry-After header; Anthropic 529: ~120s backoff), fallback chain in `AgentNode.model_provider` config. Disable SDK-level retries when using fallback chains (set `max_retries=0` on SDK client, handle in `AgentRunner`). |
-| **External memory connectors (Redis KV, vector store)** | In-memory connectors lose state on restart and cannot be shared across workers. Redis-backed and vector-backed memory enables persistent agent memory — a key differentiator for long-running or multi-turn workflows. | MEDIUM | `MemoryConnector` protocol exists. Need concrete implementations: `RedisKeyValueConnector` (redis-py, already a dependency), `RedisThreadStateStore` (for conversation threads). Vector connector (`PgvectorConnector` or `QdrantConnector`) for semantic recall. CONCERNS.md explicitly flags in-memory connectors as a production gap. Redis is already in the stack — KV connector is LOW complexity. Vector store is MEDIUM (new dependency). |
-| **Approval escalation and SLA timeout policies** | Production approval gates need enforcement: if nobody approves within N minutes, escalate or auto-reject. This closes the human-in-the-loop governance loop. Current implementation has no timeout handling. | MEDIUM | New fields on `HumanApprovalNode`: `sla_seconds`, `escalation_policy` (escalate_to, auto_approve, auto_reject). Background worker task (or scheduled poll in `RunWorker`) detects expired approvals and resolves them. Requires new `approval_sla` table or TTL field on `ApprovalRepository`. |
-| **Horizontal worker scaling support** | Multiple worker processes competing for runs via lease-based claim is already architecturally designed for. Postgres moves the write-contention bottleneck away from SQLite. This makes horizontal scaling actually viable. | LOW (depends on Postgres) | The `LeaseManager` pattern is already sound. With Postgres as the lease backend, multiple workers on separate processes/containers can compete safely. Document the deployment model; add `WORKER_ID` env var; verify lease claim atomicity against Postgres. No new abstractions needed. |
-| **Real message queue integration** | Redis Streams or a dedicated queue (RQ/Celery) can replace the SQLite-backed poll loop for distributed dispatch. This unlocks cross-host worker topology. | HIGH | This is explicitly in PROJECT.md requirements but carries high complexity. The current SQLite lease model already achieves reliable dispatch within a single host. Postgres lease model achieves multi-host dispatch without a dedicated queue. A real MQ (Redis Streams, RabbitMQ) adds operational complexity (new service, DLQ handling, exactly-once semantics). Recommend: ship Postgres-backed lease as the distributed dispatch mechanism first; defer true MQ to v1.2. |
-| **Config management (unified, environment-aware)** | No unified config surface. Env var JSON blobs are operational debt. Pydantic Settings with `.env` file support, environment profiles (dev/prod), and startup validation is a force-multiplier for all deployment work. | LOW | Use `pydantic-settings` (already in FastAPI ecosystem). Single `ZerothConfig` Pydantic model with all env vars, loaded once at bootstrap. `.env.example` committed. CONCERNS.md flags this explicitly. Low effort, high leverage. |
+| Feature | Why Expected | Complexity | Backend Dependency |
+|---------|--------------|------------|-------------------|
+| **Drag-and-drop node placement on canvas** | Core interaction model for all node-graph editors. Users drag nodes from a palette onto a pannable, zoomable canvas. n8n, Dify, Langflow, Flowise, Rivet, ComfyUI all use this exact pattern. | MEDIUM | None (pure frontend) |
+| **Edge drawing between node ports** | Connecting outputs to inputs by dragging handles is the universal paradigm. Vue Flow provides this natively. Must support typed ports (data flow vs control flow) and validate connection compatibility. | LOW | Graph model validation API |
+| **Node palette / library sidebar** | Left-side panel listing available node types grouped by category (Agents, Execution Units, Approval Gates, Memory, Tools). n8n calls this the "Node Creator"; Dify and Langflow use categorized sidebars. Users expect to search, filter, and drag from this panel. | MEDIUM | Asset catalog API (list available node types) |
+| **Inspector / properties panel** | Right-side panel showing configuration for the selected node. n8n's NDV (Node Detail View) is the gold standard: parameters, settings, and docs tabs. Every platform has this. Must update reactively on node selection. | HIGH | Node schema API (field definitions per node type) |
+| **Canvas navigation (pan, zoom, fit-to-view)** | Zoom in/out (scroll wheel), pan (space+drag or middle-click), fit-all-nodes-to-viewport button, minimap for orientation. Vue Flow provides pan/zoom natively; minimap is a Vue Flow plugin. | LOW | None (Vue Flow built-in) |
+| **Auto-layout / tidy-up** | One-click button to arrange nodes in a readable left-to-right (or top-to-bottom) DAG layout. ComfyUI's biggest UX complaint is manual layout drudgery. dagre (already in stack) handles this. n8n uses dagre for the same purpose. | LOW | None (dagre, frontend-only) |
+| **Undo/redo** | n8n implements this via a command pattern (AddNodeCommand, MoveNodeCommand, RemoveNodeCommand, AddConnectionCommand). Users expect Ctrl+Z/Ctrl+Y to work for all canvas mutations. Non-negotiable for any editor. | MEDIUM | None (frontend command stack) |
+| **Save / load workflows** | Persist the authored graph to the backend and reload it. Must handle dirty-state detection ("Unsaved Changes" indicator, like n8n's `markStateDirty()`). Needs the Graph Authoring API (REST). | LOW | Graph CRUD API (already exists in backend) |
+| **Node validation indicators** | Visual badges/icons on nodes showing errors (missing required fields, invalid connections, type mismatches). n8n shows validation issues directly on node badges. Dify highlights broken nodes in red. | MEDIUM | Backend validation API (already exists) |
+| **Workflow execution trigger + status** | "Run" button that triggers workflow execution and shows per-node execution status (pending, running, success, error). Dify and n8n both show execution flow visually on the canvas with colored borders/badges. | MEDIUM | Run creation API, WebSocket for status updates |
+| **Per-node execution results viewer** | After a run completes, clicking any node shows its input/output data, execution time, and token usage. Rivet and Dify both highlight this as a core debugging feature. Essential for understanding agent behavior. | MEDIUM | Run result API (per-node audit records) |
+| **Keyboard shortcuts** | Delete (backspace/delete), select all (Ctrl+A), copy/paste nodes (Ctrl+C/V), duplicate (Ctrl+D). All canvas editors support these. Vue Flow has built-in key handling that needs to be wired. | LOW | None (frontend-only) |
+| **Responsive three-panel layout** | Left rail (node palette/workflow list), center canvas, right inspector. Collapsible panels. n8n's `useSidebarLayout` composable manages this. This is the universal layout for workflow editors. | MEDIUM | None (frontend-only) |
 
-### Anti-Features (Do Not Build in This Milestone)
+### Table Stakes Specific to AI Agent Workflows
 
-Features that seem logical to add but are out of scope, would create scope creep, or carry risks that outweigh their value at this stage.
+These go beyond generic workflow editors. Platforms focused on AI agents (Langflow, Dify, Rivet) treat these as baseline.
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| **Studio UI / authoring frontend** | Workflow authors want a visual canvas. Phase 10 work exists. | Backend is not production-viable yet. Building UI on top of unstable infrastructure is wasteful rework. PROJECT.md explicitly defers this. | Complete this milestone first; Studio UI is the next milestone. |
-| **Kafka / full message broker (RabbitMQ)** | Teams may want high-throughput distributed dispatch | Adds an entirely new operational service, DLQ handling, partition management, and monitoring surface. The lease-over-Postgres pattern achieves the same reliability for the workload volumes Zeroth targets. | Postgres-backed lease dispatch solves multi-worker scaling without new services. |
-| **gVisor / Kata Containers** | Stronger isolation than Docker for untrusted code | Requires Kubernetes or custom container runtime. Operational complexity far exceeds the milestone scope. Phase 8A with Docker enforced is the correct scope. | Docker with resource constraints, no-network flag, and read-only filesystem covers the threat model for v1.1. |
-| **Judge/evaluation subsystem** | Automated quality scoring of agent outputs | Out-of-scope per PROJECT.md ("preserved as extension point"). Adds significant ML infrastructure complexity. | The audit trail + human approval system provides governance evidence today. Evaluation is v2+. |
-| **Multi-region / global deployment** | Enterprise customers may want geo-redundancy | Far exceeds the single-region production milestone. Requires distributed state management and data replication. | Horizontal scaling within a single region is the correct scope. |
-| **Custom LLM provider plugins (arbitrary HTTP)** | Teams want to use local/custom models | Adds protocol abstraction complexity. OpenAI-compatible endpoints (including LiteLLM, Ollama) cover the majority of cases since they expose the OpenAI API shape. | OpenAI adapter with configurable `base_url` covers local/custom models via LiteLLM or Ollama. |
-| **Streaming LLM responses to HTTP clients** | Real-time token streaming for interactive use | Zeroth's workflow model is step-completion oriented, not streaming. Streaming requires significant changes to the run model, API layer, and client contract. Not needed for batch/automation workflows. | Polling `/runs/{id}` with status updates is sufficient for v1.1. Streaming is a v2 feature if Studio UI needs it. |
-| **Built-in secrets manager (Vault, AWS Secrets Manager)** | Secure credential storage | Out of scope for the milestone. The `SecretProvider` protocol exists; adding an `EnvSecretProvider` that reads from a well-managed `.env` is sufficient. | Document that operators should inject secrets via environment variables from their existing secrets manager (Vault, AWS SM, etc.). |
+| Feature | Why Expected | Complexity | Backend Dependency |
+|---------|--------------|------------|-------------------|
+| **Model/provider selector per agent node** | Every AI workflow editor lets users pick which LLM to use per node. Langflow, Dify, and Rivet all have model dropdowns. Zeroth has 100+ models via LiteLLM; the inspector must expose this. | LOW | LiteLLM model list API |
+| **Prompt/system-message editor** | Inline code editor for prompt templates in agent nodes. CodeMirror 6 (already in stack) provides syntax highlighting, variable interpolation display, and multi-line editing. Dify's Prompt IDE is a standout here. | MEDIUM | None (CodeMirror 6, frontend) |
+| **Variable/context passing visualization** | Show how data flows between nodes -- what outputs feed into which inputs. Dify highlights connected nodes on Shift+click. Rivet shows real-time data on edges during execution. At minimum: typed port labels and hover tooltips. | MEDIUM | Graph schema (port type definitions) |
+| **Tool/function attachment to agents** | Agent nodes need a way to attach tools (execution units, external APIs). Langflow's "Tool Mode" toggle on components is elegant. Rivet wires tools as connected nodes. Zeroth should show tool connections as distinct edge types. | MEDIUM | Agent tool binding API |
+
+---
+
+## Differentiators
+
+Features that set Zeroth Studio apart. These exploit the governed backend that no competitor has. This is where Zeroth's unique value proposition lives.
+
+| Feature | Value Proposition | Complexity | Backend Dependency |
+|---------|-------------------|------------|-------------------|
+| **Approval gate visualization** | No competing visual editor shows human-in-the-loop approval gates as first-class visual nodes with SLA timers, escalation indicators, and approval status badges. Zeroth has native `HumanApprovalNode` with SLA timeouts and escalation policies -- visualizing this is a unique capability. Show: pending/approved/rejected/escalated states, countdown timer for SLA, who-approved attribution. | HIGH | Approval status API, WebSocket for live updates |
+| **Audit trail overlay per node** | Click any node to see its governance evidence: digest-chained audit records, who modified it, when it last ran, compliance status. No other visual editor surfaces audit data at the node level. Dify shows execution logs; Zeroth shows tamper-evident governance evidence. | MEDIUM | Audit trail API (already exists) |
+| **Sandbox indicator badges** | Visual indicator on execution unit nodes showing sandbox mode (Docker/local/untrusted), resource constraints (CPU/memory limits), and network isolation status. No competitor visualizes sandbox posture. Users need to see at a glance which nodes run in constrained environments. | LOW | Sandbox config from node schema |
+| **RBAC-aware canvas (read-only mode, restricted editing)** | Canvas respects the user's role: viewers see but cannot edit; operators can run but not modify graphs; authors have full edit access. n8n has basic RBAC (read-only from source control + collaboration locks), but Zeroth's per-resource RBAC is more granular. Disable drag/connect/delete interactions based on permissions. | MEDIUM | RBAC permission check API (already exists) |
+| **Token cost overlay per node** | After execution, show token usage and cost (USD) as badges or tooltips on each agent node. Dify shows token counts in its debugger; Zeroth adds cost attribution via Regulus. Visualizing spend per node is unique in the space. | LOW | Regulus cost data from run results |
+| **Budget gauge / spend dashboard** | Show remaining budget for the current tenant/deployment as a gauge or progress bar in the Studio header. Warn when approaching limits. No competitor has this because no competitor has budget enforcement. | LOW | Budget API (Regulus, already exists) |
+| **Governance evidence bundle export** | One-click export of a workflow's complete governance evidence: graph version, audit trail, approval records, cost attribution, sandbox configurations. Packaged as a compliance artifact (JSON/PDF). Unique to governed platforms. | MEDIUM | Governance evidence API (already exists in backend) |
+| **Environment-aware canvas** | Show which environment (dev/staging/prod) a workflow targets. Visual differentiation (color-coded header, environment badge). Prevent accidental edits to production workflows. Tied to deployment-time bindings. | LOW | Environment management API |
+| **Workflow versioning with diff view** | Side-by-side or inline diff of graph versions showing added/removed/modified nodes and edges. Zeroth already has graph versioning in the backend. Visual diff is high-value for governance (who changed what, when). | HIGH | Graph version diff API |
+| **Collaborative presence indicators** | Show which users are viewing/editing the same workflow (avatar pills on canvas, similar to n8n's collaboration feature). Combined with RBAC, this prevents conflicting edits. | MEDIUM | WebSocket presence API |
+
+---
+
+## Anti-Features
+
+Features to explicitly NOT build. These are tempting but wrong for Zeroth Studio.
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| **No-code / code-free promise** | Zeroth is a "medium-code" platform per PROJECT.md. Trying to hide all code behind a GUI leads to lowest-common-denominator expressiveness (ComfyUI's UX trap). Langflow and Flowise target non-developers; Zeroth targets teams with developers. | Expose CodeMirror editors for prompts, Python snippets in execution units, and JSON schema editing. "Medium-code" means visual structure with code where it matters. |
+| **500+ integration nodes (n8n-style)** | n8n's value is breadth of integrations (400+ nodes). Zeroth's value is governed AI workflows. Building Slack/Gmail/Sheets nodes is a distraction that competitors do better. | Focus on AI-specific node types: Agent, ExecutionUnit, ApprovalGate, MemoryResource, Tool, Webhook. External integrations happen via HTTP/webhook nodes or execution unit code. |
+| **Visual RAG pipeline builder** | Dify is building this (visual chunking/embedding/indexing). It is a separate product concern. Zeroth's memory connectors handle retrieval; the chunking/indexing pipeline is out of scope. | Memory resource nodes connect to existing external memory backends (Redis, pgvector, ChromaDB, Elasticsearch). Ingestion pipelines are the user's responsibility. |
+| **Real-time LLM streaming on canvas** | Showing tokens appearing in real-time on the canvas (like ChatGPT typing) is flashy but architecturally complex. Zeroth uses async step-completion execution, not streaming. PROJECT.md explicitly marks streaming as out of scope. | Show execution status badges (pending/running/complete/error) and final results after completion. Sufficient for workflow authoring context. |
+| **Marketplace / community node sharing** | Langflow has community components; n8n has a node marketplace. Building a marketplace is a product in itself -- discovery, quality control, versioning, security review. | Ship a well-designed core node library. Custom nodes via execution unit code. Marketplace can be a future milestone if demand materializes. |
+| **Mobile-responsive canvas** | Node-graph editors are inherently desktop experiences. Responsive canvas for mobile is enormous effort with minimal payoff. n8n explicitly handles mobile as panning-only mode. | Desktop/tablet only. Set a minimum viewport width. Mobile users get a read-only workflow list view at most. |
+| **AI-generated workflow suggestions** | "AI builds your workflow" is a hype feature. The graph authoring UX should be fast enough that users don't need AI to assemble nodes. Copilot-for-workflows is a research project, not a v2.0 feature. | Focus on fast node search, smart defaults, and template workflows instead. |
+| **Embedded chat/test panel** | Dify and Langflow embed a chat panel for testing chatbot workflows. Zeroth is not a chatbot builder -- it orchestrates multi-agent workflows. | Test via the "Run" button with configurable inputs. Results appear in per-node result viewers. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Real LLM provider adapters (OpenAI/Anthropic)
-    └──required-by──> Token/cost capture per node
-                          └──required-by──> Regulus SDK integration
-                          └──required-by──> Budget enforcement per tenant
+Node Palette / Library Sidebar
+    +-- requires --> Asset Catalog API (list node types with schemas)
 
-Postgres storage backend
-    └──enables──> Horizontal worker scaling
-    └──enables──> Real message queue (if ever needed; else Postgres lease is sufficient)
-    └──resolves──> SQLite write contention bottleneck
+Inspector / Properties Panel
+    +-- requires --> Node Schema API (field definitions, validation rules)
+    +-- requires --> Model List API (for agent node model selector)
 
-Config management (ZerothConfig)
-    └──required-by──> Containerized deployment
-    └──required-by──> TLS/HTTPS documentation
-    └──simplifies──> All env var wiring for new features
+Canvas Save/Load
+    +-- requires --> Graph Authoring API (CRUD for workflow graphs)
+    +-- requires --> WebSocket connection (dirty state, collaboration)
 
-Containerized deployment (Dockerfile + docker-compose)
-    └──required-by──> Readiness/liveness health probes (needs container healthcheck)
-    └──required-by──> TLS/HTTPS (nginx/Caddy in compose stack)
-    └──enables──> Horizontal worker scaling (multiple worker containers)
+Workflow Execution + Status
+    +-- requires --> Run Creation API
+    +-- requires --> WebSocket for real-time status updates
+    +-- enables --> Per-node execution results viewer
 
-API versioning (/api/v1/)
-    └──required-by──> OpenAPI spec generation (versioned paths in spec)
+Approval Gate Visualization
+    +-- requires --> Approval Status API
+    +-- requires --> WebSocket for live approval state changes
+    +-- depends-on --> Base canvas (node rendering, edge drawing)
 
-Hardened container sandbox (Docker enforcement)
-    └──no-dependencies──> Can be completed independently
+Audit Trail Overlay
+    +-- requires --> Audit Trail API (already exists in backend)
+    +-- depends-on --> Inspector panel (displays in inspector tab)
 
-Approval escalation/SLA
-    └──depends-on──> Webhook notifications (escalation often fires a webhook)
+RBAC-Aware Canvas
+    +-- requires --> Permission Check API (already exists)
+    +-- affects --> All canvas interactions (drag, connect, delete, save)
 
-External memory connectors (Redis KV)
-    └──depends-on──> Postgres (if using PG-backed threads)
-    └──independent-of──> LLM provider adapters (MemoryConnector protocol is provider-agnostic)
+Token Cost Overlay
+    +-- requires --> Run Result API with cost data (Regulus)
+    +-- depends-on --> Workflow execution feature
 
-Provider-aware retry with model fallback
-    └──depends-on──> Real LLM provider adapters (needs real provider errors to handle)
+Workflow Versioning Diff
+    +-- requires --> Graph Version Diff API (new backend endpoint)
+    +-- depends-on --> Save/load workflows
+
+Environment-Aware Canvas
+    +-- requires --> Environment Management API (new backend work)
+    +-- depends-on --> Canvas shell (header area for environment selector)
 ```
 
-### Dependency Notes
+### Critical Path
 
-- **Token capture requires real LLM adapters:** You cannot capture usage tokens without making real API calls. Fake providers have no usage data.
-- **Regulus integration requires token capture:** The `ExecutionEvent` schema needs `token_cost_usd` which requires cost data from real provider responses.
-- **Budget enforcement can be local or Regulus-backed:** A local `SpendAccumulator` in the `GuardrailConfig` can enforce budgets independently of Regulus; Regulus provides the analytics layer on top.
-- **Postgres unlocks horizontal scaling:** The architectural design already supports multi-worker lease competition. Postgres is the only blocker — SQLite cannot handle concurrent write load from N workers.
-- **Config management is a low-effort force multiplier:** All new features require new env vars. A unified `ZerothConfig` model pays for itself immediately.
-- **Webhook notifications are independent:** Can be shipped before or after other features. Not on the critical path for any other feature.
+```
+Graph Authoring API --> Canvas Save/Load --> Everything else
+     |
+     +--> Node Schema API --> Inspector Panel --> Full editing UX
+     |
+     +--> WebSocket layer --> Execution status, approvals, collaboration
+```
 
----
-
-## MVP Definition
-
-### v1.1 Launch With (Minimum Viable Production)
-
-These features make the platform minimally production-viable. Without all of them, the platform cannot be deployed or trusted in a real environment.
-
-- [ ] **Real LLM provider adapters (OpenAI, Anthropic)** — Platform cannot execute real AI workloads without these. Everything downstream depends on them.
-- [ ] **Token/cost capture per node invocation** — Economic instrumentation foundation. Required for Regulus integration and budget enforcement.
-- [ ] **Budget enforcement per tenant** — Without spend caps, the platform is economically unsafe for production use.
-- [ ] **Postgres storage backend** — Removes the SQLite write contention bottleneck that caps all production scaling.
-- [ ] **Containerized deployment (Dockerfile + docker-compose)** — Platform cannot be deployed reproducibly without this.
-- [ ] **Readiness/liveness health probes** — Required for all production deployment orchestrators (Kubernetes, docker-compose, ECS).
-- [ ] **TLS/HTTPS documentation + reverse proxy config** — API keys in plaintext HTTP is unacceptable in production.
-- [ ] **Hardened container sandbox (Docker enforcement, Phase 8A)** — Untrusted code execution in LOCAL mode is a critical security gap.
-- [ ] **Config management (ZerothConfig via pydantic-settings)** — Required for clean, validated, environment-aware production deployments.
-- [ ] **API versioning (/api/v1/) + OpenAPI spec** — Required for stable API contracts and enterprise onboarding.
-
-### Add After Core is Stable (v1.1 second wave)
-
-Features with high value that can follow the core foundation without blocking it.
-
-- [ ] **Regulus SDK integration** — Adds economic analytics layer. Depends on token capture (above). Companion service can be deployed independently.
-- [ ] **Webhook/callback notifications** — Push-based completion events. High value, independent of other features.
-- [ ] **Provider-aware retry with model fallback** — Resilience improvement. Depends on real LLM adapters.
-- [ ] **External memory connectors (Redis KV + thread state)** — Resolves the in-memory memory gap. Redis is already a stack dependency.
-- [ ] **Approval escalation and SLA timeout policies** — Closes the governance loop on human approvals.
-- [ ] **Horizontal worker scaling documentation + Postgres lease validation** — Validates the multi-worker model once Postgres is live.
-
-### Future Consideration (v1.2+)
-
-- [ ] **Vector store memory connector** — Semantic recall adds significant value but requires a new dependency (pgvector or Qdrant). Defer until Redis KV is proven.
-- [ ] **Real message queue (Redis Streams)** — Only needed if Postgres-backed lease dispatch proves insufficient at scale. Adds operational complexity.
-- [ ] **Streaming LLM responses** — Needed if Studio UI requires interactive agent sessions. Architectural change; defer to Studio milestone.
+The Graph Authoring API (REST + WebSocket) is the single highest-priority backend dependency. Without it, the canvas cannot persist or load workflows.
 
 ---
 
-## Feature Prioritization Matrix
+## MVP Recommendation
 
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| Real LLM provider adapters | HIGH | MEDIUM | P1 |
-| Token/cost capture per node | HIGH | LOW | P1 |
-| Budget enforcement per tenant | HIGH | MEDIUM | P1 |
-| Postgres storage backend | HIGH | HIGH | P1 |
-| Containerized deployment | HIGH | LOW | P1 |
-| Readiness/liveness probes | HIGH | LOW | P1 |
-| TLS/HTTPS (reverse proxy config) | HIGH | LOW | P1 |
-| Hardened container sandbox | HIGH | MEDIUM | P1 |
-| Config management | MEDIUM | LOW | P1 |
-| API versioning + OpenAPI | MEDIUM | LOW | P1 |
-| Regulus SDK integration | HIGH | MEDIUM | P2 |
-| Webhook notifications | HIGH | MEDIUM | P2 |
-| Provider-aware retry + fallback | MEDIUM | MEDIUM | P2 |
-| Redis memory connectors | MEDIUM | MEDIUM | P2 |
-| Approval escalation/SLA | MEDIUM | MEDIUM | P2 |
-| Horizontal scaling validation | MEDIUM | LOW | P2 |
-| Vector store connector | MEDIUM | HIGH | P3 |
-| Real message queue (Redis Streams) | LOW | HIGH | P3 |
-| Streaming LLM responses | LOW | HIGH | P3 |
+### Phase 1: Canvas Foundation (must ship first)
 
-**Priority key:**
-- P1: Must have for v1.1 launch — platform is not production-viable without these
-- P2: Should have in v1.1 second wave — high value, can follow core foundation
-- P3: Future consideration — defer to v1.2+ or Studio milestone
+1. **Three-panel shell layout** (left rail, canvas, right inspector)
+2. **Drag-and-drop node placement** with Vue Flow canvas
+3. **Edge drawing** between typed ports
+4. **Node palette** with Zeroth's node types (Agent, ExecutionUnit, ApprovalGate, MemoryResource)
+5. **Inspector panel** with node configuration forms
+6. **Auto-layout** via dagre
+7. **Save/load** via Graph Authoring API
+8. **Undo/redo** via command pattern
+9. **Keyboard shortcuts** (delete, select-all, copy/paste)
+10. **Canvas navigation** (pan, zoom, fit-to-view, minimap)
+
+### Phase 2: Execution and Governance Visualization
+
+1. **Workflow execution trigger** with per-node status badges
+2. **Per-node execution results viewer** (input/output/tokens/cost)
+3. **Approval gate visualization** (status, SLA timer, attribution)
+4. **Node validation indicators**
+5. **RBAC-aware canvas** (read-only mode for viewers)
+6. **Audit trail overlay** in inspector
+7. **Sandbox indicator badges**
+
+### Phase 3: Advanced Authoring
+
+1. **Prompt/system-message editor** (CodeMirror 6)
+2. **Model/provider selector** per agent node
+3. **Token cost overlay** per node
+4. **Budget gauge** in header
+5. **Environment-aware canvas** with environment selector
+6. **Variable/context passing visualization**
+7. **Tool/function attachment** to agent nodes
+
+### Defer to v2.1+
+
+- **Workflow versioning diff view** -- HIGH complexity, high value but not launch-critical
+- **Collaborative presence indicators** -- requires WebSocket presence infrastructure
+- **Governance evidence bundle export** -- backend already supports it; UI is low priority vs core editing
+- **Template workflow library** -- content creation effort, not engineering effort
 
 ---
 
-## Competitor Feature Analysis
+## Competitor Feature Matrix
 
-| Feature | LangSmith Deployment | Temporal | Zeroth Approach |
-|---------|----------------------|----------|-----------------|
-| LLM provider integration | LangChain abstractions; multi-provider routing | External; user-managed | Native OpenAI/Anthropic adapters + GovernedLLM wrapper; configurable per AgentNode |
-| Token/cost tracking | Per-trace token counts; cost estimates | Not built-in | Per-node audit record captures tokens + cost_usd; forwarded to Regulus for analytics |
-| Budget enforcement | Spend alerts; no hard enforcement in base product | Not built-in | Hard caps via QuotaEnforcer-style guardrail; soft caps via Regulus alerts |
-| Durable dispatch | LangGraph Platform (renamed): durable execution, fault tolerance | Core value proposition | SQLite lease (current) → Postgres lease (v1.1); achieves same reliability without Temporal's operational weight |
-| Human approvals | Human-in-the-loop via interrupt patterns | External signal integration | Native HumanApprovalNode with RBAC-controlled resolution + SLA escalation (v1.1) |
-| Audit trail | LangSmith traces | Activity logs | Digest-chained per-node audit with tamper detection; compliance evidence bundles |
-| Container sandbox | Not a feature | Not a feature | Native ExecutableUnitNode + Docker enforcement — unique in the space |
-| Governance / policy | Limited capability enforcement | Not built-in | Native PolicyGuard with capability-based access control per node — Zeroth's key differentiator |
+| Feature | n8n | Dify | Langflow | Flowise | Rivet | ComfyUI | Zeroth Studio |
+|---------|-----|------|----------|---------|-------|---------|---------------|
+| Drag-drop canvas | Yes | Yes | Yes | Yes | Yes | Yes | Yes (table stakes) |
+| Typed port connections | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Inspector/properties panel | Yes (NDV) | Yes | Yes | Yes | Yes | Inline only | Yes |
+| Auto-layout | Yes (dagre) | Partial | No | No | No | No | Yes (dagre) |
+| Undo/redo | Yes (commands) | Limited | No | No | Yes | No | Yes (commands) |
+| Per-node execution results | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Visual debugging | Basic | Strong | Strong | Basic | Strong | Basic | Strong (planned) |
+| Human approval gates | Via integration | No | No | No | No | No | **Native, first-class** |
+| Audit trail per node | No | No | No | No | No | No | **Native, governance** |
+| RBAC-aware editing | Basic | Basic | No | No | No | No | **Granular, per-resource** |
+| Sandbox visualization | No | No | No | No | No | No | **Unique** |
+| Cost attribution per node | No | Token count only | No | No | No | No | **USD cost via Regulus** |
+| Budget enforcement UI | No | No | No | No | No | No | **Unique** |
+| Governance evidence export | No | No | No | No | No | No | **Unique** |
+| Environment management | No | No | No | No | No | No | **Deployment-time bindings** |
+| Graph versioning/diff | Version history | No | No | No | No | No | **Visual diff (planned)** |
+| 400+ integrations | Yes | Partial | Via LangChain | Partial | No | Custom nodes | No (by design) |
+| Embedded chat test | No | Yes | Yes | Yes | No | No | No (by design) |
+
+**Key insight:** Zeroth Studio's differentiators cluster around governance visualization (approvals, audit, RBAC, sandbox, cost). No competitor in the AI workflow editor space offers any of these. This is the defensible moat -- not breadth of integrations or no-code simplicity.
 
 ---
 
 ## Sources
 
-- Codebase inspection: `src/zeroth/agent_runtime/`, `src/zeroth/guardrails/`, `src/zeroth/dispatch/`, `.planning/codebase/CONCERNS.md`, `.planning/codebase/ARCHITECTURE.md` — HIGH confidence
-- Regulus SDK inspection: `econ_instrumentation/__init__.py`, `schemas.py` — HIGH confidence (direct source read)
-- [LangSmith Deployment](https://www.langchain.com/langsmith/deployment) — production AI agent platform feature reference — MEDIUM confidence
-- [Building Hierarchical Budget Controls for Multi-Tenant LLM Gateways](https://dev.to/pranay_batta/building-hierarchical-budget-controls-for-multi-tenant-llm-gateways-ceo) — budget enforcement patterns — MEDIUM confidence
-- [FastAPI API Versioning](https://medium.com/geoblinktech/fastapi-with-api-versioning-for-data-applications-2b178b0f843f) — versioning patterns — MEDIUM confidence
-- [How to sandbox AI agents in 2026](https://northflank.com/blog/how-to-sandbox-ai-agents) — container isolation landscape — MEDIUM confidence
-- [Ask HN: What's your go-to message queue in 2025?](https://news.ycombinator.com/item?id=43993982) — queue selection rationale — MEDIUM confidence
-- [AI Agent Retry Strategies: Exponential Backoff](https://getathenic.com/blog/ai-agent-retry-strategies-exponential-backoff) — retry/fallback patterns — MEDIUM confidence
-- [Top 8 AI agent orchestration platforms](https://redis.io/blog/ai-agent-orchestration-platforms/) — ecosystem survey — MEDIUM confidence
+- [n8n Workflow Canvas Architecture (DeepWiki)](https://deepwiki.com/n8n-io/n8n/6.2-workflow-canvas-and-node-management) -- HIGH confidence (source code analysis)
+- [n8n Editor UI Documentation](https://docs.n8n.io/courses/level-one/chapter-1/) -- HIGH confidence (official docs)
+- [n8n Human-in-the-Loop](https://blog.n8n.io/human-in-the-loop-automation/) -- HIGH confidence (official blog)
+- [Langflow Documentation](https://docs.langflow.org/) -- HIGH confidence (official docs)
+- [Langflow GitHub](https://github.com/langflow-ai/langflow) -- HIGH confidence
+- [Flowise AgentFlow V2](https://docs.flowiseai.com/using-flowise/agentflowv2) -- HIGH confidence (official docs)
+- [Dify GitHub](https://github.com/langgenius/dify) -- HIGH confidence
+- [Dify 2025 Summer Highlights](https://dify.ai/blog/2025-dify-summer-highlights) -- HIGH confidence (official blog)
+- [Rivet Documentation](https://rivet.ironcladapp.com/docs) -- HIGH confidence (official docs)
+- [Rivet GitHub](https://github.com/Ironclad/rivet) -- HIGH confidence
+- [ComfyUI Workflow Docs](https://docs.comfy.org/development/core-concepts/workflow) -- HIGH confidence (official docs)
+- [Open Source AI Agent Platform Comparison](https://jimmysong.io/blog/open-source-ai-agent-workflow-comparison/) -- MEDIUM confidence
+- [React Flow / Vue Flow patterns](https://reactflow.dev/ui/templates/workflow-editor) -- HIGH confidence (framework docs)
+- [Awesome Node-Based UIs](https://github.com/xyflow/awesome-node-based-uis) -- MEDIUM confidence (curated list)
+- Zeroth PROJECT.md and codebase -- HIGH confidence (direct source)
 
 ---
 
-*Feature research for: Zeroth v1.1 Production Readiness milestone*
-*Researched: 2026-04-06*
+*Feature research for: Zeroth v2.0 Studio Visual Workflow Editor*
+*Researched: 2026-04-09*
