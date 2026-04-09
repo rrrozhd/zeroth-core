@@ -62,11 +62,11 @@
   3. User can navigate the canvas with pan, zoom, fit-to-view, and minimap
   4. User sees a responsive three-panel layout (workflow rail, canvas, inspector) with collapsible panels
   5. Studio frontend is served via Nginx alongside FastAPI in Docker, and frontend types are generated from the backend OpenAPI spec
-**Plans:** 3/5 plans executed
+**Plans:** 0/5 plans executed
 Plans:
-- [x] 22-01-PLAN.md -- Vue 3 app scaffold, three-panel shell layout, Tailwind theming, node type definitions
-- [x] 22-02-PLAN.md -- Studio graph authoring REST API with CRUD endpoints and node-types registry
-- [x] 22-03-PLAN.md -- Interactive canvas with 8 custom node types, edge drawing, port validation, pan/zoom/minimap
+- [ ] 22-01-PLAN.md -- Vue 3 app scaffold, three-panel shell layout, Tailwind theming, node type definitions
+- [ ] 22-02-PLAN.md -- Studio graph authoring REST API with CRUD endpoints and node-types registry
+- [ ] 22-03-PLAN.md -- Interactive canvas with 8 custom node types, edge drawing, port validation, pan/zoom/minimap
 - [ ] 22-04-PLAN.md -- Workflow persistence: API client, Pinia stores, save/load cycle, WorkflowRail wiring
 - [ ] 22-05-PLAN.md -- Docker/Nginx multi-container deployment for Studio frontend
 **UI hint**: yes
@@ -147,7 +147,7 @@ Phases execute in numeric order: 22 -> 23 -> 24 -> 25 -> 26
 | 19. Agent Node LLM API Parity | v1.1 | 3/3 | Complete | 2026-04-08 |
 | 20. Bootstrap Integration Wiring | v1.1 | 1/1 | Complete | 2026-04-09 |
 | 21. Health Probe Fix & Tech Debt | v1.1 | 1/1 | Complete | 2026-04-09 |
-| 22. Canvas Foundation & Dev Infrastructure | v2.0 | 3/5 | In Progress|  |
+| 22. Canvas Foundation & Dev Infrastructure | v2.0 | 0/5 | Planned    |  |
 | 23. Canvas Editing UX | v2.0 | 0/? | Not started | - |
 | 24. Execution & AI Authoring | v2.0 | 0/? | Not started | - |
 | 25. Governance Visualization | v2.0 | 0/? | Not started | - |
