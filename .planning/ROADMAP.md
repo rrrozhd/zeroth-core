@@ -3,8 +3,8 @@
 ## Milestones
 
 - ✅ **v1.0 Runtime Foundation** - Phases 1-9 (backend/runtime foundation complete)
-- 🚧 **v1.1 Production Readiness** - Phases 11-18 (in progress)
-- 📋 **v2.0 Zeroth Studio** - Phases 19-22 (planned)
+- 🚧 **v1.1 Production Readiness** - Phases 11-21 (in progress)
+- 📋 **v2.0 Zeroth Studio** - Phases 22-25 (planned)
 
 ## Phases
 
@@ -138,9 +138,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 19-01: Studio backend session, draft, revision, and lease foundations
-- [ ] 19-02: Frontend shell, routing, and canvas/inspector baseline
-- [ ] 19-03: Validation, contract-authoring UX, and autosave boundaries
+- [ ] 22-01: Studio backend session, draft, revision, and lease foundations
+- [ ] 22-02: Frontend shell, routing, and canvas/inspector baseline
+- [ ] 22-03: Validation, contract-authoring UX, and autosave boundaries
 
 </details>
 
@@ -156,6 +156,9 @@ Plans:
 - [x] **Phase 16: Distributed Dispatch & Horizontal Scaling** - ARQ-backed wakeup and multi-worker lease validation (completed 2026-04-07)
 - [x] **Phase 17: Deployment Packaging & Operations** - Dockerfile, API versioning, health probes, and TLS (completed 2026-04-07)
 - [ ] **Phase 18: Cross-Phase Integration Wiring** - Close worktree merge gaps in settings, bootstrap, and cost API (gap closure)
+- [x] **Phase 19: Agent Node LLM API Parity** - ProviderRequest tool schemas, structured output, model params, MCP server connections (completed 2026-04-08)
+- [ ] **Phase 20: Bootstrap Integration Wiring** - Wire MemoryConnectorResolver and BudgetEnforcer into AgentRunner (gap closure)
+- [ ] **Phase 21: Health Probe Fix & Tech Debt** - Fix Regulus health check, Docker Compose env vars, missing re-exports (gap closure)
 
 ## Phase Details
 
@@ -291,13 +294,41 @@ Plans:
 - [x] 18-01-PLAN.md — DispatchSettings merge, ARQ pool + memory factory + cost_estimator bootstrap wiring, cost API prefix fix
 - [ ] 18-02-PLAN.md — InstrumentedProviderAdapter orchestrator wiring, REQUIREMENTS.md traceability cleanup
 
+### Phase 20: Bootstrap Integration Wiring
+**Goal**: Wire MemoryConnectorResolver and BudgetEnforcer into AgentRunner so memory operations and budget enforcement actually execute at runtime.
+**Depends on**: Phase 18, Phase 19
+**Requirements**: MEM-01, MEM-02, MEM-03, MEM-04, MEM-05, MEM-06, ECON-03
+**Gap Closure:** Closes INT-01, INT-02, FLOW-07, FLOW-08 from v1.1 audit
+**Success Criteria** (what must be TRUE):
+  1. `bootstrap_service()` creates a `MemoryConnectorResolver` from the populated `InMemoryConnectorRegistry` and injects it into `AgentRunner`
+  2. Memory reads/writes in agent execution resolve to real connectors instead of silently no-oping
+  3. `bootstrap_service()` injects `BudgetEnforcer` into `AgentRunner` instances so pre-execution budget checks fire
+  4. A tenant over budget receives a rejection before LLM call is attempted (end-to-end)
+
+Plans:
+- [ ] 20-01: MemoryConnectorResolver and BudgetEnforcer bootstrap wiring
+
+### Phase 21: Health Probe Fix & Tech Debt
+**Goal**: Fix Regulus health check false-negative, Docker Compose missing env vars, missing agent_runtime re-exports, and stale verification status.
+**Depends on**: Phase 20
+**Requirements**: OPS-01
+**Gap Closure:** Closes INT-03 from v1.1 audit + 3 tech debt items
+**Success Criteria** (what must be TRUE):
+  1. `RegulusClient` exposes `base_url` attribute; health probe reports Regulus as available when reachable
+  2. Docker Compose includes `ZEROTH_REGULUS__ENABLED` and `ZEROTH_REGULUS__BASE_URL` env vars
+  3. `LiteLLMProviderAdapter`, `MCPServerConfig`, `ModelParams`, `build_response_format` re-exported from `agent_runtime/__init__.py`
+  4. Phase 14 VERIFICATION.md updated to reflect fixes from Phase 18
+
+Plans:
+- [ ] 21-01: Regulus health fix, Docker Compose env vars, re-exports, stale verification cleanup
+
 ### 📋 v2.0 Zeroth Studio (Planned)
 
 **Milestone Goal:** Deliver the authoring, asset, environment, and execution UX needed to turn the backend runtime foundation into a full Studio product.
 
-### Phase 19: Studio Shell & Workflow Authoring
+### Phase 22: Studio Shell & Workflow Authoring
 **Goal**: Establish the Studio shell, canvas-first navigation, workflow drafts, and authoring-time contracts/validation UX.
-**Depends on**: Phase 18
+**Depends on**: Phase 21
 **Requirements**: STU-01, STU-02, AST-04, UX-01, UX-02
 **Success Criteria** (what must be TRUE):
   1. User can open a Studio shell with workflow rail, canvas, inspector, and mode switch
@@ -307,13 +338,13 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 19-01: Studio backend session, draft, revision, and lease foundations
-- [ ] 19-02: Frontend shell, routing, and canvas/inspector baseline
-- [ ] 19-03: Validation, contract-authoring UX, and autosave boundaries
+- [ ] 22-01: Studio backend session, draft, revision, and lease foundations
+- [ ] 22-02: Frontend shell, routing, and canvas/inspector baseline
+- [ ] 22-03: Validation, contract-authoring UX, and autosave boundaries
 
-### Phase 20: Studio Runtime, Executions, And Testing
+### Phase 23: Studio Runtime, Executions, And Testing
 **Goal**: Add execution timelines, test runs, and runtime/gateway views to Studio.
-**Depends on**: Phase 19
+**Depends on**: Phase 22
 **Requirements**: STU-03, STU-04, UX-03
 **Success Criteria** (what must be TRUE):
   1. User can run draft tests from Studio against persisted authoring snapshots
@@ -323,13 +354,13 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 20-01: Studio runtime gateway and query normalization
-- [ ] 20-02: Executions and tests views
-- [ ] 20-03: Node-scoped and run-scoped governance UX
+- [ ] 23-01: Studio runtime gateway and query normalization
+- [ ] 23-02: Executions and tests views
+- [ ] 23-03: Node-scoped and run-scoped governance UX
 
-### Phase 21: Studio Assets
+### Phase 24: Studio Assets
 **Goal**: Add reusable asset authoring for agents, executable units, and memory resources.
-**Depends on**: Phase 19
+**Depends on**: Phase 22
 **Requirements**: AST-01, AST-02, AST-03
 **Success Criteria** (what must be TRUE):
   1. User can browse and select reusable assets from Studio
@@ -339,12 +370,12 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 21-01: Asset models and backend persistence
-- [ ] 21-02: Asset slide-over UX and deep-edit flows
+- [ ] 24-01: Asset models and backend persistence
+- [ ] 24-02: Asset slide-over UX and deep-edit flows
 
-### Phase 22: Environments & Deployment UX
+### Phase 25: Environments & Deployment UX
 **Goal**: Add environment management and deployment-time bindings for Studio.
-**Depends on**: Phase 20, Phase 21
+**Depends on**: Phase 23, Phase 24
 **Requirements**: AST-05
 **Success Criteria** (what must be TRUE):
   1. User can switch current environment from the Studio header
@@ -354,8 +385,8 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 22-01: Environment registry and secret/binding management
-- [ ] 22-02: Header environment UX and deploy integration
+- [ ] 25-01: Environment registry and secret/binding management
+- [ ] 25-02: Header environment UX and deploy integration
 
 ## Progress
 
@@ -379,7 +410,10 @@ Plans:
 | 16. Distributed Dispatch & Horizontal Scaling | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 17. Deployment Packaging & Operations | v1.1 | 3/3 | Complete    | 2026-04-07 |
 | 18. Cross-Phase Integration Wiring | v1.1 | 1/2 | In Progress|  |
-| 19. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Complete    | 2026-04-08 |
-| 20. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
-| 21. Studio Assets | v2.0 | 0/2 | Not started | - |
-| 22. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |
+| 19. Agent Node LLM API Parity | v1.1 | 0/1 | Complete    | 2026-04-08 |
+| 20. Bootstrap Integration Wiring | v1.1 | 0/1 | Not started | - |
+| 21. Health Probe Fix & Tech Debt | v1.1 | 0/1 | Not started | - |
+| 22. Studio Shell & Workflow Authoring | v2.0 | 0/3 | Not started | - |
+| 23. Studio Runtime, Executions, And Testing | v2.0 | 0/3 | Not started | - |
+| 24. Studio Assets | v2.0 | 0/2 | Not started | - |
+| 25. Environments & Deployment UX | v2.0 | 0/2 | Not started | - |

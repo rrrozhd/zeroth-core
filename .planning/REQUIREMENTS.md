@@ -99,47 +99,47 @@ Deferred to subsequent milestones.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| CFG-01 | Phase 11 | Complete |
-| CFG-02 | Phase 11 | Complete |
-| CFG-03 | Phase 11 | Complete |
-| LLM-01 | Phase 12 | Complete |
-| LLM-02 | Phase 12 | Complete |
-| LLM-03 | Phase 12 | Complete |
-| LLM-04 | Phase 12 | Complete |
-| ECON-01 | Phase 18 | Complete |
-| ECON-02 | Phase 18 | Complete |
-| ECON-03 | Phase 13 | Complete |
-| ECON-04 | Phase 18 | Complete |
-| MEM-01 | Phase 18 | Complete |
-| MEM-02 | Phase 14 | Complete |
-| MEM-03 | Phase 14 | Complete |
-| MEM-04 | Phase 14 | Complete |
-| MEM-05 | Phase 14 | Complete |
-| MEM-06 | Phase 14 | Complete |
-| SBX-01 | Phase 14 | Complete |
-| SBX-02 | Phase 14 | Complete |
-| OPS-01 | Phase 15 | Complete |
-| OPS-02 | Phase 15 | Complete |
-| OPS-03 | Phase 17 | Complete |
-| OPS-04 | Phase 18 | Complete |
-| OPS-05 | Phase 18 | Complete |
-| DEP-01 | Phase 17 | Complete |
-| DEP-02 | Phase 17 | Complete |
-| DEP-03 | Phase 17 | Complete |
-| DEP-04 | Phase 17 | Complete |
-| API-01 | Phase 19 | Complete |
-| API-02 | Phase 19 | Complete |
-| API-03 | Phase 19 | Complete |
-| API-04 | Phase 19 | Complete |
+| Requirement | Phase | Status | Gap Closure |
+|-------------|-------|--------|-------------|
+| CFG-01 | Phase 11 | Complete | — |
+| CFG-02 | Phase 11 | Complete | — |
+| CFG-03 | Phase 11 | Complete | — |
+| LLM-01 | Phase 12 | Complete | — |
+| LLM-02 | Phase 12 | Complete | — |
+| LLM-03 | Phase 12 | Complete | — |
+| LLM-04 | Phase 12 | Complete | — |
+| ECON-01 | Phase 18 | Complete | — |
+| ECON-02 | Phase 18 | Complete | — |
+| ECON-03 | Phase 13 | Complete | Phase 20 (INT-02: BudgetEnforcer wiring) |
+| ECON-04 | Phase 18 | Complete | — |
+| MEM-01 | Phase 18 | Complete | Phase 20 (INT-01: MemoryConnectorResolver wiring) |
+| MEM-02 | Phase 14 | Complete | Phase 20 (INT-01: MemoryConnectorResolver wiring) |
+| MEM-03 | Phase 14 | Complete | Phase 20 (INT-01: MemoryConnectorResolver wiring) |
+| MEM-04 | Phase 14 | Complete | Phase 20 (INT-01: MemoryConnectorResolver wiring) |
+| MEM-05 | Phase 14 | Complete | Phase 20 (INT-01: MemoryConnectorResolver wiring) |
+| MEM-06 | Phase 14 | Complete | Phase 20 (INT-01: MemoryConnectorResolver wiring) |
+| SBX-01 | Phase 14 | Complete | — |
+| SBX-02 | Phase 14 | Complete | — |
+| OPS-01 | Phase 15 | Complete | Phase 21 (INT-03: Regulus health check fix) |
+| OPS-02 | Phase 15 | Complete | — |
+| OPS-03 | Phase 17 | Complete | — |
+| OPS-04 | Phase 18 | Complete | — |
+| OPS-05 | Phase 18 | Complete | — |
+| DEP-01 | Phase 17 | Complete | — |
+| DEP-02 | Phase 17 | Complete | — |
+| DEP-03 | Phase 17 | Complete | — |
+| DEP-04 | Phase 17 | Complete | — |
+| API-01 | Phase 19 | Complete | — |
+| API-02 | Phase 19 | Complete | — |
+| API-03 | Phase 19 | Complete | — |
+| API-04 | Phase 19 | Complete | — |
 
 **Coverage:**
 - v1.1 requirements: 32 total
-- Satisfied: 32
-- Partial: 0
+- Satisfied: 32 (code exists in original phases)
+- Integration wiring gaps: 8 requirements need gap closure (Phase 20: 7, Phase 21: 1)
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-09 after Phase 19 completion and milestone audit*
+*Last updated: 2026-04-09 after gap closure phases 20-21 created from milestone audit*
