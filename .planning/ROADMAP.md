@@ -147,7 +147,7 @@ Phases execute in numeric order: 22 -> 23 -> 24 -> 25 -> 26
 | 19. Agent Node LLM API Parity | v1.1 | 3/3 | Complete | 2026-04-08 |
 | 20. Bootstrap Integration Wiring | v1.1 | 1/1 | Complete | 2026-04-09 |
 | 21. Health Probe Fix & Tech Debt | v1.1 | 1/1 | Complete | 2026-04-09 |
-| 22. Canvas Foundation & Dev Infrastructure | v2.0 | 6/6 | Complete   | 2026-04-09 |
+| 22. Canvas Foundation & Dev Infrastructure | v2.0 | 6/6 | Complete    | 2026-04-09 |
 | 23. Canvas Editing UX | v2.0 | 0/? | Not started | - |
 | 24. Execution & AI Authoring | v2.0 | 0/? | Not started | - |
 | 25. Governance Visualization | v2.0 | 0/? | Not started | - |
