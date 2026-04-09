@@ -58,10 +58,10 @@ Requirements for production readiness milestone. Each maps to roadmap phases.
 
 ### Agent Node LLM API Parity
 
-- [ ] **API-01**: ProviderRequest carries native tool/function-calling schemas to provider adapters; ToolAttachmentManifest converts to provider-native format
-- [ ] **API-02**: Agent nodes support native structured output via response_format (json_schema mode) for providers that support it, with post-hoc validation fallback
-- [ ] **API-03**: Agent nodes support per-node model parameters (temperature, max_tokens, top_p, stop, seed, tool_choice) forwarded to provider API
-- [ ] **API-04**: Agent nodes can declare MCP server connections; tools discovered at startup and callable during execution
+- [x] **API-01**: ProviderRequest carries native tool/function-calling schemas to provider adapters; ToolAttachmentManifest converts to provider-native format
+- [x] **API-02**: Agent nodes support native structured output via response_format (json_schema mode) for providers that support it, with post-hoc validation fallback
+- [x] **API-03**: Agent nodes support per-node model parameters (temperature, max_tokens, top_p, stop, seed, tool_choice) forwarded to provider API
+- [x] **API-04**: Agent nodes can declare MCP server connections; tools discovered at startup and callable during execution
 
 ## Future Requirements
 
@@ -129,13 +129,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEP-02 | Phase 17 | Complete |
 | DEP-03 | Phase 17 | Complete |
 | DEP-04 | Phase 17 | Complete |
+| API-01 | Phase 19 | Complete |
+| API-02 | Phase 19 | Complete |
+| API-03 | Phase 19 | Complete |
+| API-04 | Phase 19 | Complete |
 
 **Coverage:**
-- v1.1 requirements: 28 total
-- Satisfied: 28
+- v1.1 requirements: 32 total
+- Satisfied: 32
 - Partial: 0
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-08 after Phase 18 gap closure completion*
+*Last updated: 2026-04-09 after Phase 19 completion and milestone audit*
