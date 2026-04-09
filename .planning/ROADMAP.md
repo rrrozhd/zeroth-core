@@ -81,9 +81,9 @@ Plans:
   3. User can auto-layout the graph into a readable DAG arrangement
   4. User can undo and redo canvas operations, and use keyboard shortcuts for common actions (delete, select-all, copy/paste, duplicate)
   5. User can see validation indicators on nodes with missing fields, invalid connections, or type mismatches
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 Plans:
-- [ ] 23-01-PLAN.md -- Command pattern undo/redo, node type schema extension with property definitions
+- [x] 23-01-PLAN.md -- Command pattern undo/redo, node type schema extension with property definitions
 - [ ] 23-02-PLAN.md -- Categorized node palette sidebar with drag-to-add
 - [ ] 23-03-PLAN.md -- Property inspector panel and dagre auto-layout
 - [ ] 23-04-PLAN.md -- Keyboard shortcuts and validation indicators
@@ -153,7 +153,7 @@ Phases execute in numeric order: 22 -> 23 -> 24 -> 25 -> 26
 | 20. Bootstrap Integration Wiring | v1.1 | 1/1 | Complete | 2026-04-09 |
 | 21. Health Probe Fix & Tech Debt | v1.1 | 1/1 | Complete | 2026-04-09 |
 | 22. Canvas Foundation & Dev Infrastructure | v2.0 | 6/6 | Complete    | 2026-04-09 |
-| 23. Canvas Editing UX | v2.0 | 0/4 | Not started | - |
+| 23. Canvas Editing UX | v2.0 | 1/4 | In Progress|  |
 | 24. Execution & AI Authoring | v2.0 | 0/? | Not started | - |
 | 25. Governance Visualization | v2.0 | 0/? | Not started | - |
 | 26. Versioning & Collaboration | v2.0 | 0/? | Not started | - |

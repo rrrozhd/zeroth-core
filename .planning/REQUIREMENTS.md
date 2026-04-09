@@ -15,7 +15,7 @@ Requirements for Zeroth Studio visual workflow authoring UI. Each maps to roadma
 - [ ] **CANV-04**: User can view and edit selected node properties in an inspector panel
 - [ ] **CANV-05**: User can auto-layout the graph in a readable DAG arrangement
 - [x] **CANV-06**: User can save and load workflow graphs via the authoring API
-- [ ] **CANV-07**: User can undo and redo canvas operations (node add/move/delete, edge add/remove)
+- [x] **CANV-07**: User can undo and redo canvas operations (node add/move/delete, edge add/remove)
 - [ ] **CANV-08**: User can use keyboard shortcuts for common operations (delete, select-all, copy/paste, duplicate)
 - [ ] **CANV-09**: User can navigate the canvas with pan, zoom, fit-to-view, and minimap
 - [x] **CANV-10**: User can work in a responsive three-panel layout (rail, canvas, inspector) with collapsible panels
@@ -93,7 +93,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CANV-04 | Phase 23 | Pending |
 | CANV-05 | Phase 23 | Pending |
 | CANV-06 | Phase 22 | Complete |
-| CANV-07 | Phase 23 | Pending |
+| CANV-07 | Phase 23 | Complete |
 | CANV-08 | Phase 23 | Pending |
 | CANV-09 | Phase 22 | Pending |
 | CANV-10 | Phase 22 | Complete |
