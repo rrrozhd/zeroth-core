@@ -1,0 +1,39 @@
+tarball_path=/Users/dondoe/archives/zeroth-monolith/zeroth-monolith-2026-04-10.tar.gz
+tarball_sha256=627d3c2014e7de9a3dd17b4498e614548fba2ee0a4ddd68d0a51adef3dab8067
+tarball_size_bytes=29015943
+mirror_path=/Users/dondoe/archives/zeroth-monolith/zeroth-monolith.git
+mirror_ref_count=89
+archive_branch_count=4
+recovery_dir=/tmp/zeroth-monolith-recovery-test
+checkout=archived-stash-0
+archived-stash-0
+05f60c7 WIP on (no branch): 1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+71a6ff2 index on (no branch): 1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+5ef30b4 docs(22-05): complete Docker multi-container deployment plan
+fc7f8f8 feat(22-05): add Docker multi-container deployment for Studio SPA
+
+checkout=archive/stash-0
+archive/stash-0
+05f60c7 WIP on (no branch): 1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+71a6ff2 index on (no branch): 1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+5ef30b4 docs(22-05): complete Docker multi-container deployment plan
+fc7f8f8 feat(22-05): add Docker multi-container deployment for Studio SPA
+
+checkout=archive/detached-wt-34170e0463cc
+archive/detached-wt-34170e0463cc
+34170e0 chore(27-01): add archive preflight automation
+a500941 docs(state): record phase 27 context session
+bdb3fc3 docs(27): capture phase context
+d5afdae docs: write v3.0 requirements and roadmap (6 phases, 34 requirements)
+94e9ba3 docs: start milestone v3.0 Core Library Extraction, Studio Split & Documentation
+
+checkout=archive/detached-wt-788c279c7aa2
+archive/detached-wt-788c279c7aa2
+788c279 docs(21-01): complete health probe fix and tech debt plan
+955ca7b fix(21-01): add agent_runtime re-exports and update Phase 14 verification status
+7963f23 fix(21-01): add RegulusClient base_url property and Docker Compose Regulus env vars
+baf8234 docs(21): create phase plan for health probe fix and tech debt
+df39cbd docs(21): research phase domain
+
