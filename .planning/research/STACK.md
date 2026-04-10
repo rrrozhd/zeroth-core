@@ -1,329 +1,605 @@
-# Stack Research
+# Stack Research — v3.0 Core Library Extraction, Studio Split & Documentation
 
-**Domain:** Visual workflow editor frontend (Zeroth Studio) + graph authoring API additions to existing Python/FastAPI backend
-**Researched:** 2026-04-09
-**Confidence:** HIGH (versions verified via npm/official sources; integration with existing FastAPI backend cross-checked)
+**Domain:** Python library packaging + technical documentation site + cross-repo frontend consumer
+**Researched:** 2026-04-10
+**Confidence:** HIGH (packaging + docs toolchain); MEDIUM (OpenAPI-in-docs integration pattern); HIGH (hosting)
 
----
-
-## Existing Backend Stack (Do Not Duplicate)
-
-Already present and validated through v1.1 -- no changes needed for Studio:
-
-| Technology | Version | Role |
-|------------|---------|------|
-| Python | >=3.12 | Backend language |
-| FastAPI | >=0.115 | REST API + WebSocket support (built-in) |
-| Pydantic | >=2.10 | Validation, settings, API schemas |
-| SQLAlchemy | >=2.0.49 | ORM / query builder |
-| asyncpg | >=0.31.0 | Async Postgres driver |
-| Redis | >=5.0.0 | Distributed state, pub/sub for WS fan-out |
-| Uvicorn | >=0.30 | ASGI server (HTTP + WebSocket) |
+> Scope note: this document ONLY lists what v3.0 *adds* or *changes*. The existing runtime stack (FastAPI, SQLAlchemy, Alembic, LiteLLM, Pydantic, ARQ, Redis, pgvector, Chroma, Elasticsearch, governai, econ-instrumentation-sdk, ruff, pytest, pytest-asyncio, uv, hatchling, Python 3.12+) is considered settled and NOT re-evaluated here. Supersedes the v2.0 Studio stack research.
 
 ---
 
-## Frontend Stack -- New Additions
+## TL;DR — Additions for v3.0
 
-### Core Framework (Already Decided)
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Vue 3 | 3.5.x | UI framework | Composition API, excellent TypeScript support, same ecosystem as n8n reference design. Vue 3.5+ required for VueUse 14.x compatibility |
-| Vite | 8.x | Build tool + dev server | Current major version. Uses Rolldown/Oxc for faster builds. First-class Vue plugin via `@vitejs/plugin-vue`. HMR for instant feedback during canvas development |
-| Pinia | 3.0.x | State management | Official Vue state library. v3 drops deprecated APIs, requires Vue 3 + TypeScript 5. Stores for workflow graph state, selection state, inspector state, canvas viewport |
-| TypeScript | 5.x | Type safety | Required by Pinia 3. Type-safe node definitions, edge contracts, and API layer reduce runtime errors in graph editor logic |
-
-**Confidence:** HIGH (versions verified via npm April 2026).
+1. **PyPI publishing:** `uv build` + `pypa/gh-action-pypi-publish@release/v1` via GitHub Actions with **OIDC trusted publishing**; TestPyPI first, PyPI on tag. No API tokens in secrets.
+2. **Docs site:** **MkDocs Material** + **mkdocstrings[python]** (Griffe backend) + **mike** for versioning, published to **GitHub Pages**. Markdown-first, Python API reference auto-generated from docstrings via static AST parsing (no runtime imports needed).
+3. **OpenAPI-in-docs:** **neoteroi-mkdocs** OpenAPI Docs plugin renders FastAPI's exported `openapi.json` into native MkDocs Material pages, plus a **ReDoc** static HTML page for the "fat reference" view.
+4. **Docstring style:** **Google-style docstrings** (mkdocstrings-python default, best rendering, works with Griffe type extraction).
+5. **Cross-repo consumer (`zeroth-studio`):** consume core via a release-asset-pinned `openapi.json` committed to `zeroth-studio`, feeding `openapi-typescript` (TS types) + `@hey-api/openapi-ts` (typed client). HTTP-only boundary, no npm SDK.
+6. **Hatchling namespace config:** replace `packages = ["src/zeroth"]` with `sources = ["src"]` + `only-include = ["src/zeroth/core"]` to ship ONLY `zeroth/core/*` and keep the `zeroth` namespace PEP 420 implicit.
+7. **Cleanup:** dedupe `psycopg` (keep `>=3.3`) and `litellm` (keep `>=1.83,<2.0`) in `pyproject.toml`.
 
 ---
 
-### Graph Editor Core (Already Decided)
+## Recommended Stack
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `@vue-flow/core` | 1.48.x | Interactive flow canvas | Purpose-built Vue 3 flowchart library. Handles pan/zoom, node drag, edge drawing, minimap, controls. MIT licensed. Same library n8n uses. 95 dependents on npm -- active ecosystem |
-| `@dagrejs/dagre` | 3.0.0 | Automatic graph layout | Directed acyclic graph layout algorithm. Use for auto-layout button and initial workflow rendering. v3.0.0 is the actively maintained fork (released March 2026). Do NOT use the legacy `dagre` package |
-| `codemirror` | 6.0.x | Code/config editing | Modular editor for JSON config, Python snippets in node inspector. Use `@codemirror/lang-json`, `@codemirror/lang-python` for language support. Active maintenance (last updated April 2026) |
+### Core Additions
 
-**Confidence:** HIGH (versions verified via npm).
+| Technology | Version (Apr 2026) | Purpose | Why Recommended |
+|---|---|---|---|
+| **uv** | 0.11.x (already installed) | Build frontend / dep mgmt / `uv build` produces wheel + sdist | Already the project's package manager; `uv build` delegates to hatchling; no reason to switch. |
+| **hatchling** | >=1.27 | PEP 517 build backend (already used) | Already the backend; supports PEP 420 namespace packages via `only-include`. Switching backends (e.g., to uv_build) is unnecessary churn and uv_build has known PEP 420 limitations (astral-sh/uv#14451). |
+| **pypa/gh-action-pypi-publish** | `release/v1` (moving tag; pin by SHA for supply-chain hardening) | GitHub Actions step that uploads wheel+sdist to (Test)PyPI via OIDC | The "blessed" PyPA action. Built-in trusted-publishing support via `id-token: write`, generates Sigstore attestations by default, no long-lived tokens. |
+| **PyPI Trusted Publishers (OIDC)** | PyPI feature | Tokenless publishing from GitHub Actions | Eliminates API token theft risk; short-lived OIDC tokens minted per workflow run. PyPI's official recommendation. |
+| **MkDocs** | 1.6.x (pulled by Material) | Static site generator (markdown → HTML) | De-facto Python-ecosystem doc SSG. Simpler than Sphinx for Markdown-first workflows. |
+| **mkdocs-material** | 9.7.6 (Mar 2026) | Theme, search, nav, admonitions, code highlighting, dark mode | Ubiquitous, accessible, fast, first-class offline search (lunr), excellent code blocks, supported by mkdocstrings. Free tier is sufficient; Insiders not required. |
+| **mkdocstrings** | >=0.27 | MkDocs plugin that renders Python API reference inline | Native Material integration — lets guides and API ref cross-link via `[Graph][zeroth.core.graph.models.Graph]`. |
+| **mkdocstrings-python** | 2.0.3 | Python handler for mkdocstrings (Griffe-backed) | Uses Griffe to parse source **statically** (no import side-effects — critical since our code imports FastAPI, psycopg, Redis, etc.). Supports Google / NumPy / Sphinx docstring styles. Renders type annotations with auto cross-references. |
+| **Griffe** | 1.x (transitive) | Static Python AST parser for API extraction | Static parsing means mkdocstrings does NOT execute `import zeroth.core.service` during docs build → docs CI needs no Postgres/Redis/etc. Major advantage over Sphinx autodoc. |
+| **mike** | >=2.1 | Versioned docs deployment to `gh-pages` branch | Standard for MkDocs versioning; Material has first-class support via `extra.version.provider: mike`. Each tagged release gets its own `/vX.Y/` URL; `latest` alias points at newest. |
+| **neoteroi-mkdocs** | >=1.1 | MkDocs plugin that converts OpenAPI 3 JSON → Material-styled Markdown endpoint reference | Produces documentation that matches the rest of the site (fonts, search, admonitions, nav). Unlike an iframe'd Swagger UI, its output is crawlable and searchable by the MkDocs lunr index. |
+| **@redocly/cli** (ReDoc) | 1.x / 2.x | Single-file "fat reference" HTML for OpenAPI schema | Complementary to neoteroi — ReDoc is the best dense single-page API browser. Generate once per release, drop at `/reference/http/redoc/index.html`. |
+| **GitHub Pages** | — | Docs hosting | Free, unlimited, custom domain (CNAME), HTTPS via Let's Encrypt, native `mike`+`gh-pages` workflow. |
 
-**Note on vue-codemirror wrappers:** Skip `vue-codemirror` and `vue-codemirror6` wrapper libraries. CodeMirror 6's `EditorView` API is straightforward to wrap in a Vue composable (`useCodeMirror`) with `onMounted`/`onUnmounted` lifecycle hooks. Avoids a dependency that adds abstraction without meaningful value. The wrapper is ~30 lines of code.
+### Supporting Libraries (docs build-time only)
 
----
+| Library | Version | Purpose | When to Use |
+|---|---|---|---|
+| **pymdown-extensions** | >=10 | Markdown extensions (tabbed code, admonitions, mermaid, keys) | Pulled in by mkdocs-material recommended config; enables "Python / HTTP / curl" tabs in examples. |
+| **mkdocs-gen-files** | >=0.5 | Programmatic page generation during build | Generates per-module API reference pages by walking `src/zeroth/core/` — avoids hand-maintaining nav for every module. Standard mkdocstrings recipe. |
+| **mkdocs-literate-nav** | >=0.6 | Sidebar nav defined in `SUMMARY.md` instead of `mkdocs.yml` | Lets `mkdocs-gen-files` emit `SUMMARY.md` with the generated module tree for a fully dynamic API nav. |
+| **mkdocs-section-index** | >=0.3 | Attach `index.md` to section headers | Cleaner nav UX (a section header is also a landing page). |
+| **mkdocs-macros-plugin** | >=1.3 (optional) | Jinja templating in Markdown | For injecting version numbers, env matrices, shared snippets into guides. |
+| **import-linter** | >=2 | Enforce that `zeroth.core.*` does not import forbidden modules | Carried over from the split design; runs in CI as a lint step. Polices future drift even though v3.0 is a pure rename. |
 
-### Component Library: Reka UI + Tailwind CSS 4
+### Cross-Repo Consumer (`zeroth-studio`) Tooling
 
-**Recommendation: Reka UI (headless) + Tailwind CSS 4 (styling)**
+| Library | Version | Purpose | Why |
+|---|---|---|---|
+| **openapi-typescript** | 7.x | Converts `openapi.json` → TypeScript `types.ts` (no runtime) | Zero-runtime type generation, actively maintained, clean `components['schemas']` types. Decouples Studio from a heavy SDK generator. |
+| **@hey-api/openapi-ts** | 0.60.x | Generates a typed fetch client from OpenAPI | Modern successor to `openapi-typescript-codegen`. Tree-shakable, TS-first. Alternative: **orval** (more opinionated around TanStack Query). |
+| **GitHub Release asset pattern** | — | `zeroth-core` CI publishes `openapi.json` as a release asset on each tag; `zeroth-studio` CI downloads it into `src/generated/` | Deterministic, offline-capable, no need to boot a live core during Studio CI. |
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `reka-ui` | 2.9.x | Headless accessible UI primitives | 40+ unstyled components (Dialog, Dropdown, Tabs, Tooltip, Popover, Select). WAI-ARIA compliant out of the box. Headless means full visual control -- critical for a custom design system like a graph editor. 590K weekly downloads, actively maintained. Formerly Radix Vue |
-| `tailwindcss` | 4.x | Utility-first CSS | v4 has first-party Vite plugin (`@tailwindcss/vite`) -- no PostCSS config needed. 5x faster full builds, 100x faster incremental. Pairs naturally with headless components since you control all styling |
-| `@tailwindcss/vite` | 4.x | Vite integration | Direct Vite plugin integration, no postcss.config.js needed |
+### Development Tools
 
-**Why NOT Element Plus:**
-- Opinionated design system (Material-ish) clashes with building a custom graph editor UI. You fight the component styles constantly
-- Heavier bundle (~300KB gzip for full import). Tree-shaking helps but still larger than headless
-- Less flexible for the unique UI patterns a workflow editor needs (split panes, custom panels, floating toolbars)
-
-**Why NOT Naive UI:**
-- Better than Element Plus for customization but still styled -- you're paying for CSS you'll override
-- Smaller community than Element Plus, smaller than Reka UI's weekly downloads
-- TypeScript support is good but Reka UI + Tailwind gives equivalent DX with less bundle weight
-
-**Why headless (Reka UI) wins for graph editors:**
-- Workflow editors need custom chrome: floating panels, contextual toolbars, minimap overlays, node palettes
-- Pre-styled components fight your layout. Headless components give you behavior (focus trap, keyboard nav, ARIA) without visual opinions
-- n8n built their own design system (`@n8n/design-system`) for exactly this reason -- pre-built UI kits don't fit workflow editors well
-
-**Confidence:** HIGH (Reka UI version verified; Tailwind v4 Vite integration verified via official docs).
-
----
-
-### WebSocket: Native FastAPI WebSocket + VueUse `useWebSocket`
-
-**Recommendation: No additional WebSocket library needed.**
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| FastAPI WebSocket (backend) | built-in | Server-side WS endpoint | FastAPI has native WebSocket support via Starlette. No library needed. `@app.websocket("/ws/workflow/{id}")` handles connection lifecycle. Use existing Redis pub/sub for multi-worker fan-out (already in stack) |
-| `@vueuse/core` `useWebSocket` (frontend) | 14.2.x | Reactive WS client with auto-reconnect | VueUse's `useWebSocket` composable provides reactive `data`, `status`, `send()` with built-in `autoReconnect`, `heartbeat`, and typed message handling. No separate reconnecting-websocket library needed |
-
-**Why NOT reconnecting-websocket:** Last published 6 years ago (v4.4.0). VueUse's `useWebSocket` provides the same auto-reconnect capability with Vue-native reactivity and active maintenance.
-
-**Why NOT Socket.IO:** Adds a custom protocol layer and requires a Socket.IO server (not native WebSocket). FastAPI's native WebSocket + VueUse covers all needs without the overhead. Socket.IO's room/namespace features are overkill -- Zeroth's workflow-scoped channels map directly to WebSocket URL paths.
-
-**WebSocket architecture for Studio:**
-
-```
-Browser                    FastAPI                      Redis
-  |                          |                           |
-  |-- WS /ws/workflow/123 -->|                           |
-  |                          |-- SUBSCRIBE workflow:123 ->|
-  |                          |                           |
-  |<-- graph delta ---------|<-- PUBLISH workflow:123 ---|
-  |                          |                           |
-```
-
-- One WS connection per open workflow
-- JSON messages with `{type: "node_moved"|"edge_added"|"config_changed", payload: {...}}`
-- Backend validates mutations against governance rules before broadcasting
-- Redis pub/sub enables multi-worker scaling (already in stack from v1.1)
-
-**Confidence:** HIGH (FastAPI WebSocket is Starlette built-in; VueUse version verified via npm).
+| Tool | Purpose | Notes |
+|---|---|---|
+| **uv build** | `uv build` → `dist/*.whl` + `dist/*.tar.gz` | Replaces `python -m build`. Respects hatchling `[tool.hatch.build.targets.wheel]`. |
+| **uv publish** | Optional manual publish | Prefer the GitHub Action for real publishes; `uv publish` is handy for TestPyPI smoke tests from a dev machine. |
+| **twine check** | Validates README rendering on PyPI | `uvx twine check dist/*` before first publish. Catches broken RST/MD in `long_description`. |
+| **pip install --index-url https://test.pypi.org/simple/** | TestPyPI verification | Verify the package installs cleanly from TestPyPI before cutting the real PyPI release. |
 
 ---
 
-### HTTP Client: ky
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `ky` | latest | HTTP client for REST API calls | ~2KB gzip. Wraps native Fetch API with retry, timeout, hooks (interceptors), and JSON shortcuts. TypeScript-first. Lighter than Axios (no XMLHttpRequest polyfill). Perfect for a modern Vite/Vue 3 app that only targets modern browsers |
-
-**Why NOT Axios:** Axios is 13KB+ gzip, uses XMLHttpRequest under the hood (legacy API), and carries polyfill weight. `ky` provides the same DX (interceptors, retry, JSON handling) at ~15% of the bundle size using native Fetch.
-
-**Why NOT ofetch:** Poor TypeScript support and lacks interceptor/plugin system. Not suitable for an API layer that needs auth token injection and error normalization.
-
-**API layer pattern:**
-
-```typescript
-// src/api/client.ts
-import ky from 'ky'
-
-export const api = ky.create({
-  prefixUrl: '/api/v1',
-  hooks: {
-    beforeRequest: [(req) => {
-      req.headers.set('Authorization', `Bearer ${useAuthStore().token}`)
-    }],
-    afterResponse: [async (_req, _opts, res) => {
-      if (res.status === 401) useAuthStore().logout()
-    }]
-  }
-})
-
-// src/api/workflows.ts
-export const workflowApi = {
-  list: () => api.get('workflows').json<Workflow[]>(),
-  get: (id: string) => api.get(`workflows/${id}`).json<Workflow>(),
-  create: (data: CreateWorkflow) => api.post('workflows', { json: data }).json<Workflow>(),
-}
-```
-
-**Confidence:** MEDIUM (ky is well-established but version not pinned -- check npm for latest at install time).
-
----
-
-### Utility Library
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `@vueuse/core` | 14.2.x | Vue composition utilities | Essential composables: `useWebSocket` (WS client), `useDebounceFn` (canvas events), `useResizeObserver` (panel resizing), `useLocalStorage` (UI preferences), `useDraggable` (node palette DnD), `useEventListener` (keyboard shortcuts). Requires Vue 3.5+ |
-
-**Confidence:** HIGH (version verified via npm).
-
----
-
-### Testing Stack
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `vitest` | 4.x | Unit + component tests | Vite-native test runner. Zero-config with Vite projects. Same transform pipeline as dev server. Supports Vue SFC testing via `@vitejs/plugin-vue` |
-| `@vue/test-utils` | latest | Vue component mounting | Official Vue test library. `mount()`, `shallowMount()`, props/emits assertions. Required for testing Vue Flow wrapper components and inspector panels |
-| `@vitest/browser` + `playwright` | 4.x / 1.59.x | Browser-mode component tests | For canvas/graph tests that need real DOM (Vue Flow relies on getBoundingClientRect, ResizeObserver). JSDOM can't simulate these. Use Vitest browser mode with Playwright provider for the ~30% of tests that need real rendering |
-| `@playwright/test` | 1.59.x | E2E tests | Full browser E2E for critical workflows: create workflow, add node, draw edge, save. Separate from Vitest -- runs against dev server. Use for smoke tests, not exhaustive coverage |
-
-**Testing strategy:**
-- **70% Vitest + JSDOM:** Store logic, composables, API layer, utility functions, simple component rendering
-- **20% Vitest browser mode (Playwright):** Vue Flow canvas interactions, drag-and-drop, resize behavior
-- **10% Playwright E2E:** Critical user journeys (create workflow end-to-end, deploy workflow)
-
-**Why Vitest over Jest:** Vitest shares Vite's transform pipeline. Jest requires separate Babel/TypeScript config. With a Vite project, Vitest is zero-config and 2-5x faster for Vue SFCs.
-
-**Confidence:** HIGH (Vitest 4.x, Playwright 1.59.x verified via npm).
-
----
-
-### Additional Critical Libraries
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `@vueuse/core` | 14.2.x | See Utility Library section above | |
-| `vue-router` | 4.x | Client-side routing | Studio needs routes: `/workflows`, `/workflows/:id/edit`, `/settings`, `/environments`. Official Vue router |
-| `splitpanes` | 3.x | Resizable panel layout | MIT licensed. Vue 3 compatible. For the three-pane Studio layout (workflow rail \| canvas \| inspector). Simpler than building custom resize handles. Used in VS Code-style layouts |
-| `@iconify/vue` | 4.x | Icon system | Unified icon API accessing 200K+ icons from 150+ icon sets. Load only used icons (tree-shakeable). Better than bundling an entire icon font. Works with Tailwind classes |
-| `nanoid` | 5.x | Client-side ID generation | URL-safe unique IDs for nodes/edges created in the browser before server persistence. 130 bytes gzip. Cryptographically strong. Used for optimistic UI -- node gets a temp ID immediately, server confirms or replaces |
-
-**Confidence:** MEDIUM (versions estimated from latest npm; verify at install time).
-
----
-
-## Installation
+## Installation (new deps only)
 
 ```bash
-# Initialize Vue 3 project
-npm create vite@latest studio -- --template vue-ts
-cd studio
+# Docs toolchain — as a uv dep group, NOT runtime deps
+uv add --group docs \
+  "mkdocs-material>=9.7.6" \
+  "mkdocstrings[python]>=0.27" \
+  "mike>=2.1" \
+  "mkdocs-gen-files>=0.5" \
+  "mkdocs-literate-nav>=0.6" \
+  "mkdocs-section-index>=0.3" \
+  "pymdown-extensions>=10" \
+  "neoteroi-mkdocs>=1.1"
 
-# Core framework (already in template)
-npm install vue@3.5 pinia@3 vue-router@4
+# Boundary lint
+uv add --group dev "import-linter>=2"
 
-# Graph editor
-npm install @vue-flow/core @dagrejs/dagre
-
-# UI components + styling
-npm install reka-ui
-npm install -D tailwindcss @tailwindcss/vite
-
-# Code editor
-npm install codemirror @codemirror/lang-json @codemirror/lang-python @codemirror/theme-one-dark
-
-# HTTP + WebSocket (via VueUse)
-npm install ky @vueuse/core
-
-# Layout + icons + IDs
-npm install splitpanes @iconify/vue nanoid
-
-# Testing
-npm install -D vitest @vue/test-utils @vitest/browser @playwright/test happy-dom
-npx playwright install chromium
+# ReDoc static bundle (invoked in CI via npx; NOT a Python dep)
+npx --yes @redocly/cli@latest build-docs openapi.json -o site/reference/http/redoc/index.html
 ```
+
+Add to `pyproject.toml`:
+
+```toml
+[dependency-groups]
+docs = [
+    "mkdocs-material>=9.7.6",
+    "mkdocstrings[python]>=0.27",
+    "mike>=2.1",
+    "mkdocs-gen-files>=0.5",
+    "mkdocs-literate-nav>=0.6",
+    "mkdocs-section-index>=0.3",
+    "pymdown-extensions>=10",
+    "neoteroi-mkdocs>=1.1",
+]
+```
+
+---
+
+## Namespace Package Mechanics (the load-bearing section)
+
+The project renames `src/zeroth/*` → `src/zeroth/core/*` with **no** top-level `src/zeroth/__init__.py`. This is a PEP 420 implicit namespace package. Hatchling supports this, but the current `packages = ["src/zeroth"]` line is **wrong** for this layout because it treats `zeroth` as a regular package and expects `__init__.py`.
+
+### Correct hatchling config
+
+```toml
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "zeroth-core"
+version = "3.0.0"
+# ... (other fields)
+
+[tool.hatch.build.targets.wheel]
+# DO NOT use packages = ["src/zeroth"] — that requires zeroth/__init__.py
+sources = ["src"]
+only-include = ["src/zeroth/core"]
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src/zeroth/core", "README.md", "LICENSE", "pyproject.toml"]
+
+[tool.hatch.metadata]
+allow-direct-references = true  # keep ONLY during dev; must be removed before first publish
+```
+
+**Why this exact incantation:**
+
+- `sources = ["src"]` tells hatchling to strip `src/` from wheel layout so the wheel contains `zeroth/core/...`, not `src/zeroth/core/...`.
+- `only-include = ["src/zeroth/core"]` means the wheel contains EXACTLY `zeroth/core/*` and nothing else — no accidental `zeroth/__init__.py`, no leakage of `tests/`, `.planning/`, etc.
+- Omitting any `packages = [...]` key avoids hatchling's implicit package detection (which looks for `__init__.py` and would fail).
+- The resulting wheel ships directories as namespace portions. A future `zeroth-studio-py` or `zeroth-sdk` wheel can coexist in the same `zeroth/` namespace without collision.
+
+### Editable install gotcha
+
+`uv sync` / `pip install -e .` with hatchling uses `.pth`-based editable installs that work with PEP 420. No `__editable__` shims needed. However:
+
+- **If a dev accidentally creates `src/zeroth/__init__.py`** (empty or otherwise), Python shadows the namespace package globally and breaks any sibling `zeroth.*` package.
+- **Mitigation:** add a unit test that asserts `importlib.util.find_spec('zeroth').submodule_search_locations is not None and not hasattr(__import__('zeroth'), '__file__')`. Namespace packages have no `__file__`. Flag in PITFALLS.md.
+- `ruff` and `pytest` work fine with `src/` as the source root. Add `pythonpath = ["src"]` under `[tool.pytest.ini_options]` only if test imports fail (shouldn't be needed with uv's editable install).
+
+### Distribution name vs import name
+
+- Distribution (PyPI) name: **`zeroth-core`** (hyphen, reserved per split design)
+- Import name: **`zeroth.core`** (dot)
+- `pip install zeroth-core` → `from zeroth.core import ...`
+
+Normal (cf. `google-cloud-storage` → `google.cloud.storage`). Document loudly in README.
+
+---
+
+## PyPI Publishing Flow (Trusted Publishing / OIDC)
+
+### One-time setup on (Test)PyPI
+
+1. On **TestPyPI** (https://test.pypi.org/manage/account/publishing/) add a "pending publisher":
+   - PyPI Project Name: `zeroth-core`
+   - Owner: `rrrozhd`
+   - Repository: `zeroth-core` (post-split) or current repo if publishing before split
+   - Workflow filename: `publish.yml`
+   - Environment name: `testpypi`
+2. On **PyPI** (https://pypi.org/manage/account/publishing/) repeat with environment `pypi`.
+3. In the GitHub repo, create two protected environments under Settings → Environments: `testpypi` (auto-deploy) and `pypi` (require manual approval).
+
+No API tokens stored anywhere. OIDC mints short-lived tokens per workflow run.
+
+### `.github/workflows/publish.yml`
+
+```yaml
+name: publish
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.12
+      - run: uv build             # produces dist/*.whl and dist/*.tar.gz
+      - run: uvx twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with: { name: dist, path: dist/ }
+
+  testpypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write            # OIDC — the magic permission
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist/ }
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  pypi:
+    needs: testpypi
+    runs-on: ubuntu-latest
+    environment: pypi            # requires manual approval
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist/ }
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        # default repository-url = pypi.org; no username/password = OIDC
+```
+
+### Gotchas (CRITICAL)
+
+- **`allow-direct-references = true`** lets `governai @ git+https://...` stay in `dependencies` LOCALLY. **PyPI REJECTS direct-reference URLs** (`git+`, `file:`) in uploaded distribution metadata. Before first publish, EITHER:
+  - Publish governai upstream to PyPI (out of scope), OR
+  - Move `governai` to `[project.optional-dependencies].governai` and document a manual install step, OR
+  - Remove from `dependencies` entirely and require users to pip-install it themselves from git.
+
+  **This is the single biggest publishing blocker for `zeroth-core`. Must be resolved in an early phase.**
+
+- **`econ-instrumentation-sdk @ file:///...`** — same problem. Solution is this milestone's other deliverable: publish `econ-instrumentation-sdk` to PyPI first (TestPyPI → PyPI), then switch to a version spec `econ-instrumentation-sdk>=X.Y`. The Regulus SDK uses setuptools; its own publish workflow is nearly identical (different `build-backend` but same OIDC flow).
+
+- **Duplicate deps in current `pyproject.toml`:**
+  - `litellm>=1.83,<2.0` (line 12) vs `litellm>=1.83.0` (line 29) → **keep the bounded one (`>=1.83,<2.0`)**, delete the duplicate.
+  - `psycopg[binary]>=3.3` (line 16) vs `psycopg[binary]>=3.1` (line 30) → **keep `>=3.3`**, delete the duplicate.
+  - `uv` currently resolves these (bounded wins), but strict resolvers and `twine check` may warn. Clean up unconditionally as part of Phase 1.
+
+- **Version bumping:** `version = "0.1.0"` today → `"3.0.0"` at release. Use a single source of truth: either keep it in `pyproject.toml` and bump manually, or use `hatch-vcs` to derive from git tags (optional; adds a plugin dep).
+
+---
+
+## Documentation Site Architecture
+
+```
+docs/
+├── index.md                          # landing
+├── getting-started/
+│   ├── install.md
+│   ├── first-graph.md
+│   └── running-in-process.md
+├── concepts/
+│   ├── graphs.md
+│   ├── contracts.md
+│   ├── orchestration.md
+│   ├── governance.md
+│   └── economics.md
+├── guides/
+│   ├── graph-authoring.md
+│   ├── memory-backends.md
+│   ├── approvals.md
+│   ├── secrets.md
+│   ├── dispatch.md
+│   └── ...                           # one per subsystem
+├── integrations/
+│   ├── litellm-providers.md
+│   ├── governai.md
+│   └── regulus.md
+├── deployment/
+│   ├── docker.md
+│   ├── postgres.md
+│   └── redis-arq.md
+├── migration/
+│   └── from-pre-v3.md                # the zeroth → zeroth.core rename guide
+├── reference/
+│   ├── python/                       # GENERATED by mkdocs-gen-files
+│   │   └── ...                       # one page per zeroth.core.* module
+│   └── http/
+│       ├── index.md                  # neoteroi-rendered endpoints
+│       └── redoc.md                  # link to /reference/http/redoc/
+└── gen_ref_pages.py                  # mkdocs-gen-files script
+```
+
+### `mkdocs.yml` skeleton
+
+```yaml
+site_name: Zeroth Core
+site_url: https://rrrozhd.github.io/zeroth-core/
+repo_url: https://github.com/rrrozhd/zeroth-core
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+    - search.highlight
+    - search.share
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: { icon: material/brightness-7, name: Dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: { icon: material/brightness-4, name: Light mode }
+
+plugins:
+  - search
+  - gen-files:
+      scripts: [docs/gen_ref_pages.py]
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+            docstring_section_style: table
+  - neoteroi.mkdocsoad:
+      use_pymdownx: true
+  - mike:
+      alias_type: symlink
+      canonical_version: latest
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed: { alternate_style: true }
+  - pymdownx.highlight: { anchor_linenums: true }
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - toc: { permalink: true }
+
+extra:
+  version:
+    provider: mike
+    default: latest
+```
+
+### Docstring style decision: **Google**
+
+- Default for mkdocstrings-python; renders most richly of the three supported styles.
+- Easier to read in source than NumPy's underlined sections.
+- Griffe extracts type annotations from function signatures separately, so docstrings don't duplicate types.
+- Enforce with `ruff`'s `D` (pydocstyle) rules: `[tool.ruff.lint.pydocstyle] convention = "google"` — but roll out gradually per module to avoid a 280-test, 22K-LOC docstring storm.
+
+### Per-module API reference auto-gen
+
+`docs/gen_ref_pages.py` walks `src/zeroth/core/` and emits one `reference/python/<module>.md` per public module containing just:
+
+```
+::: zeroth.core.graph.models
+```
+
+mkdocstrings + Griffe do the rest. This is the canonical mkdocstrings recipe — see https://mkdocstrings.github.io/recipes/.
+
+### OpenAPI integration: two-track strategy
+
+FastAPI already exposes `/openapi.json` at runtime. We bake it into the docs pipeline:
+
+1. **CI step:** during docs build, a short Python script imports the FastAPI app (with a dev config — SQLite backend, no Redis) and writes `docs/_generated/openapi.json`. This IS an `import fastapi` but that's fine — only the docs build needs it, not mkdocstrings' Python handler (which stays static).
+2. **neoteroi-mkdocs** renders that JSON into `docs/reference/http/index.md` as Material-styled endpoint docs (searchable, themeable, deep-linkable).
+3. **ReDoc** is built as a separate static HTML page via `npx @redocly/cli build-docs` and dropped at `site/reference/http/redoc/index.html` as an "all endpoints on one page" reference.
+
+**Why both:** neoteroi output integrates with site search & theme; ReDoc is denser and better for quick endpoint lookup. One extra CI step — cheap.
+
+**Why not Swagger UI?** Interactive "try it" is useless for a library reference site (no live backend), adds a heavy JS bundle, and its output is not searchable by lunr.
+
+---
+
+## Docs Hosting Decision: **GitHub Pages**
+
+| Criterion | GitHub Pages | Read the Docs | Netlify/Vercel/Cloudflare Pages |
+|---|---|---|---|
+| Cost | Free | Free (Community) / $50+/mo (Business) | Free tier; build minutes capped |
+| Custom domain + HTTPS | ✅ (CNAME + LE auto) | ✅ | ✅ |
+| Versioning | ✅ via `mike` | ✅ native | Manual only |
+| Build environment control | Full (GitHub Actions) | Constrained (RTD-managed) | Full |
+| Search | lunr (client) | Algolia-backed (better) | lunr (client) |
+| Works with `mike` | ✅ (designed for it) | ⚠️ awkward | ✅ but duplicates host's versioning |
+| PR preview deploys | GH Pages preview environments (basic) | ✅ | ✅ (best feature) |
+| Analytics | Via plugin | Built-in | Built-in |
+
+**Choice: GitHub Pages.** `mike` is purpose-built for gh-pages, GitHub Actions gives full build control (can run Python scripts to export OpenAPI), custom domain is trivial, free forever for public repos. RTD's superior search is the only meaningful tradeoff and Material's built-in search is already very good.
+
+**If** we later hit lunr's limits (>5K pages) → migrate search to **Algolia DocSearch** (free for OSS) without changing host.
+**If** PR preview deploys become important → migrate to **Cloudflare Pages** (free preview per PR), keep `mike` for versioning.
+
+### Deployment workflow (`.github/workflows/docs.yml`)
+
+```yaml
+name: docs
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+permissions:
+  contents: write       # mike pushes to gh-pages
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }            # mike needs history
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.12
+      - run: uv sync --group docs
+      - name: Export OpenAPI
+        run: uv run python scripts/export_openapi.py > docs/_generated/openapi.json
+      - name: Build ReDoc bundle
+        run: |
+          mkdir -p site-extras/reference/http/redoc
+          npx --yes @redocly/cli@latest build-docs \
+            docs/_generated/openapi.json \
+            -o site-extras/reference/http/redoc/index.html
+      - name: Deploy dev docs
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          uv run mike deploy --push --update-aliases dev
+      - name: Deploy tagged version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          VERSION=${GITHUB_REF_NAME#v}
+          uv run mike deploy --push --update-aliases "$VERSION" latest
+          uv run mike set-default --push latest
+```
+
+---
+
+## Cross-Repo Dependency: `zeroth-studio` → `zeroth-core`
+
+Studio is a Vue 3 frontend; its only dep on core is the HTTP API surface. **Do NOT** try to publish an npm SDK of core — the duplication is not worth it.
+
+### Recommended pattern: release-pinned OpenAPI schema
+
+1. On every tagged `zeroth-core` release, the `publish.yml` workflow uploads `openapi.json` as a **GitHub Release asset** alongside the wheel.
+2. `zeroth-studio` has `openapi.json` checked in at `src/generated/openapi.json` plus a version pin in `package.json`:
+   ```json
+   "zerothCoreVersion": "3.0.0"
+   ```
+3. A scheduled GitHub Action in Studio opens a "refresh openapi" PR when a new core release is detected:
+   ```bash
+   gh release download "v${ZEROTH_CORE_VERSION}" \
+     -R rrrozhd/zeroth-core -p openapi.json -O src/generated/openapi.json
+   npx openapi-typescript src/generated/openapi.json -o src/generated/api-types.ts
+   npx @hey-api/openapi-ts -i src/generated/openapi.json -o src/generated/client
+   ```
+4. Studio's TypeScript build fails deterministically if core removes/renames an endpoint — caught in PR, not at runtime.
+
+**Why not "fetch at runtime from a live core":** CI becomes non-reproducible, offline dev breaks, rollback coupling.
+
+**Why not "generate from source via code-gen":** requires running Python in the Studio Node CI image. Release-asset pattern is simpler and versioned.
+
+**Library choices:**
+
+- `openapi-typescript` (types only, zero runtime) — **primary choice**
+- `@hey-api/openapi-ts` — modern full client generator, TS-first
+- `orval` — alternative if Studio commits to TanStack Query (more opinionated)
+- `openapi-generator-cli` — **avoid** (Java dep, bloated output, slow)
 
 ---
 
 ## Alternatives Considered
 
-| Recommended | Alternative | Why Not |
-|-------------|-------------|---------|
-| Reka UI (headless) | Element Plus | Opinionated styling fights custom graph editor UI. Heavier bundle. Not suitable for floating panels and canvas overlays |
-| Reka UI (headless) | Naive UI | Still styled -- you override CSS constantly. Smaller ecosystem than Reka UI (by weekly downloads) |
-| Reka UI (headless) | Vuetify 3 | Material Design opinions even stronger than Element Plus. Massive bundle. Wrong aesthetic for a dev-tool/IDE-style UI |
-| Tailwind CSS 4 | UnoCSS | UnoCSS is faster but Tailwind 4 closed the performance gap significantly. Tailwind has broader ecosystem (plugins, examples, component libraries). Reka UI docs assume Tailwind |
-| `ky` | Axios | 6x larger bundle, XMLHttpRequest-based. No advantage for modern-browser-only SPA |
-| `ky` | `ofetch` | Weak TypeScript support, no interceptors. Not suitable for auth-injecting API layer |
-| VueUse `useWebSocket` | Socket.IO | Custom protocol overhead, requires server-side Socket.IO. FastAPI native WS + VueUse covers all needs |
-| VueUse `useWebSocket` | `reconnecting-websocket` | Unmaintained (6 years). VueUse provides same auto-reconnect with Vue reactivity |
-| Vitest browser mode | Cypress component testing | Cypress is slower, requires separate runner, and component testing is still experimental. Vitest browser mode is first-class |
-| `splitpanes` | Custom CSS resize | Keyboard accessibility, min/max constraints, and persistent sizes are non-trivial. splitpanes handles all of these |
-| `@iconify/vue` | Font Awesome | FA requires loading entire icon font. Iconify loads individual SVGs on demand |
+| Recommended | Alternative | When to Use Alternative |
+|---|---|---|
+| MkDocs Material + mkdocstrings | **Sphinx + autodoc + Furo** | You need reStructuredText, LaTeX/PDF output, or academic cross-referencing (numpydoc, napoleon). Sphinx is still king for scientific Python (NumPy, SciPy, Astropy). For an application library with narrative guides, MkDocs Material is lighter and more readable. Critically, Sphinx autodoc **imports** code to extract docs → docs CI would need Postgres, Redis, etc. Griffe's static parsing is a major win. |
+| MkDocs Material | **Docusaurus** | You want React/MDX components in docs, or you're a JavaScript shop. For a Python library, Docusaurus means Node tooling on top of Python tooling and no native Python API extraction. Skip. |
+| MkDocs Material | **pdoc** | You want the absolute minimum: one command → HTML API ref, no guides. pdoc is great for tiny libraries but has no guides, search, versioning, or theming. We need all four. |
+| hatchling | **uv_build** (astral-sh/uv native backend) | Once uv_build fully supports PEP 420 implicit namespace packages (tracked in astral-sh/uv#14451) AND is battle-tested, migrate for a single-tool story. Today it's premature. |
+| hatchling | **setuptools** | You're publishing a project that predates pyproject.toml with complex `MANIFEST.in`. Not our case. Setuptools' namespace package story is also more awkward. |
+| pypa/gh-action-pypi-publish (OIDC) | **API token in secrets + twine upload** | You're publishing from a CI that doesn't support OIDC to PyPI (GitLab, self-hosted Jenkins). On GitHub Actions, OIDC is strictly better. |
+| GitHub Pages + mike | **Read the Docs** | You need RTD's Algolia search, their analytics, or your docs team already knows the RTD workflow. Costs $50+/mo for Business; build env is constrained. |
+| GitHub Pages + mike | **Cloudflare Pages / Netlify / Vercel** | You need deploy previews per PR. Cloudflare is most "free forever" of the three. Revisit if we hit GH Pages bandwidth limits. |
+| neoteroi-mkdocs | **mkdocs-render-swagger-plugin** | You specifically want interactive Swagger UI embedded. Swagger UI is a giant iframe that breaks Material search and theme — neoteroi produces native MkDocs pages. |
+| Release-asset OpenAPI pinning | **Fetch from `/openapi.json` of a deployed staging core** | Studio needs real-time schema updates during rapid cross-repo dev. Exception, not norm. |
+| openapi-typescript | **openapi-generator-cli (Java)** | Only if you need a generator targeting a non-JS language. |
 
 ---
 
 ## What NOT to Use
 
 | Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| `vue-codemirror` / `vue-codemirror6` wrappers | Unnecessary abstraction over CodeMirror 6's already-clean API. Adds a dependency for ~30 lines of composable code | Write a `useCodeMirror` composable directly |
-| Socket.IO | Adds custom protocol + server dependency. FastAPI's native WebSocket is sufficient | FastAPI WebSocket + VueUse `useWebSocket` |
-| Vuex | Deprecated in favor of Pinia for Vue 3. Pinia 3 is the official recommendation | Pinia 3 |
-| Element Plus / Vuetify / Naive UI | Pre-styled component libraries fight a custom graph editor's visual requirements | Reka UI (headless) + Tailwind CSS 4 |
-| `dagre` (legacy package) | Unmaintained. Only `@dagrejs/dagre` receives updates (v3.0.0 March 2026) | `@dagrejs/dagre` |
-| `reconnecting-websocket` | Unmaintained (last release 2020). Security risk | VueUse `useWebSocket` with `autoReconnect: true` |
-| Lodash (full) | 70KB+ for utilities VueUse and native JS already provide (debounce, throttle, cloneDeep via structuredClone) | VueUse composables + native JS |
-| Server-Sent Events (SSE) for canvas sync | SSE is server-to-client only. Canvas editing requires bidirectional communication (client sends mutations, server broadcasts) | WebSocket (bidirectional) |
-| GraphQL | Adds schema layer + codegen complexity. Zeroth's REST API is well-defined with OpenAPI. Graph queries don't justify the tooling overhead for this domain | REST + OpenAPI + `ky` |
-| Electron / Tauri | Desktop wrapper adds build complexity. Web-only is an explicit project constraint | Browser-only SPA |
+|---|---|---|
+| **Long-lived PyPI API tokens in GitHub Secrets** | Token theft is the #1 PyPI supply-chain attack vector. If leaked, attackers publish malicious versions under your name. | **Trusted Publishing (OIDC).** Short-lived, scoped per workflow run, auto-revoked. |
+| **`__init__.py` in `src/zeroth/`** | Breaks PEP 420 namespace semantics; future `zeroth.studio` / `zeroth.sdk` packages cannot coexist. | Leave `src/zeroth/` as a bare directory. Add a test that asserts the namespace nature of `zeroth`. |
+| **`packages = ["src/zeroth"]` in hatchling** (current config) | Hatchling looks for `zeroth/__init__.py` and breaks when it's absent, OR ships unwanted files. | `sources = ["src"]` + `only-include = ["src/zeroth/core"]`. |
+| **Direct references (`git+`, `file:`) in published `[project].dependencies`** | PyPI rejects them on upload. | Move to `[project.optional-dependencies]`, OR publish upstream to PyPI, OR require manual user install. |
+| **Sphinx `autodoc`** (for this project) | Imports target modules during build. Our modules pull FastAPI, SQLAlchemy, psycopg, Redis — docs CI becomes a full runtime env. | **mkdocstrings + Griffe** — static AST parsing, no imports, no runtime deps needed during docs build. |
+| **Swagger UI embedded via iframe** | Heavy JS bundle, breaks lunr search indexing, doesn't match site theme, slow on mobile. | **neoteroi-mkdocs** (searchable native pages) + **ReDoc** static HTML. |
+| **Publishing `zeroth-studio` as an npm consumer of a hand-written `@zeroth/sdk` package** | Duplicates HTTP contracts in two languages; drift is guaranteed; maintenance burden. | **OpenAPI pinning** via release asset + type generation. Single source of truth. |
+| **`openapi-generator-cli`** (Java OpenAPI generator) | Java dep in Node/TS CI, heavy output, slow, awkward TS idioms. | `openapi-typescript` (types) + `@hey-api/openapi-ts` (client). |
+| **Duplicate dependency entries in `pyproject.toml`** (`litellm` ×2, `psycopg` ×2) | Confusing; trips strict resolvers and `twine check`. | Dedupe. Keep tighter bounds: `litellm>=1.83,<2.0`, `psycopg[binary]>=3.3`. |
+| **`allow-direct-references = true`** AT PUBLISH TIME | PyPI will reject the upload. | Remove from `pyproject.toml` before first publish by eliminating all direct-reference deps. |
 
 ---
 
-## Backend Additions for Studio API
+## Stack Patterns by Variant
 
-No new Python packages needed. All capabilities exist in the current stack:
+**If `governai` cannot be published to PyPI in time for v3.0.0:**
+- Move `governai @ git+...` from `[project].dependencies` to `[project.optional-dependencies].governai`.
+- Document in install guide: `pip install zeroth-core && pip install 'git+https://github.com/rrrozhd/governai.git@...'`.
+- Acceptable for v3.0.0; flag as tech debt.
 
-| Capability | Existing Technology | Notes |
-|------------|-------------------|-------|
-| REST endpoints for graph CRUD | FastAPI + Pydantic | New routers under `/api/v1/studio/` |
-| WebSocket for real-time sync | FastAPI (Starlette WebSocket) | Built-in. Add `@app.websocket()` routes |
-| Multi-worker WS fan-out | Redis pub/sub | Already in stack. Use `redis.pubsub()` for cross-worker broadcast |
-| CORS for dev server | FastAPI CORSMiddleware | Already configured. Add Vite dev server origin |
-| Static file serving (production) | FastAPI StaticFiles or Nginx | Serve built Vue app. Nginx preferred for production |
-| API schema generation | FastAPI OpenAPI | Auto-generated. Frontend can use generated types |
+**If docs need per-PR preview deploys:**
+- Switch from GitHub Pages to **Cloudflare Pages** (free, preview URL per PR).
+- Keep `mike` for semver versioning — CF Pages handles branch previews, `mike` handles releases, they compose.
 
-**Key integration point:** Generate TypeScript types from FastAPI's OpenAPI schema. Use `openapi-typescript` (npm) to auto-generate `src/api/types.ts` from `/openapi.json`. This keeps frontend types in sync with backend Pydantic models without manual duplication.
+**If lunr search becomes too slow:**
+- Add **Algolia DocSearch** (free for OSS) as a Material search backend. No migration otherwise.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `openapi-typescript` | latest | Generate TS types from OpenAPI spec | Dev dependency. Run as build step: `npx openapi-typescript http://localhost:8000/openapi.json -o src/api/types.ts`. Ensures type safety between Python Pydantic models and TypeScript API layer |
+**If we ever need PDF or man-page output:**
+- Add `mkdocs-with-pdf` plugin, or accept the migration cost to Sphinx. Defer indefinitely.
+
+**If we want OpenAPI types in Python (core or another Python consumer):**
+- Add `datamodel-code-generator` (Pydantic-v2 compatible) for `openapi.json` → pydantic models in a sibling repo.
 
 ---
 
 ## Version Compatibility
 
-| Package | Compatible With | Notes |
-|---------|-----------------|-------|
-| `vue@3.5.x` | `pinia@3.0.x` | Pinia 3 requires Vue 3, TypeScript 5 |
-| `vue@3.5.x` | `@vueuse/core@14.x` | VueUse 14 requires Vue 3.5+ |
-| `vue@3.5.x` | `@vue-flow/core@1.48.x` | Vue Flow requires Vue 3 |
-| `vue@3.5.x` | `reka-ui@2.9.x` | Reka UI requires Vue 3.4+ |
-| `vite@8.x` | `vitest@4.x` | Vitest 4.x aligns with Vite 8 transform pipeline |
-| `vite@8.x` | `@tailwindcss/vite@4.x` | First-party Vite plugin |
-| `vite@8.x` | `@vitejs/plugin-vue` | Official Vue Vite plugin, always compatible with latest Vite |
-| `@vue-flow/core@1.48.x` | `@dagrejs/dagre@3.0.0` | Vue Flow's auto-layout examples use dagre. No tight coupling -- dagre computes positions, Vue Flow renders |
-| `vitest@4.x` | `@vue/test-utils` | Standard pairing. Vue Test Utils is test-runner agnostic |
-| `vitest@4.x` | `@vitest/browser` + `playwright@1.59.x` | Vitest browser mode uses Playwright as provider |
+| Package A | Compatible With | Notes |
+|---|---|---|
+| `mkdocs-material>=9.7` | `mkdocs>=1.6,<2.0` | MkDocs 2.0 is in alpha (Feb 2026); Material will track it but pin to 1.6.x for now. |
+| `mkdocstrings[python]>=0.27` | `mkdocs>=1.6`, `griffe>=1.0` | Griffe 1.x is the stable line. |
+| `mike>=2.1` | `mkdocs>=1.4` | Works with `extra.version.provider: mike`. |
+| `neoteroi-mkdocs>=1.1` | `mkdocs-material>=9.0`, `pymdown-extensions>=10` | Depends on Material's admonition & tabbed blocks. |
+| `hatchling>=1.27` | `uv>=0.5`, Python `>=3.8` | `only-include` / PEP 420 support stable since ~1.17. |
+| `pypa/gh-action-pypi-publish@release/v1` | PyPI Trusted Publishers | Pin with `release/v1` OR a SHA for supply-chain hardening. |
+| `openapi-typescript@7` | TypeScript `>=5`, Node `>=18` | Handles OpenAPI 3.0 and 3.1 (FastAPI emits 3.1 since 0.110). |
+
+---
+
+## Confidence & Risk Register
+
+| Area | Confidence | Risk / Unknown |
+|---|---|---|
+| PyPI OIDC trusted publishing | HIGH | Battle-tested. Main risk: `governai` / `econ-instrumentation-sdk` direct-reference blocker (known, flagged). |
+| MkDocs Material + mkdocstrings | HIGH | Industry standard for Python library docs. |
+| Hatchling `only-include` for PEP 420 | HIGH | Confirmed in hatch docs. Pitfall: existing `packages = ["src/zeroth"]` line must be replaced. |
+| neoteroi-mkdocs for OpenAPI rendering | MEDIUM | Less popular than Swagger UI; if it breaks on FastAPI's OpenAPI 3.1 output, fallbacks are `mkdocs-render-swagger-plugin` (with search tradeoff) or a pure ReDoc-only strategy. Verify early in the docs phase. |
+| OpenAPI pinning pattern for Studio | HIGH | Standard pattern; risk is forgetting to bump the pinned version, mitigated by scheduled GH Action. |
+| GitHub Pages hosting | HIGH | No concerns. |
+| Regulus SDK publishing (setuptools → PyPI) | MEDIUM | SDK is currently setuptools-based at `/Users/dondoe/coding/regulus/sdk/python/`; publish flow mirrors zeroth-core but uses setuptools build. Needs its own OIDC publisher config. |
+
+---
+
+## Open Questions for Roadmap / Later Phases
+
+1. **Who owns the `zeroth-core` PyPI project registration?** Reserved per design doc but not yet claimed — must be claimed before configuring trusted publisher.
+2. **Version scheme:** SemVer? CalVer? Recommend SemVer (`3.0.0`, `3.0.1`, ...) matching the milestone number.
+3. **`governai` resolution timeline:** is upstream likely to publish v0.3.0 to PyPI before v3.0.0 ships, or do we accept the optional-dependency workaround?
+4. **Docs domain:** `docs.zeroth.dev`? `zeroth-core.readthedocs.io`? `rrrozhd.github.io/zeroth-core`? Decide before CNAME config.
+5. **Docstring backfill strategy:** 22K LOC exists without Google-style docstrings. Phase it: (a) enforce style on new code via ruff; (b) backfill public API modules first; (c) leave internals for later. Don't block v3.0.0 on 100% docstring coverage.
 
 ---
 
 ## Sources
 
-- [npm @vue-flow/core](https://www.npmjs.com/package/@vue-flow/core) -- v1.48.2 confirmed (HIGH confidence)
-- [npm @dagrejs/dagre](https://www.npmjs.com/package/@dagrejs/dagre) -- v3.0.0 confirmed (HIGH confidence)
-- [npm vitest](https://www.npmjs.com/package/vitest) -- v4.1.3 confirmed (HIGH confidence)
-- [npm playwright](https://www.npmjs.com/package/playwright) -- v1.59.1 confirmed (HIGH confidence)
-- [npm pinia](https://www.npmjs.com/package/pinia) -- v3.0.4 confirmed (HIGH confidence)
-- [npm @vueuse/core](https://www.npmjs.com/package/@vueuse/core) -- v14.2.1 confirmed (HIGH confidence)
-- [Reka UI GitHub](https://github.com/unovue/reka-ui) -- v2.9.0 confirmed, headless primitives (HIGH confidence)
-- [Tailwind CSS v4 announcement](https://tailwindcss.com/blog/tailwindcss-v4) -- Vite plugin, performance improvements (HIGH confidence)
-- [Vite 8 announcement](https://vite.dev/blog/announcing-vite7) -- v8.0.7 current, Rolldown-based (HIGH confidence)
-- [FastAPI WebSocket docs](https://fastapi.tiangolo.com/advanced/websockets/) -- native Starlette WS support (HIGH confidence)
-- [VueUse useWebSocket](https://vueuse.org/core/usewebsocket/) -- auto-reconnect, reactive API (HIGH confidence)
-- [Vue Testing docs](https://vuejs.org/guide/scaling-up/testing) -- Vitest + Vue Test Utils recommended (HIGH confidence)
-- [n8n Frontend Architecture (DeepWiki)](https://deepwiki.com/n8n-io/n8n/6.1-server-and-api-architecture) -- design system patterns reference (MEDIUM confidence)
-- [npm-compare component libraries](https://npm-compare.com/ant-design-vue,bootstrap-vue,element-plus,naive-ui,vuetify) -- download comparisons (MEDIUM confidence)
-- [Axios vs ky 2026](https://www.pkgpulse.com/blog/axios-vs-ky-2026) -- bundle size and feature comparison (MEDIUM confidence)
-- [CodeMirror changelog](https://codemirror.net/docs/changelog/) -- active maintenance confirmed (HIGH confidence)
+- [pypa/gh-action-pypi-publish (GitHub)](https://github.com/pypa/gh-action-pypi-publish) — OIDC trusted publishing + Sigstore attestations
+- [PyPI Trusted Publishers — Using a Publisher](https://docs.pypi.org/trusted-publishers/using-a-publisher/) — official setup flow
+- [GitHub Docs — Configuring OpenID Connect in PyPI](https://docs.github.com/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-pypi) — `id-token: write` permission requirement
+- [Hatch build configuration](https://hatch.pypa.io/1.13/config/build/) — `sources`, `only-include`, `force-include` semantics
+- [pypa/hatch discussion #819 — namespace packages](https://github.com/pypa/hatch/discussions/819) — confirmed PEP 420 recipe
+- [PEP 420 — Implicit Namespace Packages](https://peps.python.org/pep-0420/)
+- [Python Packaging User Guide — namespace packages](https://packaging.python.org/en/latest/guides/packaging-namespace-packages/)
+- [astral-sh/uv#14451 — uv_build PEP 420 limitation](https://github.com/astral-sh/uv/issues/14451) — rationale to stay on hatchling
+- [mkdocs-material PyPI](https://pypi.org/project/mkdocs-material/) — 9.7.6 (Mar 2026) confirmed
+- [mkdocstrings-python PyPI](https://pypi.org/project/mkdocstrings-python/) — 2.0.3 confirmed
+- [mkdocstrings Python handler usage](https://mkdocstrings.github.io/python/usage/) — Google/NumPy/Sphinx docstring support, Griffe-backed static parsing
+- [Material for MkDocs — Setting up versioning](https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/) — mike integration
+- [jimporter/mike (GitHub)](https://github.com/jimporter/mike) — versioning mechanics
+- [Neoteroi MkDocs OpenAPI Docs plugin](https://www.neoteroi.dev/mkdocs-plugins/web/oad/) — FastAPI OpenAPI → Material pages
+- [bharel/mkdocs-render-swagger-plugin (GitHub)](https://github.com/bharel/mkdocs-render-swagger-plugin) — fallback option
+- [FastAPI Metadata and Docs URLs](https://fastapi.tiangolo.com/tutorial/metadata/) — OpenAPI export semantics
+- [Redocly CLI — build-docs](https://redocly.com/docs/cli/commands/build-docs/) — static ReDoc bundle
+- [openapi-typescript (GitHub)](https://github.com/drwpow/openapi-typescript) — TS type generation
+- [@hey-api/openapi-ts](https://heyapi.dev/) — modern TS client generator
 
 ---
 
-*Stack research for: Zeroth v2.0 Studio Frontend*
-*Researched: 2026-04-09*
+*Stack research for: v3.0 Core Library Extraction, Studio Split & Documentation*
+*Researched: 2026-04-10*
+*Supersedes: v2.0 Studio stack research (2026-04-09)*

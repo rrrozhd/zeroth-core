@@ -1,237 +1,379 @@
-# Feature Landscape: Zeroth Studio Visual Workflow Editor
+# Feature Research
 
-**Domain:** Visual workflow authoring UI for governed multi-agent AI platform
-**Researched:** 2026-04-09
-**Confidence:** HIGH (cross-referenced 6 competing platforms, n8n architecture deep dive, official docs)
+**Domain:** Python library packaging + in-depth documentation + frontend repo split (v3.0 Core Library Extraction, Studio Split & Documentation)
+**Researched:** 2026-04-10
+**Confidence:** HIGH (exemplars are well-known, actively maintained, and their documentation patterns are stable industry practice)
 
----
+## Research Scope
 
-## Context: What Already Exists (Backend)
+This milestone is a packaging and documentation milestone for an existing mature Python backend (~22K LOC source, ~18K LOC tests, 280+ tests, 20+ subsystems). Feature research focuses exclusively on the NEW deliverables:
 
-Zeroth v1.1 shipped a complete governed backend: graph-based workflow modeling with validation and versioning, runtime orchestration with approvals/memory/durable dispatch, identity/RBAC/governance evidence/audit trails, 100+ LLM models via LiteLLM with token economics (Regulus), external memory connectors, container sandboxing, webhooks, and containerized deployment. The Studio milestone adds a visual authoring frontend on top of this existing backend.
+1. `zeroth-core` PyPI-installable library structure & metadata
+2. In-depth documentation for every subsystem
+3. `zeroth-studio` frontend repo separation
+4. Migration support for users of the monolithic repo
 
-**Chosen stack:** Vue 3 / Vite / Pinia / Vue Flow / dagre / CodeMirror 6 (already decided in PROJECT.md).
+Existing backend features (graph, orchestrator, agents, memory, etc.) are NOT re-researched.
 
----
+## Exemplars Studied
 
-## Table Stakes
+| Exemplar | What We Learned | Link |
+|----------|----------------|------|
+| **FastAPI** | Tutorial-first narrative docs with progressive disclosure; hand-written reference; multi-language scaffolding; Swagger/ReDoc for HTTP API | [fastapi.tiangolo.com](https://fastapi.tiangolo.com/) |
+| **Pydantic** | Unified docs site with strong "Concepts" section + auto-generated API reference; version dropdown; migration guide as first-class page | [docs.pydantic.dev](https://docs.pydantic.dev/latest/) |
+| **SQLAlchemy** | Narrative Unified Tutorial + massive reference; explicitly treats reference as primary artifact; unified 1.4/2.0/2.1 tutorial reuse | [docs.sqlalchemy.org](https://docs.sqlalchemy.org/en/20/) |
+| **LangChain** | Explicit adoption of Diátaxis (Tutorials / How-to / Conceptual / API Reference); [doc refresh blog post](https://blog.langchain.com/langchain-documentation-refresh/) | [python.langchain.com](https://python.langchain.com/) |
+| **Django** | Pioneered the four-doc-types-per-topic model that became Diátaxis; topic-oriented TOC | (referenced in Diátaxis origin) |
+| **Typer** | Tightly-scoped Getting Started: install → first command → progressive tutorial stepping through features in a single linear flow | typer.tiangolo.com |
+| **Diátaxis framework** | Tutorials / How-to Guides / Reference / Explanation as orthogonal documentation quadrants — THE dominant IA pattern | [diataxis.fr](https://diataxis.fr/) |
+| **mkdocstrings + Griffe** | Auto-generate API reference from docstrings; supports Google/NumPy/Sphinx styles; cross-references between narrative and reference | [mkdocstrings.github.io](https://mkdocstrings.github.io/) |
+| **LibCST RenameCommand** | Automated codemod for package renames (e.g. `zeroth.*` → `zeroth.core.*`); rewrites imports in user codebases | [libcst.readthedocs.io](https://libcst.readthedocs.io/en/latest/codemods.html) |
 
-Features users expect from any visual workflow editor in 2025-2026. Missing any of these makes the editor feel broken or incomplete. Every platform in the space (n8n, Dify, Langflow, Flowise, Rivet, ComfyUI) ships all of these.
+## Common Pattern Extracted (The "Standard Shape")
 
-| Feature | Why Expected | Complexity | Backend Dependency |
-|---------|--------------|------------|-------------------|
-| **Drag-and-drop node placement on canvas** | Core interaction model for all node-graph editors. Users drag nodes from a palette onto a pannable, zoomable canvas. n8n, Dify, Langflow, Flowise, Rivet, ComfyUI all use this exact pattern. | MEDIUM | None (pure frontend) |
-| **Edge drawing between node ports** | Connecting outputs to inputs by dragging handles is the universal paradigm. Vue Flow provides this natively. Must support typed ports (data flow vs control flow) and validate connection compatibility. | LOW | Graph model validation API |
-| **Node palette / library sidebar** | Left-side panel listing available node types grouped by category (Agents, Execution Units, Approval Gates, Memory, Tools). n8n calls this the "Node Creator"; Dify and Langflow use categorized sidebars. Users expect to search, filter, and drag from this panel. | MEDIUM | Asset catalog API (list available node types) |
-| **Inspector / properties panel** | Right-side panel showing configuration for the selected node. n8n's NDV (Node Detail View) is the gold standard: parameters, settings, and docs tabs. Every platform has this. Must update reactively on node selection. | HIGH | Node schema API (field definitions per node type) |
-| **Canvas navigation (pan, zoom, fit-to-view)** | Zoom in/out (scroll wheel), pan (space+drag or middle-click), fit-all-nodes-to-viewport button, minimap for orientation. Vue Flow provides pan/zoom natively; minimap is a Vue Flow plugin. | LOW | None (Vue Flow built-in) |
-| **Auto-layout / tidy-up** | One-click button to arrange nodes in a readable left-to-right (or top-to-bottom) DAG layout. ComfyUI's biggest UX complaint is manual layout drudgery. dagre (already in stack) handles this. n8n uses dagre for the same purpose. | LOW | None (dagre, frontend-only) |
-| **Undo/redo** | n8n implements this via a command pattern (AddNodeCommand, MoveNodeCommand, RemoveNodeCommand, AddConnectionCommand). Users expect Ctrl+Z/Ctrl+Y to work for all canvas mutations. Non-negotiable for any editor. | MEDIUM | None (frontend command stack) |
-| **Save / load workflows** | Persist the authored graph to the backend and reload it. Must handle dirty-state detection ("Unsaved Changes" indicator, like n8n's `markStateDirty()`). Needs the Graph Authoring API (REST). | LOW | Graph CRUD API (already exists in backend) |
-| **Node validation indicators** | Visual badges/icons on nodes showing errors (missing required fields, invalid connections, type mismatches). n8n shows validation issues directly on node badges. Dify highlights broken nodes in red. | MEDIUM | Backend validation API (already exists) |
-| **Workflow execution trigger + status** | "Run" button that triggers workflow execution and shows per-node execution status (pending, running, success, error). Dify and n8n both show execution flow visually on the canvas with colored borders/badges. | MEDIUM | Run creation API, WebSocket for status updates |
-| **Per-node execution results viewer** | After a run completes, clicking any node shows its input/output data, execution time, and token usage. Rivet and Dify both highlight this as a core debugging feature. Essential for understanding agent behavior. | MEDIUM | Run result API (per-node audit records) |
-| **Keyboard shortcuts** | Delete (backspace/delete), select all (Ctrl+A), copy/paste nodes (Ctrl+C/V), duplicate (Ctrl+D). All canvas editors support these. Vue Flow has built-in key handling that needs to be wired. | LOW | None (frontend-only) |
-| **Responsive three-panel layout** | Left rail (node palette/workflow list), center canvas, right inspector. Collapsible panels. n8n's `useSidebarLayout` composable manages this. This is the universal layout for workflow editors. | MEDIUM | None (frontend-only) |
+Every exemplar converges on roughly this top-level IA:
 
-### Table Stakes Specific to AI Agent Workflows
+```
+1. Home / Why [Library]          (one-paragraph pitch + install + 10-line example)
+2. Getting Started / Tutorial    (progressive, ONE linear path, ~30 minutes end-to-end)
+3. Concepts / Explanation        (what it is, why it exists, mental model per subsystem)
+4. How-to Guides / Recipes       (task-oriented, "how do I X")
+5. API Reference                 (auto-generated, module-by-module, cross-linked)
+6. Deployment / Operations       (production concerns)
+7. Migration                     (from prior versions / prior names)
+8. Contributing                  (for library developers)
+9. Release notes / Changelog
+```
 
-These go beyond generic workflow editors. Platforms focused on AI agents (Langflow, Dify, Rivet) treat these as baseline.
+Zeroth-specific additions (because it is simultaneously a library AND an HTTP service):
 
-| Feature | Why Expected | Complexity | Backend Dependency |
-|---------|--------------|------------|-------------------|
-| **Model/provider selector per agent node** | Every AI workflow editor lets users pick which LLM to use per node. Langflow, Dify, and Rivet all have model dropdowns. Zeroth has 100+ models via LiteLLM; the inspector must expose this. | LOW | LiteLLM model list API |
-| **Prompt/system-message editor** | Inline code editor for prompt templates in agent nodes. CodeMirror 6 (already in stack) provides syntax highlighting, variable interpolation display, and multi-line editing. Dify's Prompt IDE is a standout here. | MEDIUM | None (CodeMirror 6, frontend) |
-| **Variable/context passing visualization** | Show how data flows between nodes -- what outputs feed into which inputs. Dify highlights connected nodes on Shift+click. Rivet shows real-time data on edges during execution. At minimum: typed port labels and hover tooltips. | MEDIUM | Graph schema (port type definitions) |
-| **Tool/function attachment to agents** | Agent nodes need a way to attach tools (execution units, external APIs). Langflow's "Tool Mode" toggle on components is elegant. Rivet wires tools as connected nodes. Zeroth should show tool connections as distinct edge types. | MEDIUM | Agent tool binding API |
-
----
-
-## Differentiators
-
-Features that set Zeroth Studio apart. These exploit the governed backend that no competitor has. This is where Zeroth's unique value proposition lives.
-
-| Feature | Value Proposition | Complexity | Backend Dependency |
-|---------|-------------------|------------|-------------------|
-| **Approval gate visualization** | No competing visual editor shows human-in-the-loop approval gates as first-class visual nodes with SLA timers, escalation indicators, and approval status badges. Zeroth has native `HumanApprovalNode` with SLA timeouts and escalation policies -- visualizing this is a unique capability. Show: pending/approved/rejected/escalated states, countdown timer for SLA, who-approved attribution. | HIGH | Approval status API, WebSocket for live updates |
-| **Audit trail overlay per node** | Click any node to see its governance evidence: digest-chained audit records, who modified it, when it last ran, compliance status. No other visual editor surfaces audit data at the node level. Dify shows execution logs; Zeroth shows tamper-evident governance evidence. | MEDIUM | Audit trail API (already exists) |
-| **Sandbox indicator badges** | Visual indicator on execution unit nodes showing sandbox mode (Docker/local/untrusted), resource constraints (CPU/memory limits), and network isolation status. No competitor visualizes sandbox posture. Users need to see at a glance which nodes run in constrained environments. | LOW | Sandbox config from node schema |
-| **RBAC-aware canvas (read-only mode, restricted editing)** | Canvas respects the user's role: viewers see but cannot edit; operators can run but not modify graphs; authors have full edit access. n8n has basic RBAC (read-only from source control + collaboration locks), but Zeroth's per-resource RBAC is more granular. Disable drag/connect/delete interactions based on permissions. | MEDIUM | RBAC permission check API (already exists) |
-| **Token cost overlay per node** | After execution, show token usage and cost (USD) as badges or tooltips on each agent node. Dify shows token counts in its debugger; Zeroth adds cost attribution via Regulus. Visualizing spend per node is unique in the space. | LOW | Regulus cost data from run results |
-| **Budget gauge / spend dashboard** | Show remaining budget for the current tenant/deployment as a gauge or progress bar in the Studio header. Warn when approaching limits. No competitor has this because no competitor has budget enforcement. | LOW | Budget API (Regulus, already exists) |
-| **Governance evidence bundle export** | One-click export of a workflow's complete governance evidence: graph version, audit trail, approval records, cost attribution, sandbox configurations. Packaged as a compliance artifact (JSON/PDF). Unique to governed platforms. | MEDIUM | Governance evidence API (already exists in backend) |
-| **Environment-aware canvas** | Show which environment (dev/staging/prod) a workflow targets. Visual differentiation (color-coded header, environment badge). Prevent accidental edits to production workflows. Tied to deployment-time bindings. | LOW | Environment management API |
-| **Workflow versioning with diff view** | Side-by-side or inline diff of graph versions showing added/removed/modified nodes and edges. Zeroth already has graph versioning in the backend. Visual diff is high-value for governance (who changed what, when). | HIGH | Graph version diff API |
-| **Collaborative presence indicators** | Show which users are viewing/editing the same workflow (avatar pills on canvas, similar to n8n's collaboration feature). Combined with RBAC, this prevents conflicting edits. | MEDIUM | WebSocket presence API |
+```
+- HTTP API Reference             (alongside Python API Reference — OpenAPI-sourced)
+- Service Mode guide             (running as a FastAPI service vs embedding as a library)
+- Governance guide               (approvals, audit, policy — Zeroth's differentiator)
+```
 
 ---
 
-## Anti-Features
+## Feature Landscape
 
-Features to explicitly NOT build. These are tempting but wrong for Zeroth Studio.
+### Table Stakes (Users Expect These)
 
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| **No-code / code-free promise** | Zeroth is a "medium-code" platform per PROJECT.md. Trying to hide all code behind a GUI leads to lowest-common-denominator expressiveness (ComfyUI's UX trap). Langflow and Flowise target non-developers; Zeroth targets teams with developers. | Expose CodeMirror editors for prompts, Python snippets in execution units, and JSON schema editing. "Medium-code" means visual structure with code where it matters. |
-| **500+ integration nodes (n8n-style)** | n8n's value is breadth of integrations (400+ nodes). Zeroth's value is governed AI workflows. Building Slack/Gmail/Sheets nodes is a distraction that competitors do better. | Focus on AI-specific node types: Agent, ExecutionUnit, ApprovalGate, MemoryResource, Tool, Webhook. External integrations happen via HTTP/webhook nodes or execution unit code. |
-| **Visual RAG pipeline builder** | Dify is building this (visual chunking/embedding/indexing). It is a separate product concern. Zeroth's memory connectors handle retrieval; the chunking/indexing pipeline is out of scope. | Memory resource nodes connect to existing external memory backends (Redis, pgvector, ChromaDB, Elasticsearch). Ingestion pipelines are the user's responsibility. |
-| **Real-time LLM streaming on canvas** | Showing tokens appearing in real-time on the canvas (like ChatGPT typing) is flashy but architecturally complex. Zeroth uses async step-completion execution, not streaming. PROJECT.md explicitly marks streaming as out of scope. | Show execution status badges (pending/running/complete/error) and final results after completion. Sufficient for workflow authoring context. |
-| **Marketplace / community node sharing** | Langflow has community components; n8n has a node marketplace. Building a marketplace is a product in itself -- discovery, quality control, versioning, security review. | Ship a well-designed core node library. Custom nodes via execution unit code. Marketplace can be a future milestone if demand materializes. |
-| **Mobile-responsive canvas** | Node-graph editors are inherently desktop experiences. Responsive canvas for mobile is enormous effort with minimal payoff. n8n explicitly handles mobile as panning-only mode. | Desktop/tablet only. Set a minimum viewport width. Mobile users get a read-only workflow list view at most. |
-| **AI-generated workflow suggestions** | "AI builds your workflow" is a hype feature. The graph authoring UX should be fast enough that users don't need AI to assemble nodes. Copilot-for-workflows is a research project, not a v2.0 feature. | Focus on fast node search, smart defaults, and template workflows instead. |
-| **Embedded chat/test panel** | Dify and Langflow embed a chat panel for testing chatbot workflows. Zeroth is not a chatbot builder -- it orchestrates multi-agent workflows. | Test via the "Run" button with configurable inputs. Results appear in per-node result viewers. |
+Features whose absence makes a 0.1.0 library release feel broken or unusable.
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| **`pip install zeroth-core` works and resolves cleanly** | Non-negotiable for "pip-installable library" | MEDIUM | PEP 621 `pyproject.toml` with optional-dependencies extras (`[memory-pg]`, `[memory-chroma]`, `[dispatch]`, `[all]`). Requires `econ-instrumentation-sdk` on PyPI first. |
+| **PEP 420 namespace package `zeroth.core.*`** | Decision already logged; leaves room for `zeroth.studio`, `zeroth.ext.*` siblings | MEDIUM | No top-level `zeroth/__init__.py`. Entire rename is a rename-only (no re-export glue), per design decision. |
+| **Landing page with <10-line hello world** | Every exemplar does this; users decide in 30 seconds | SMALL | Example: build trivial graph, run it, print result. Must be copy-pasteable, must actually run. |
+| **Getting Started tutorial (single linear path)** | Typer/FastAPI pattern; Getting Started is NOT a menu | MEDIUM | 3 sections: (1) install + 10-line hello, (2) first graph with one agent + one tool + LLM call, (3) run in service mode. ~30 min end-to-end. First working output in <5 minutes. |
+| **Concept pages for every major subsystem** | LangChain "Conceptual Guides"; SQLAlchemy narrative | LARGE | ~20 subsystems: graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service, threads. Each is an Explanation-quadrant page: what it is, why it exists, mental model, where it fits. ~500-1500 words each. |
+| **Per-subsystem usage guide** | Pydantic per-concept pages | LARGE | For each subsystem: Overview → Core Concepts → Minimal Example → Common Patterns → Pitfalls → Reference cross-link. Mirrors LangChain's structure. |
+| **Auto-generated Python API reference via mkdocstrings** | Django/Pydantic/SQLAlchemy all have one; hand-writing reference for 22K LOC is impractical | MEDIUM | Use `mkdocstrings[python]` + Griffe. Requires docstring coverage sweep across public surface — flag for PITFALLS. |
+| **HTTP API reference (OpenAPI-sourced)** | Zeroth ships a FastAPI service; users need both embeddings AND service docs | SMALL | Already have OpenAPI spec. Render via `neoteroi-mkdocs` swagger/redoc plugin or serve `/docs` endpoint and link. |
+| **Install guide with all optional extras documented** | Zeroth has many optional backends (pgvector, Chroma, Elasticsearch, ARQ, Docker sandbox) | SMALL | Matrix: "I want to use X → install `zeroth-core[x]`". |
+| **Configuration reference** | pydantic-settings drives everything; users will hit it immediately | SMALL | Every env var, every default, every secret. Auto-generatable from pydantic-settings schema. |
+| **Deployment guide** | Docker-compose and Nginx TLS ship in the repo; users need to know how to stand it up | MEDIUM | Cover: local dev, docker-compose, standalone service, embedded in host app, with/without Regulus companion, with/without Postgres. |
+| **Migration guide from monolith → `zeroth-core`** | Existing users (even internal) have `from zeroth.graph import ...` imports | MEDIUM | Single page covering (a) the rename pattern, (b) the LibCST codemod (or sed-level equivalent), (c) econ SDK path swap, (d) env var changes if any, (e) Docker image retag. |
+| **Changelog / release notes** | PyPI releases need them; [keepachangelog.com](https://keepachangelog.com/) format | SMALL | `CHANGELOG.md` at repo root + rendered on docs site. |
+| **`zeroth-studio` in its own public repo with independent CI** | Decision already logged | MEDIUM | Repo: `rrrozhd/zeroth-studio`. Own `package.json`, own CI, own release tags. Consumes `zeroth-core` via HTTP only. |
+| **Studio README pointing at `zeroth-core`** | Discoverability: devs finding Studio first must know where the backend lives | SMALL | Cross-link both READMEs. |
+| **Archive of monolithic repo (tarball + bare mirror + GitHub `rrrozhd/zeroth-archive`)** | Decision already logged; mostly done ad-hoc | SMALL | Finalize the ad-hoc archive, document where each layer lives, add a "this repo is archived" notice. |
+| **License + CONTRIBUTING files** | PyPI convention; users check before depending | SMALL | Reuse existing. |
+| **Docs site deployed on every commit to main** | Industry baseline (mkdocs gh-deploy) | SMALL | GitHub Actions workflow, publish to `gh-pages` or Cloudflare Pages. |
+
+### Differentiators (Competitive Advantage)
+
+Features that would make Zeroth's docs noticeably better than a median Python library's docs, aligned with the "governance-first" core value.
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| **Diátaxis-explicit IA** | LangChain adopted this and wrote a blog post about the improvement. Users find what they need faster. Reviewers/contributors know where new content goes. | SMALL (IA, not content) | Label every page as Tutorial / How-to / Concept / Reference in frontmatter. Four top-level TOC entries, not 15. |
+| **Governance walkthrough tutorial** | This is Zeroth's actual differentiator vs LangGraph/CrewAI/Semantic Kernel. A tutorial that shows an approval gate stopping execution, an auditor reviewing the trail, and a policy blocking a tool call is unique. | MEDIUM | ~2000 words + runnable example. Tutorial-quadrant content. |
+| **Recipes cookbook** (cross-subsystem how-tos) | Answers "how do I do X" where X spans 3-4 subsystems | MEDIUM | Examples: "add a human approval step to an agent tool call", "attach a pgvector memory to a graph node", "cap a run's budget with Regulus", "sandbox a Python execution unit", "retry a failed webhook from the DLQ". 10-15 recipes at launch. |
+| **Runnable examples directory** (`examples/` in repo) | FastAPI does this; examples stay in sync because CI runs them | MEDIUM | Each example is a complete, minimal, runnable Python file with a README. CI smoke-tests them. Link inline from docs pages. |
+| **LibCST codemod for the rename** | Automates migration; dramatically lowers upgrade friction | MEDIUM | `python -m zeroth.core.codemods.rename_from_monolith <path>`. Wraps `libcst.codemod.commands.rename.RenameCommand`. Worth it because the rename pattern is mechanical. |
+| **"Choose your path" landing page** | Library-vs-service is genuinely confusing for Zeroth (it is both) | SMALL | Two prominent cards on home: "Embed as a library" vs "Run as a governed API service". Each links to a different Getting Started path. |
+| **Per-subsystem Pitfalls callouts** | Zeroth has 20 subsystems with real production footguns (sandbox timeouts, approval SLAs, memory retention, economic budget overshoot) | MEDIUM | Inline `!!! warning` callouts on each subsystem page. Drawn directly from our PITFALLS.md research. |
+| **HTTP API + Python API side-by-side** | Every subsystem has both a Python interface and an HTTP interface; showing both on one page is unusual and valuable | MEDIUM | Tabbed code blocks: `Python` / `HTTP` / `curl`. Forces us to verify parity and flags gaps. |
+| **"What's indexed vs not" docstring coverage badge** | Honest signal to users about which parts are well-documented | SMALL | `interrogate` or `docstr-coverage` in CI, badge in README. |
+| **Documented extension points** | Zeroth has several (memory connectors, LLM providers, execution units, judges) — documenting them unlocks the ecosystem | MEDIUM | "Writing a custom memory connector" / "Writing a custom execution unit" / etc. How-to quadrant. |
+| **Cross-repo version compatibility matrix** (zeroth-core × zeroth-studio) | Prevents "I upgraded Studio and it broke" issues | SMALL | Single table: "zeroth-studio 0.2.x works with zeroth-core 0.1.x-0.3.x". Maintained in both repos. |
+
+### Anti-Features (Commonly Requested, Often Problematic)
+
+Features that sound obviously good but waste effort or create maintenance burden for a 0.1.0 release.
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| **Multi-version docs site (v0.1 / v0.2 / latest dropdown)** | "Mature libraries have it" | Pre-1.0, API is still shifting. `mike` plugin adds CI complexity. Stale old versions confuse more than help. Pydantic does this but they are v2.12 with real users on v1. | Ship only `latest`. Add version dropdown at 1.0. Until then, link to git tags for historical docs. |
+| **Documentation in multiple languages** | "FastAPI does it" | FastAPI has 12 language maintainers. We have one team. Translations rot faster than code. | English only. Accept PRs for translations later if a maintainer emerges. |
+| **Hand-written API reference for every class** | "Higher quality than auto-generated" | 22K LOC. Would take months. Goes out of sync on day one. Every exemplar except tiny libraries uses auto-generation. | mkdocstrings + Griffe. Hand-write only the curated narrative pages. |
+| **Interactive Jupyter notebook examples** | "Jupyter is popular for AI" | Notebooks are hard to version-control, hard to diff, hard to CI-test, and get stale. LangChain has notebook cookbooks and [their own blog post](https://blog.langchain.com/langchain-documentation-refresh/) admits this is a pain point. | Plain `.py` files in `examples/` directory with README. CI-runnable. Copy-pasteable into notebooks if users want. |
+| **Video tutorials / screencasts** | "Accessibility, different learning styles" | Massively expensive to produce, impossible to update in-place when API changes, requires separate hosting, SEO/search unfriendly. | Written tutorials only. Community members can produce videos later. |
+| **Public Discord/Slack support channel at launch** | "Community building" | Pre-1.0 libraries drown their own maintainers in live support. Sets expectation of responsiveness we can't meet. | GitHub Issues + GitHub Discussions only. Discord/Slack post-1.0. |
+| **"Awesome Zeroth" curated extension list** | "Ecosystem growth" | There is no ecosystem yet. Premature. Will sit empty and look abandoned. | Revisit at 1.0 when third-party extensions exist. |
+| **Auto-generated CLI reference from `--help` output** | "Nice consistency" | Zeroth is primarily a library + HTTP service, not a CLI tool. Small CLI surface. Manual page is simpler and stays current. | Hand-written CLI page covering the ~5 commands. |
+| **Docs-as-code in RST + Sphinx** | "Sphinx is the Python standard" | Author is more productive in Markdown. mkdocs-material rendering is better out-of-box. **Caveat:** mkdocs-material is moving to "minimal maintenance" in late 2026 per [squidfunk](https://squidfunk.github.io/mkdocs-material/alternatives/); Zensical is the successor (still alpha). | Use mkdocs-material now, re-evaluate migration path in 2026 Q4. Sphinx is the safer LONG-term bet if we want to avoid a future migration. **Flag for STACK.md decision.** |
+| **Live documentation search via Algolia DocSearch** | "FastAPI has it" | Requires Algolia approval and setup. Local Lunr search is free and sufficient for a 0.1.0 site. | Built-in mkdocs search. Algolia later if traffic warrants. |
+| **Monorepo with `zeroth-core` + `zeroth-studio` together** | "Simpler CI", "atomic commits" | Directly contradicts the existing design decision to split. Would re-couple release cadences we already decided to uncouple. | Honor the split decision. Two repos. Cross-repo contracts via HTTP API + OpenAPI schema. |
+| **Real-time docs preview with editing** | "GitBook is nicer" | GitBook costs money, locks content in their platform, harder to git-review. | mkdocs serve + PR preview deploys (Cloudflare Pages or Netlify) gives 90% of the benefit. |
+| **Porting every subsystem guide to both Python and HTTP simultaneously at v0.1** | "Parity is nice" | Doubles initial effort. Can ship Python narrative first and add HTTP tabs incrementally. | Python narrative first for all 20 subsystems. HTTP tabs added in a follow-up phase. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Node Palette / Library Sidebar
-    +-- requires --> Asset Catalog API (list node types with schemas)
+PyPI package published (`zeroth-core` + `econ-instrumentation-sdk`)
+    └──required by──> Install guide can be tested end-to-end
+    └──required by──> Getting Started tutorial can work
+    └──required by──> docs site "pip install" copy-paste is honest
 
-Inspector / Properties Panel
-    +-- requires --> Node Schema API (field definitions, validation rules)
-    +-- requires --> Model List API (for agent node model selector)
+Rename complete (`zeroth.*` → `zeroth.core.*`)
+    └──required by──> Auto-generated API reference (mkdocstrings paths)
+    └──required by──> Migration guide (can reference real new paths)
+    └──required by──> LibCST codemod (targets the real paths)
 
-Canvas Save/Load
-    +-- requires --> Graph Authoring API (CRUD for workflow graphs)
-    +-- requires --> WebSocket connection (dirty state, collaboration)
+Docstring coverage sweep on public surface
+    └──required by──> Auto-generated API reference is useful
+    └──required by──> Per-subsystem usage guide can cross-link to reference
 
-Workflow Execution + Status
-    +-- requires --> Run Creation API
-    +-- requires --> WebSocket for real-time status updates
-    +-- enables --> Per-node execution results viewer
+Concept pages (~20 subsystems)
+    └──required by──> Per-subsystem usage guides (usage guides reference concepts)
+    └──required by──> Recipes cookbook (recipes cite concepts)
 
-Approval Gate Visualization
-    +-- requires --> Approval Status API
-    +-- requires --> WebSocket for live approval state changes
-    +-- depends-on --> Base canvas (node rendering, edge drawing)
+Getting Started tutorial
+    └──required by──> Landing page (landing links to Getting Started)
+    └──required by──> Governance walkthrough (reuses Getting Started's setup)
 
-Audit Trail Overlay
-    +-- requires --> Audit Trail API (already exists in backend)
-    +-- depends-on --> Inspector panel (displays in inspector tab)
+Runnable examples in `examples/`
+    └──enhances──> Concept pages (inline snippets link to full examples)
+    └──enhances──> Recipes cookbook (recipes ARE examples + prose)
+    └──required by──> CI smoke test for examples
 
-RBAC-Aware Canvas
-    +-- requires --> Permission Check API (already exists)
-    +-- affects --> All canvas interactions (drag, connect, delete, save)
+HTTP API reference
+    └──requires──> OpenAPI spec is current (already true)
+    └──enhances──> Per-subsystem usage guide (HTTP tab)
 
-Token Cost Overlay
-    +-- requires --> Run Result API with cost data (Regulus)
-    +-- depends-on --> Workflow execution feature
+Studio repo split
+    └──required by──> Cross-repo compatibility matrix
+    └──required by──> Studio README cross-links
+    └──blocks──> Studio phases 24-26 development (they move to new repo)
 
-Workflow Versioning Diff
-    +-- requires --> Graph Version Diff API (new backend endpoint)
-    +-- depends-on --> Save/load workflows
-
-Environment-Aware Canvas
-    +-- requires --> Environment Management API (new backend work)
-    +-- depends-on --> Canvas shell (header area for environment selector)
+Archive of monolith
+    └──required by──> Migration guide's "old repo is archived" notice
+    └──mostly done ad-hoc──> Needs formalization only
 ```
 
-### Critical Path
+### Dependency Notes
 
-```
-Graph Authoring API --> Canvas Save/Load --> Everything else
-     |
-     +--> Node Schema API --> Inspector Panel --> Full editing UX
-     |
-     +--> WebSocket layer --> Execution status, approvals, collaboration
-```
-
-The Graph Authoring API (REST + WebSocket) is the single highest-priority backend dependency. Without it, the canvas cannot persist or load workflows.
+- **API reference requires docstring coverage:** Auto-generated reference is only as good as the docstrings. A coverage sweep (target: 95% on public surface) is a hard prerequisite. Use `interrogate` or `docstr-coverage` in CI.
+- **Rename must land before docs writing:** Writing concept pages against `zeroth.graph` and then globally rewriting to `zeroth.core.graph` wastes editor time. Sequence: rename → docstring sweep → narrative docs.
+- **PyPI publish must land before Getting Started can be tested:** The `pip install zeroth-core` copy-paste in Getting Started is a lie until the package exists on PyPI. TestPyPI is acceptable for pre-release validation.
+- **`econ-instrumentation-sdk` must publish before `zeroth-core`:** It's a hard dependency (currently a local file path). Sequence: econ SDK to PyPI → zeroth-core to PyPI.
+- **Studio split blocks v2.0 phases 24-26:** Those phases can only resume once `zeroth-studio` has its own repo, CI, and working dev loop against a `zeroth-core` API.
 
 ---
 
-## MVP Recommendation
+## MVP Definition
 
-### Phase 1: Canvas Foundation (must ship first)
+### Launch With (v0.1.0 of `zeroth-core` + `zeroth-studio` split + v0.1 docs)
 
-1. **Three-panel shell layout** (left rail, canvas, right inspector)
-2. **Drag-and-drop node placement** with Vue Flow canvas
-3. **Edge drawing** between typed ports
-4. **Node palette** with Zeroth's node types (Agent, ExecutionUnit, ApprovalGate, MemoryResource)
-5. **Inspector panel** with node configuration forms
-6. **Auto-layout** via dagre
-7. **Save/load** via Graph Authoring API
-8. **Undo/redo** via command pattern
-9. **Keyboard shortcuts** (delete, select-all, copy/paste)
-10. **Canvas navigation** (pan, zoom, fit-to-view, minimap)
+Minimum viable product — what's needed for the milestone to be "done" and the library to be usable by a first external user.
 
-### Phase 2: Execution and Governance Visualization
+**Library packaging:**
+- [ ] `econ-instrumentation-sdk` published to PyPI (blocks everything else)
+- [ ] `zeroth-core` published to PyPI with `zeroth.core.*` namespace
+- [ ] `pyproject.toml` with optional-dependency extras documented
+- [ ] `CHANGELOG.md` + license + contributing files at repo root
 
-1. **Workflow execution trigger** with per-node status badges
-2. **Per-node execution results viewer** (input/output/tokens/cost)
-3. **Approval gate visualization** (status, SLA timer, attribution)
-4. **Node validation indicators**
-5. **RBAC-aware canvas** (read-only mode for viewers)
-6. **Audit trail overlay** in inspector
-7. **Sandbox indicator badges**
+**Documentation (Diátaxis-organized):**
+- [ ] Landing page with 10-line hello world + install + "choose your path" cards
+- [ ] Getting Started: 3-section linear tutorial (install → hello graph → run in service mode), <30 min end-to-end, first output in <5 min
+- [ ] Concept pages for all ~20 subsystems (~500-1500 words each)
+- [ ] Usage guides for all ~20 subsystems (Overview → Example → Patterns → Pitfalls → Reference link)
+- [ ] Governance walkthrough tutorial (Zeroth's differentiator)
+- [ ] Auto-generated Python API reference via mkdocstrings
+- [ ] HTTP API reference (rendered from OpenAPI)
+- [ ] Configuration reference (auto-generated from pydantic-settings)
+- [ ] Deployment guide (local / docker-compose / service mode / embedded)
+- [ ] Migration guide (monolith → `zeroth.core.*`)
+- [ ] 10-15 recipes in a Cookbook section
+- [ ] `examples/` directory with CI-tested runnable examples
+- [ ] Docs site deployed on every main commit
 
-### Phase 3: Advanced Authoring
+**Studio split:**
+- [ ] `rrrozhd/zeroth-studio` public repo created
+- [ ] Vue 3 frontend moved with history preserved
+- [ ] Independent CI passing
+- [ ] README cross-links both ways
+- [ ] Cross-repo compatibility matrix documented
 
-1. **Prompt/system-message editor** (CodeMirror 6)
-2. **Model/provider selector** per agent node
-3. **Token cost overlay** per node
-4. **Budget gauge** in header
-5. **Environment-aware canvas** with environment selector
-6. **Variable/context passing visualization**
-7. **Tool/function attachment** to agent nodes
+**Archive:**
+- [ ] Ad-hoc monolith archive formalized (tarball, bare mirror, `rrrozhd/zeroth-archive`)
+- [ ] Archive notice on old repo
 
-### Defer to v2.1+
+### Add After Validation (v0.2.x)
 
-- **Workflow versioning diff view** -- HIGH complexity, high value but not launch-critical
-- **Collaborative presence indicators** -- requires WebSocket presence infrastructure
-- **Governance evidence bundle export** -- backend already supports it; UI is low priority vs core editing
-- **Template workflow library** -- content creation effort, not engineering effort
+Features to add once first external users have validated the core library.
+
+- [ ] LibCST codemod for the rename (only worth building if users report mechanical migration pain)
+- [ ] HTTP API tabs added inline to every subsystem usage guide (currently Python-only)
+- [ ] Extension point guides (custom memory connector, custom LLM provider, custom execution unit)
+- [ ] Algolia DocSearch (only if traffic warrants)
+- [ ] Docstring coverage badge in README
+- [ ] Governance case studies (real-world workflows with audit trails)
+
+### Future Consideration (v1.0+)
+
+- [ ] Multi-version docs site (`mike` plugin) — only once there are enough releases to matter
+- [ ] Translations — only if maintainers emerge
+- [ ] Video tutorials / screencasts
+- [ ] Discord/Slack community channel
+- [ ] "Awesome Zeroth" curated list
+- [ ] Monorepo reconsolidation evaluation (unlikely; split is intentional)
+- [ ] Migration off mkdocs-material to Zensical or Sphinx (forced by 2026 Q4 mkdocs-material maintenance change)
 
 ---
 
-## Competitor Feature Matrix
+## Feature Prioritization Matrix
 
-| Feature | n8n | Dify | Langflow | Flowise | Rivet | ComfyUI | Zeroth Studio |
-|---------|-----|------|----------|---------|-------|---------|---------------|
-| Drag-drop canvas | Yes | Yes | Yes | Yes | Yes | Yes | Yes (table stakes) |
-| Typed port connections | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Inspector/properties panel | Yes (NDV) | Yes | Yes | Yes | Yes | Inline only | Yes |
-| Auto-layout | Yes (dagre) | Partial | No | No | No | No | Yes (dagre) |
-| Undo/redo | Yes (commands) | Limited | No | No | Yes | No | Yes (commands) |
-| Per-node execution results | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| Visual debugging | Basic | Strong | Strong | Basic | Strong | Basic | Strong (planned) |
-| Human approval gates | Via integration | No | No | No | No | No | **Native, first-class** |
-| Audit trail per node | No | No | No | No | No | No | **Native, governance** |
-| RBAC-aware editing | Basic | Basic | No | No | No | No | **Granular, per-resource** |
-| Sandbox visualization | No | No | No | No | No | No | **Unique** |
-| Cost attribution per node | No | Token count only | No | No | No | No | **USD cost via Regulus** |
-| Budget enforcement UI | No | No | No | No | No | No | **Unique** |
-| Governance evidence export | No | No | No | No | No | No | **Unique** |
-| Environment management | No | No | No | No | No | No | **Deployment-time bindings** |
-| Graph versioning/diff | Version history | No | No | No | No | No | **Visual diff (planned)** |
-| 400+ integrations | Yes | Partial | Via LangChain | Partial | No | Custom nodes | No (by design) |
-| Embedded chat test | No | Yes | Yes | Yes | No | No | No (by design) |
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| `zeroth-core` on PyPI | HIGH | MEDIUM | P1 |
+| `econ-instrumentation-sdk` on PyPI | HIGH (blocks above) | LOW | P1 |
+| Landing page + hello world | HIGH | LOW | P1 |
+| Getting Started (3 sections) | HIGH | MEDIUM | P1 |
+| Concept pages × 20 subsystems | HIGH | HIGH | P1 |
+| Usage guides × 20 subsystems | HIGH | HIGH | P1 |
+| Auto-generated Python API reference | HIGH | MEDIUM | P1 |
+| HTTP API reference | MEDIUM | LOW | P1 |
+| Migration guide | HIGH | MEDIUM | P1 |
+| Configuration reference | HIGH | LOW | P1 |
+| Deployment guide | HIGH | MEDIUM | P1 |
+| Recipes cookbook (10-15) | MEDIUM | MEDIUM | P1 |
+| `examples/` dir with CI tests | MEDIUM | MEDIUM | P1 |
+| `zeroth-studio` repo split | HIGH | MEDIUM | P1 |
+| Archive formalization | LOW | LOW | P1 (cleanup) |
+| Governance walkthrough tutorial | HIGH (differentiator) | MEDIUM | P1 |
+| Docstring coverage sweep | MEDIUM (enables reference quality) | MEDIUM | P1 |
+| Cross-repo compatibility matrix | MEDIUM | LOW | P1 |
+| LibCST codemod | MEDIUM | MEDIUM | P2 |
+| HTTP/Python side-by-side tabs | MEDIUM | MEDIUM | P2 |
+| Extension point guides | MEDIUM | MEDIUM | P2 |
+| Docstring coverage badge | LOW | LOW | P2 |
+| Multi-version docs (`mike`) | LOW (pre-1.0) | MEDIUM | P3 |
+| Translations | LOW | HIGH | P3 |
+| Video tutorials | LOW | HIGH | P3 |
+| Discord/Slack community | LOW (pre-1.0) | HIGH (support burden) | P3 |
 
-**Key insight:** Zeroth Studio's differentiators cluster around governance visualization (approvals, audit, RBAC, sandbox, cost). No competitor in the AI workflow editor space offers any of these. This is the defensible moat -- not breadth of integrations or no-code simplicity.
+**Priority key:**
+- **P1:** Must have for v3.0 milestone completion
+- **P2:** Should have, add in v0.2.x iterations
+- **P3:** Defer until post-1.0
+
+---
+
+## Exemplar Feature Analysis
+
+| Feature | FastAPI | Pydantic | LangChain | SQLAlchemy | Our Approach |
+|---------|---------|----------|-----------|------------|--------------|
+| **IA framework** | Progressive narrative tutorial | Concepts + Reference | Explicit Diátaxis | Unified Tutorial + Reference | Explicit Diátaxis (LangChain pattern) |
+| **Getting Started length** | Long progressive tutorial | Short + "Why Pydantic" | Short tutorial + "Quickstart" | Long narrative | **Short linear 3-section** (Typer pattern) |
+| **API reference style** | Hand-written references | Auto-generated | Auto-generated | Mostly auto + curated | **Auto-generated via mkdocstrings** |
+| **Examples location** | Inline + separate tutorial repo | Inline | `cookbook/` notebooks + inline | Inline | **`examples/` `.py` files + inline** (FastAPI pattern, minus tutorial repo) |
+| **Multi-version docs** | Yes | Yes (v1 vs v2 dropdown) | Yes (v0.1 / v0.2 / latest) | Yes (1.4 / 2.0 / 2.1) | **No** (pre-1.0 — defer) |
+| **Migration guide** | Not applicable | First-class page (v1→v2) | First-class page (v0.1→v0.2) | Migration section per version | **First-class page** (monolith → core) |
+| **Doc engine** | MkDocs Material | MkDocs Material | Docusaurus (TS-based) | Sphinx | **MkDocs Material** (with Zensical migration flag) |
+| **Cookbook/recipes** | "Advanced User Guide" | N/A | Large cookbook | Distributed in reference | **Dedicated Cookbook section** (LangChain pattern) |
+| **Translations** | 12 languages | English only | English only | English only | **English only** |
+| **Frontend UI separation** | N/A | N/A | LangSmith is separate closed-source product | N/A | `zeroth-studio` separate public repo |
+
+---
+
+## Information Architecture Recommendation (for ARCHITECTURE.md / REQUIREMENTS.md)
+
+```
+zeroth-core docs site
+├── Home                                  (Explanation + Tutorial entry)
+│   ├── 10-line hello world
+│   ├── Install
+│   └── "Choose your path" (library vs service)
+├── Getting Started                       (Tutorial quadrant)
+│   ├── 1. Install & first graph
+│   ├── 2. Add an agent with an LLM and a tool
+│   └── 3. Run in service mode with an approval gate
+├── Concepts                              (Explanation quadrant)
+│   ├── Why Zeroth / governance model
+│   ├── Graph authoring
+│   ├── Orchestrator runtime
+│   ├── Agents & LLM providers
+│   ├── Execution units & sandbox
+│   ├── Memory connectors
+│   ├── Contracts registry
+│   ├── Runs, threads, conditions, mappings
+│   ├── Policy, approvals, audit
+│   ├── Secrets & identity
+│   ├── Guardrails
+│   ├── Dispatch & workers
+│   ├── Economics (Regulus)
+│   ├── Storage backends
+│   └── Service mode
+├── Guides                                (How-to quadrant)
+│   ├── Per-subsystem usage guides (~20)
+│   ├── Deployment (local / docker-compose / service / embedded)
+│   ├── Extension points (custom memory / provider / execution unit) [v0.2]
+│   └── Governance walkthrough
+├── Cookbook / Recipes                    (How-to quadrant)
+│   └── 10-15 cross-subsystem recipes
+├── Reference                             (Reference quadrant)
+│   ├── Python API (auto-generated, mkdocstrings)
+│   ├── HTTP API (OpenAPI-rendered)
+│   ├── Configuration (pydantic-settings-sourced)
+│   └── CLI
+├── Migration                             (Reference quadrant)
+│   └── Monolith → `zeroth.core.*`
+├── Changelog
+└── Contributing
+```
+
+Total initial pages: roughly **80-100** counting all per-subsystem concept + guide pairs, recipes, and reference stubs.
+
+---
+
+## Open Questions for REQUIREMENTS.md
+
+1. **Doc engine decision:** mkdocs-material now vs Sphinx for longevity? Flag the mkdocs-material "minimal maintenance in late 2026" risk in STACK.md.
+2. **Docstring style:** Google-style, NumPy-style, or Sphinx-style? Must be consistent for mkdocstrings. (Recommendation: Google-style — most readable in source, well-supported by Griffe.)
+3. **Docstring coverage target:** 95% on public surface? 100%? `interrogate` threshold?
+4. **Recipe count for v0.1:** 10? 15? 20? (Recommendation: 10 for launch, grow organically.)
+5. **Examples `.py` vs notebooks:** Confirm `.py` files (recommended) — notebooks are a documented anti-feature above.
+6. **Migration guide scope:** Does it also cover deployments (Docker image retag, env var names) or only Python imports?
+7. **Cross-repo compat matrix ownership:** Lives in `zeroth-core` docs, `zeroth-studio` docs, or both?
+8. **Codemod priority:** Build LibCST codemod in v0.1 or defer to v0.2 once we hear user migration pain?
 
 ---
 
 ## Sources
 
-- [n8n Workflow Canvas Architecture (DeepWiki)](https://deepwiki.com/n8n-io/n8n/6.2-workflow-canvas-and-node-management) -- HIGH confidence (source code analysis)
-- [n8n Editor UI Documentation](https://docs.n8n.io/courses/level-one/chapter-1/) -- HIGH confidence (official docs)
-- [n8n Human-in-the-Loop](https://blog.n8n.io/human-in-the-loop-automation/) -- HIGH confidence (official blog)
-- [Langflow Documentation](https://docs.langflow.org/) -- HIGH confidence (official docs)
-- [Langflow GitHub](https://github.com/langflow-ai/langflow) -- HIGH confidence
-- [Flowise AgentFlow V2](https://docs.flowiseai.com/using-flowise/agentflowv2) -- HIGH confidence (official docs)
-- [Dify GitHub](https://github.com/langgenius/dify) -- HIGH confidence
-- [Dify 2025 Summer Highlights](https://dify.ai/blog/2025-dify-summer-highlights) -- HIGH confidence (official blog)
-- [Rivet Documentation](https://rivet.ironcladapp.com/docs) -- HIGH confidence (official docs)
-- [Rivet GitHub](https://github.com/Ironclad/rivet) -- HIGH confidence
-- [ComfyUI Workflow Docs](https://docs.comfy.org/development/core-concepts/workflow) -- HIGH confidence (official docs)
-- [Open Source AI Agent Platform Comparison](https://jimmysong.io/blog/open-source-ai-agent-workflow-comparison/) -- MEDIUM confidence
-- [React Flow / Vue Flow patterns](https://reactflow.dev/ui/templates/workflow-editor) -- HIGH confidence (framework docs)
-- [Awesome Node-Based UIs](https://github.com/xyflow/awesome-node-based-uis) -- MEDIUM confidence (curated list)
-- Zeroth PROJECT.md and codebase -- HIGH confidence (direct source)
+- [Diátaxis framework (diataxis.fr)](https://diataxis.fr/) — the dominant documentation IA pattern
+- [LangChain documentation refresh blog](https://blog.langchain.com/langchain-documentation-refresh/) — explicit Diátaxis adoption retrospective
+- [LangChain Documentation Style Guide](https://python.langchain.com/v0.2/docs/contributing/documentation/style_guide/)
+- [FastAPI official docs](https://fastapi.tiangolo.com/) — tutorial-first narrative pattern
+- [Pydantic docs](https://docs.pydantic.dev/latest/) — concepts + auto-generated reference pattern
+- [SQLAlchemy Unified Tutorial](https://docs.sqlalchemy.org/en/20/) — narrative + reference split
+- [mkdocstrings overview](https://mkdocstrings.github.io/) — auto-generated API reference tooling
+- [mkdocstrings-python usage](https://mkdocstrings.github.io/python/usage/)
+- [Real Python: Build Python docs with MkDocs](https://realpython.com/python-project-documentation-with-mkdocs/)
+- [Switching From Sphinx to MkDocs (Towards Data Science)](https://towardsdatascience.com/switching-from-sphinx-to-mkdocs-documentation-what-did-i-gain-and-lose-04080338ad38/)
+- [Material for MkDocs — Alternatives page (Zensical transition notice)](https://squidfunk.github.io/mkdocs-material/alternatives/)
+- [LibCST codemods tutorial](https://libcst.readthedocs.io/en/latest/codemods_tutorial.html)
+- [LibCST RenameCommand source](https://github.com/Instagram/LibCST/blob/main/libcst/codemod/commands/rename.py)
+- [Keep a Changelog](https://keepachangelog.com/)
+- [Scientific Python Development Guide — Writing documentation](https://learn.scientific-python.org/development/guides/docs/)
 
 ---
-
-*Feature research for: Zeroth v2.0 Studio Visual Workflow Editor*
-*Researched: 2026-04-09*
+*Feature research for: v3.0 Core Library Extraction, Studio Split & Documentation*
+*Researched: 2026-04-10*
+*Confidence: HIGH — exemplar patterns are stable, well-known industry practice; only open uncertainty is the 2026 Q4 mkdocs-material maintenance transition.*

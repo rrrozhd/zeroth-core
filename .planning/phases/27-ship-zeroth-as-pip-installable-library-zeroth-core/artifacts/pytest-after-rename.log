@@ -1,0 +1,51 @@
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+................FFFF.................................................... [ 32%]
+.......................................................................F [ 43%]
+.....................FF.......................F.FF...................... [ 54%]
+FFFFFFFF..............FF.F.F...F......FF...F............................ [ 64%]
+........................................................................ [ 75%]
+......................E..E..E..E.F...................................... [ 85%]
+........................................................................ [ 96%]
+......................                                                   [100%]
+=============================== warnings summary ===============================
+tests/dispatch/test_worker.py::test_extract_run_id_from_task_name
+  /Users/dondoe/coding/zeroth/.venv/lib/python3.12/site-packages/_pytest/python.py:166: RuntimeWarning: coroutine 'test_extract_run_id_from_task_name.<locals>._noop' was never awaited
+    result = testfunction(**testargs)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/live_scenarios/test_research_audit.py::test_research_audit_bootstrap_and_api_flow
+FAILED tests/live_scenarios/test_research_audit.py::test_research_audit_approval_pause_and_resume
+FAILED tests/live_scenarios/test_research_audit.py::test_research_audit_thread_continuity_across_runs
+FAILED tests/live_scenarios/test_research_audit.py::test_research_audit_strict_policy_mode_terminates_run
+FAILED tests/policy/test_runtime_enforcement.py::test_runtime_orchestrator_passes_enforcement_context_to_runners_and_audit
+FAILED tests/secrets/test_data_protection.py::test_checkpoints_do_not_persist_raw_secret_values
+FAILED tests/secrets/test_data_protection.py::test_audit_records_do_not_contain_raw_secret_values_at_rest
+FAILED tests/service/test_approval_api.py::test_approval_api_resolves_all_decisions_and_resumes_when_appropriate[approve-None-succeeded-expected_output0]
+FAILED tests/service/test_approval_api.py::test_approval_api_resolves_all_decisions_and_resumes_when_appropriate[edit_and_approve-edited_payload2-succeeded-expected_output2]
+FAILED tests/service/test_approval_api.py::test_approval_api_duplicate_resolution_is_idempotent
+FAILED tests/service/test_e2e_phase4.py::test_phase4_end_to_end_deploy_invoke_resume_thread_and_rollback
+FAILED tests/service/test_e2e_phase5.py::test_phase5_linear_graph_runs_agent_to_eu_to_agent_via_api
+FAILED tests/service/test_e2e_phase5.py::test_phase5_cyclic_graph_stops_at_loop_guard_via_api
+FAILED tests/service/test_e2e_phase5.py::test_phase5_conditional_branching_fans_out_via_api
+FAILED tests/service/test_e2e_phase5.py::test_phase5_approval_pause_and_resume_via_api
+FAILED tests/service/test_e2e_phase5.py::test_phase5_thread_continuity_across_runs_via_api
+FAILED tests/service/test_e2e_phase5.py::test_phase5_shared_memory_connector_between_agents_via_api
+FAILED tests/service/test_e2e_phase5.py::test_phase5_deploy_and_invoke_via_service_wrapper_api
+FAILED tests/service/test_run_api.py::test_run_creation_accepts_input_and_supplied_thread_id
+FAILED tests/service/test_run_api.py::test_run_creation_without_thread_id_returns_new_thread_linkage
+FAILED tests/service/test_run_api.py::test_run_creation_validates_against_deployed_input_contract_version
+FAILED tests/service/test_run_api.py::test_run_status_reports_running_and_completed_state
+FAILED tests/service/test_run_api.py::test_run_status_reports_failed_state - ...
+FAILED tests/service/test_thread_api.py::test_thread_api_creates_new_thread_when_thread_id_is_omitted
+FAILED tests/service/test_thread_api.py::test_thread_api_continues_existing_thread_for_same_deployment_snapshot
+FAILED tests/service/test_thread_api.py::test_thread_api_keeps_thread_linkage_visible_in_run_state_and_audits
+FAILED tests/test_postgres_backend.py::TestDatabaseFactory::test_factory_creates_postgres
+ERROR tests/test_postgres_backend.py::TestGraphRepositoryDualBackend::test_save_and_get_graph[postgres]
+ERROR tests/test_postgres_backend.py::TestGraphRepositoryDualBackend::test_publish_graph[postgres]
+ERROR tests/test_postgres_backend.py::TestRunRepositoryDualBackend::test_put_and_get_run[postgres]
+ERROR tests/test_postgres_backend.py::TestRunRepositoryDualBackend::test_count_pending[postgres]
+27 failed, 639 passed, 8 deselected, 1 warning, 4 errors in 79.42s (0:01:19)
