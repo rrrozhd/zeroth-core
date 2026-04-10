@@ -2,53 +2,66 @@
 
 ## Milestones
 
-- v1.0 Runtime Foundation -- Phases 1-9 (shipped 2026-03-27)
-- v1.1 Production Readiness -- Phases 11-21 (shipped 2026-04-09)
-- v2.0 Zeroth Studio -- Phases 22-26 (in progress)
+- v1.0 Runtime Foundation — Phases 1-9 (shipped 2026-03-27)
+- v1.1 Production Readiness — Phases 11-21 (shipped 2026-04-09)
+- v2.0 Zeroth Studio — Phases 22-26 (partially shipped: 22-23 done; 24-26 moved to `zeroth-studio` repo under v3.0)
+- v3.0 Core Library Extraction, Studio Split & Documentation — Phases 27-32 (in progress)
 
 ## Phases
 
 <details>
-<summary>v1.0 Runtime Foundation (Phases 1-9) -- SHIPPED 2026-03-27</summary>
+<summary>v1.0 Runtime Foundation (Phases 1-9) — SHIPPED 2026-03-27</summary>
 
-- [x] Phase 1: Core Foundation (2/2 plans) -- completed 2026-03-19
-- [x] Phase 2: Execution Core (2/2 plans) -- completed 2026-03-19
-- [x] Phase 3: Platform Control (2/2 plans) -- completed 2026-03-19
-- [x] Phase 4: Deployment Surface (1/1 plan) -- completed 2026-03-20
-- [x] Phase 5: Integration & Polish (1/1 plan) -- completed 2026-03-26
-- [x] Phase 6: Identity & Tenant Governance (1/1 plan) -- completed 2026-03-27
-- [x] Phase 7: Transparent Governance & Provenance (1/1 plan) -- completed 2026-03-27
-- [x] Phase 8: Runtime Security Hardening (1/1 plan) -- completed 2026-03-27
-- [x] Phase 9: Durable Control Plane & Production Operations (1/1 plan) -- completed 2026-03-27
+- [x] Phase 1: Core Foundation (2/2 plans) — completed 2026-03-19
+- [x] Phase 2: Execution Core (2/2 plans) — completed 2026-03-19
+- [x] Phase 3: Platform Control (2/2 plans) — completed 2026-03-19
+- [x] Phase 4: Deployment Surface (1/1 plan) — completed 2026-03-20
+- [x] Phase 5: Integration & Polish (1/1 plan) — completed 2026-03-26
+- [x] Phase 6: Identity & Tenant Governance (1/1 plan) — completed 2026-03-27
+- [x] Phase 7: Transparent Governance & Provenance (1/1 plan) — completed 2026-03-27
+- [x] Phase 8: Runtime Security Hardening (1/1 plan) — completed 2026-03-27
+- [x] Phase 9: Durable Control Plane & Production Operations (1/1 plan) — completed 2026-03-27
 
 </details>
 
 <details>
-<summary>v1.1 Production Readiness (Phases 11-21) -- SHIPPED 2026-04-09</summary>
+<summary>v1.1 Production Readiness (Phases 11-21) — SHIPPED 2026-04-09</summary>
 
-- [x] Phase 11: Config & Postgres Storage (3/3 plans) -- completed 2026-04-06
-- [x] Phase 12: Real LLM Providers & Retry (3/3 plans) -- completed 2026-04-06
-- [x] Phase 13: Regulus Economics Integration (3/3 plans) -- completed 2026-04-07
-- [x] Phase 14: Memory Connectors & Container Sandbox (5/5 plans) -- completed 2026-04-07
-- [x] Phase 15: Webhooks & Approval SLA (3/3 plans) -- completed 2026-04-07
-- [x] Phase 16: Distributed Dispatch & Horizontal Scaling (3/3 plans) -- completed 2026-04-07
-- [x] Phase 17: Deployment Packaging & Operations (3/3 plans) -- completed 2026-04-07
-- [x] Phase 18: Cross-Phase Integration Wiring (2/2 plans) -- completed 2026-04-08
-- [x] Phase 19: Agent Node LLM API Parity (3/3 plans) -- completed 2026-04-08
-- [x] Phase 20: Bootstrap Integration Wiring (1/1 plan) -- completed 2026-04-09
-- [x] Phase 21: Health Probe Fix & Tech Debt (1/1 plan) -- completed 2026-04-09
+- [x] Phase 11: Config & Postgres Storage (3/3 plans) — completed 2026-04-06
+- [x] Phase 12: Real LLM Providers & Retry (3/3 plans) — completed 2026-04-06
+- [x] Phase 13: Regulus Economics Integration (3/3 plans) — completed 2026-04-07
+- [x] Phase 14: Memory Connectors & Container Sandbox (5/5 plans) — completed 2026-04-07
+- [x] Phase 15: Webhooks & Approval SLA (3/3 plans) — completed 2026-04-07
+- [x] Phase 16: Distributed Dispatch & Horizontal Scaling (3/3 plans) — completed 2026-04-07
+- [x] Phase 17: Deployment Packaging & Operations (3/3 plans) — completed 2026-04-07
+- [x] Phase 18: Cross-Phase Integration Wiring (2/2 plans) — completed 2026-04-08
+- [x] Phase 19: Agent Node LLM API Parity (3/3 plans) — completed 2026-04-08
+- [x] Phase 20: Bootstrap Integration Wiring (1/1 plan) — completed 2026-04-09
+- [x] Phase 21: Health Probe Fix & Tech Debt (1/1 plan) — completed 2026-04-09
 
 </details>
 
-### v2.0 Zeroth Studio (In Progress)
+<details>
+<summary>v2.0 Zeroth Studio (Phases 22-26) — PARTIALLY SHIPPED; 24-26 moved to zeroth-studio repo</summary>
 
-**Milestone Goal:** Build a visual workflow authoring UI for governed multi-agent systems, using Vue 3 + Vue Flow, with governance-first canvas patterns reimplemented for Zeroth's domain model.
+- [x] Phase 22: Canvas Foundation & Dev Infrastructure (6/6 plans) — completed 2026-04-09
+- [x] Phase 23: Canvas Editing UX (4/4 plans) — completed 2026-04-09
+- [→] Phase 24: Execution & AI Authoring — **moved to `zeroth-studio` repo** (part of v3.0 split)
+- [→] Phase 25: Governance Visualization — **moved to `zeroth-studio` repo** (part of v3.0 split)
+- [→] Phase 26: Versioning & Collaboration — **moved to `zeroth-studio` repo** (part of v3.0 split)
 
-- [x] **Phase 22: Canvas Foundation & Dev Infrastructure** - Vue app scaffold, basic canvas with node/edge editing, graph authoring REST API, Docker/Nginx serving (completed 2026-04-09)
-- [x] **Phase 23: Canvas Editing UX** - Palette sidebar, inspector panel, auto-layout, undo/redo, keyboard shortcuts, validation indicators (completed 2026-04-09)
-- [ ] **Phase 24: Execution & AI Authoring** - WebSocket real-time updates, workflow execution trigger, per-node results, model selector, prompt editor, tool attachment
-- [ ] **Phase 25: Governance Visualization** - Approval gates, audit trail, sandbox badges, RBAC-aware canvas, cost/budget display, environment switching
-- [ ] **Phase 26: Versioning & Collaboration** - Graph version diff view, collaborative presence indicators
+</details>
+
+### v3.0 Core Library Extraction, Studio Split & Documentation (In Progress)
+
+**Milestone Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
+
+- [~] **Phase 27: Monolith Archive & Namespace Rename** — Preserve the monolithic repo in a multi-layer archive, then relocate all Python source from `zeroth.*` to `zeroth.core.*` (pure rename, zero deletions). Much of this is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/` — this phase formalizes and verifies it.
+- [ ] **Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)** — Publish both packages to PyPI via trusted publisher, with optional-dependency extras declared and verified installable end-to-end.
+- [ ] **Phase 29: Studio Repo Split** — Create `rrrozhd/zeroth-studio` as a public repo with preserved git history, independent CI, HTTP-only consumption of `zeroth-core`, and cross-repo compatibility matrix.
+- [ ] **Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough** — Stand up mkdocs-material with Diátaxis IA, deploy on every main commit, and ship the "first working path" pages: landing, Getting Started, governance walkthrough tutorial.
+- [ ] **Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples** — Write Concept + Usage Guide pages for all ~20 subsystems, author 10+ cookbook recipes, and ship the CI-tested `examples/` directory.
+- [ ] **Phase 32: Reference Docs, Deployment & Migration Guide** — Auto-generate Python API reference via mkdocstrings, render HTTP API reference from OpenAPI, auto-generate configuration reference from pydantic-settings, and write the deployment and migration guides.
 
 ## Phase Details
 
@@ -63,12 +76,6 @@
   4. User sees a responsive three-panel layout (workflow rail, canvas, inspector) with collapsible panels
   5. Studio frontend is served via Nginx alongside FastAPI in Docker, and frontend types are generated from the backend OpenAPI spec
 **Plans:** 6/6 plans complete
-Plans:
-- [x] 22-01-PLAN.md -- Vue 3 app scaffold, three-panel shell layout, Tailwind theming, node type definitions
-- [x] 22-02-PLAN.md -- Studio graph authoring REST API with CRUD endpoints and node-types registry
-- [x] 22-03-PLAN.md -- Interactive canvas with 8 custom node types, edge drawing, port validation, pan/zoom/minimap
-- [x] 22-04-PLAN.md -- Workflow persistence: API client, Pinia stores, save/load cycle, WorkflowRail wiring
-- [x] 22-05-PLAN.md -- Docker/Nginx multi-container deployment for Studio frontend
 **UI hint**: yes
 
 ### Phase 23: Canvas Editing UX
@@ -82,53 +89,88 @@ Plans:
   4. User can undo and redo canvas operations, and use keyboard shortcuts for common actions (delete, select-all, copy/paste, duplicate)
   5. User can see validation indicators on nodes with missing fields, invalid connections, or type mismatches
 **Plans:** 4/4 plans complete
-Plans:
-- [x] 23-01-PLAN.md -- Command pattern undo/redo, node type schema extension with property definitions
-- [x] 23-02-PLAN.md -- Categorized node palette sidebar with drag-to-add
-- [x] 23-03-PLAN.md -- Property inspector panel and dagre auto-layout
-- [x] 23-04-PLAN.md -- Keyboard shortcuts and validation indicators
 **UI hint**: yes
 
-### Phase 24: Execution & AI Authoring
-**Goal**: Users can trigger workflow execution, see real-time per-node status updates via WebSocket, configure agent nodes with model/provider selection, prompt editing, tool attachment, and inspect data flow between nodes
-**Depends on**: Phase 23
-**Requirements**: API-02, API-04, AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05
+### Phase 27: Monolith Archive & Namespace Rename
+**Goal**: The monolithic Zeroth repo is preserved in a multi-layer archive, and all Python source is relocated into the `zeroth.core.*` PEP 420 namespace package with the full existing test suite passing on the renamed layout
+**Depends on**: Phase 23 (v2.0 partial ship)
+**Requirements**: ARCHIVE-01, ARCHIVE-02, ARCHIVE-03, RENAME-01, RENAME-02, RENAME-03, RENAME-04, RENAME-05
 **Success Criteria** (what must be TRUE):
-  1. User can trigger workflow execution and see real-time per-node status badges (running, complete, failed) via WebSocket
-  2. User can view per-node execution results including input, output, token count, and cost
-  3. User can select an LLM model/provider per agent node and edit prompts in a syntax-highlighted CodeMirror editor
-  4. User can attach tools and execution units to agent nodes as distinct connection types
-  5. User can see data flow between nodes via typed port labels and hover tooltips
+  1. The monolith is recoverable from three independent archive layers (local tarball, local bare mirror, `rrrozhd/zeroth-archive` on GitHub) and the archived repo carries a visible "archived — see zeroth-core/zeroth-studio" notice
+  2. All 36 pre-existing worktree branches, both stashes, and the detached-HEAD worktree are preserved in the archive and can be checked out from the bare mirror
+  3. All Python source lives under `zeroth.core.*` with no top-level `zeroth/__init__.py` (PEP 420 namespace package), no deletions, no functional changes
+  4. The full existing test suite (280+ tests) passes against the renamed package with zero skips and zero regressions
+  5. Docstring coverage on the `zeroth.core.*` public surface reaches ≥90% (measured by `interrogate`) using a single consistent style (Google-style)
 **Plans**: TBD
-**UI hint**: yes
+**Notes**: Much of the rename and tarball work is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/`. This phase formalizes that scratch work — the plan will decide whether to adopt it, rebuild it, or merge-in selectively.
 
-### Phase 25: Governance Visualization
-**Goal**: Users can see Zeroth's governance layer on the canvas -- approval gate status with SLA timers, per-node audit trails, sandbox indicators, RBAC-enforced access levels, token cost attribution, budget gauges, and environment switching
-**Depends on**: Phase 24
-**Requirements**: GOV-01, GOV-02, GOV-03, GOV-04, GOV-05, GOV-06, GOV-07
+### Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)
+**Goal**: Both `econ-instrumentation-sdk` and `zeroth-core` are published to PyPI via GitHub Actions trusted publisher, a clean-venv install of `zeroth-core[all]` succeeds, and every declared optional extra is verified installable
+**Depends on**: Phase 27
+**Requirements**: PKG-01, PKG-02, PKG-03, PKG-04, PKG-05, PKG-06
 **Success Criteria** (what must be TRUE):
-  1. User can see approval gate nodes with live status (pending/approved/rejected/escalated), SLA countdown, and who-approved attribution
-  2. User can view per-node audit trail and governance evidence in the inspector
-  3. Canvas enforces RBAC -- viewers see read-only, operators can run but not edit, authors have full access
-  4. User can see token cost badges on agent nodes after execution and a tenant budget gauge in the Studio header
-  5. User can see and switch the target environment (dev/staging/prod) with visual differentiation, and see sandbox indicator badges on execution unit nodes
+  1. `econ-instrumentation-sdk` is live on PyPI at a stable version, and `zeroth-core` depends on it via a PyPI version constraint, not a local file path
+  2. `pyproject.toml` declares the full set of optional-dependency extras (`[memory-pg]`, `[memory-chroma]`, `[memory-es]`, `[dispatch]`, `[sandbox]`, `[all]`) and each extra resolves and installs cleanly
+  3. Repository root contains `CHANGELOG.md` (keepachangelog format), `LICENSE`, and `CONTRIBUTING.md` suitable for public PyPI consumption
+  4. PyPI releases are published by GitHub Actions using trusted publisher (OIDC), with no long-lived API tokens in the repo or CI
+  5. In a fresh virtualenv, `pip install zeroth-core` followed by running the Getting Started hello example produces working output end-to-end
 **Plans**: TBD
-**UI hint**: yes
 
-### Phase 26: Versioning & Collaboration
-**Goal**: Users can compare graph versions side-by-side and see which other users are viewing or editing the same workflow
-**Depends on**: Phase 24
-**Requirements**: COLLAB-01, COLLAB-02
+### Phase 29: Studio Repo Split
+**Goal**: `rrrozhd/zeroth-studio` exists as a public repo with preserved git history, passing independent CI, HTTP-only consumption of `zeroth-core`, and a documented cross-repo compatibility matrix
+**Depends on**: Phase 28
+**Requirements**: STUDIO-01, STUDIO-02, STUDIO-03, STUDIO-04, STUDIO-05
 **Success Criteria** (what must be TRUE):
-  1. User can view a side-by-side diff of graph versions showing added, removed, and modified nodes and edges
-  2. User can see presence indicators showing which other users are viewing or editing the same workflow
+  1. `rrrozhd/zeroth-studio` is a public GitHub repository containing the Vue 3 + Vue Flow frontend with full git history preserved (via subtree or git-filter-repo)
+  2. `zeroth-studio` has its own CI pipeline (lint, typecheck, build, test) that passes on its default branch without touching or importing from `zeroth-core`
+  3. `zeroth-studio`'s only contract with `zeroth-core` is HTTP/OpenAPI — its frontend types are generated from the `zeroth-core` OpenAPI spec via `openapi-typescript`
+  4. Both repos' READMEs cross-link, and a `zeroth-studio × zeroth-core` compatibility matrix is documented and maintained
+  5. A developer can clone `zeroth-studio`, run `npm install && npm run dev`, and develop against a running `zeroth-core` service without any cross-repo source dependencies
 **Plans**: TBD
-**UI hint**: yes
+**UI hint**: yes (frontend repo, but no new UI features in this phase — move only)
+
+### Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough
+**Goal**: The `zeroth-core` documentation site is live on a public URL, built with mkdocs-material using explicit Diátaxis IA, and contains the complete "first working path" — landing page, 3-section Getting Started tutorial, and a Governance Walkthrough showcasing Zeroth's differentiator
+**Depends on**: Phase 28
+**Requirements**: SITE-01, SITE-02, SITE-03, SITE-04, DOCS-01, DOCS-02, DOCS-05
+**Success Criteria** (what must be TRUE):
+  1. The docs site is built by mkdocs-material with four top-level Diátaxis sections (Tutorials / How-to Guides / Concepts / Reference), has built-in search, and auto-generates a site map
+  2. A GitHub Actions workflow builds and deploys the docs to a public URL on every commit to `main`, and pull requests get preview deploys
+  3. The landing page shows a 10-line hello-world, install snippet, and a "Choose your path" split between embedding as a library and running as a service
+  4. Getting Started is a single linear 3-section tutorial (install → first graph with one agent/tool/LLM → run in service mode with an approval gate) that produces first working output in under 5 minutes and completes in under 30
+  5. A Governance Walkthrough tutorial runs end-to-end with an approval gate stopping execution, an auditor reviewing the trail, and a policy blocking a tool call
+**Plans**: TBD
+**UI hint**: yes (docs site is the UI)
+
+### Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples
+**Goal**: Every major `zeroth.core.*` subsystem has a paired Concept page and Usage Guide on the docs site, the Cookbook contains at least 10 cross-subsystem recipes, and an `examples/` directory with CI-tested runnable `.py` files covers the main subsystems
+**Depends on**: Phase 30
+**Requirements**: DOCS-03, DOCS-04, DOCS-06, DOCS-12
+**Success Criteria** (what must be TRUE):
+  1. Every major subsystem (graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service, threads) has a Concept page explaining what it is, why it exists, and where it fits
+  2. Every major subsystem has a Usage Guide (Overview → Minimal example → Common patterns → Pitfalls → Reference cross-link) paired with its Concept page
+  3. The Cookbook section contains at least 10 cross-subsystem recipes covering the most common Zeroth tasks (approval steps, memory attachment, budget capping, sandboxing, webhook retry, etc.)
+  4. The repo root contains an `examples/` directory with runnable `.py` files (no notebooks) exercising the main subsystems
+  5. A CI job smoke-tests every file in `examples/` on every commit to `main`, and the job is green
+**Plans**: TBD
+**UI hint**: yes (docs content)
+
+### Phase 32: Reference Docs, Deployment & Migration Guide
+**Goal**: The docs site has a complete Reference quadrant (Python API auto-generated from docstrings, HTTP API rendered from OpenAPI, Configuration reference auto-generated from pydantic-settings), plus a Deployment Guide covering every supported mode and a Migration Guide from the monolith layout
+**Depends on**: Phase 30 (and Phase 27 for the renamed import paths referenced by the API reference)
+**Requirements**: DOCS-07, DOCS-08, DOCS-09, DOCS-10, DOCS-11
+**Success Criteria** (what must be TRUE):
+  1. Python API Reference is auto-generated from docstrings via mkdocstrings + Griffe for the full `zeroth.core.*` public surface, cross-linked from narrative pages
+  2. HTTP API Reference is rendered from the `zeroth-core` FastAPI OpenAPI spec and published alongside the Python reference on the docs site
+  3. Configuration Reference is auto-generated from the pydantic-settings schemas and documents every env var, its default, and whether it is a secret
+  4. Deployment Guide covers local development, docker-compose, standalone service mode, embedded-in-host-app mode, and deployments with and without the Regulus companion service
+  5. Migration Guide walks an existing monolith user through the switch to `zeroth.core.*` — import rename pattern, econ SDK path swap, env var changes, and Docker image retag
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 22 -> 23 -> 24 -> 25 -> 26
+Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable after 28) → 31 → 32.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -152,8 +194,14 @@ Phases execute in numeric order: 22 -> 23 -> 24 -> 25 -> 26
 | 19. Agent Node LLM API Parity | v1.1 | 3/3 | Complete | 2026-04-08 |
 | 20. Bootstrap Integration Wiring | v1.1 | 1/1 | Complete | 2026-04-09 |
 | 21. Health Probe Fix & Tech Debt | v1.1 | 1/1 | Complete | 2026-04-09 |
-| 22. Canvas Foundation & Dev Infrastructure | v2.0 | 6/6 | Complete    | 2026-04-09 |
-| 23. Canvas Editing UX | v2.0 | 4/4 | Complete    | 2026-04-09 |
-| 24. Execution & AI Authoring | v2.0 | 0/? | Not started | - |
-| 25. Governance Visualization | v2.0 | 0/? | Not started | - |
-| 26. Versioning & Collaboration | v2.0 | 0/? | Not started | - |
+| 22. Canvas Foundation & Dev Infrastructure | v2.0 | 6/6 | Complete | 2026-04-09 |
+| 23. Canvas Editing UX | v2.0 | 4/4 | Complete | 2026-04-09 |
+| 24. Execution & AI Authoring | v2.0 | — | Moved to `zeroth-studio` | — |
+| 25. Governance Visualization | v2.0 | — | Moved to `zeroth-studio` | — |
+| 26. Versioning & Collaboration | v2.0 | — | Moved to `zeroth-studio` | — |
+| 27. Monolith Archive & Namespace Rename | v3.0 | 0/? | In progress (ad-hoc) | — |
+| 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 0/? | Not started | — |
+| 29. Studio Repo Split | v3.0 | 0/? | Not started | — |
+| 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 0/? | Not started | — |
+| 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 0/? | Not started | — |
+| 32. Reference Docs, Deployment & Migration Guide | v3.0 | 0/? | Not started | — |

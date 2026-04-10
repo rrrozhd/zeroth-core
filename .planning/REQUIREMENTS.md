@@ -1,129 +1,180 @@
-# Requirements: Zeroth Studio
+# Requirements: Zeroth
 
-**Defined:** 2026-04-09
+**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-10 (v3.0 milestone)
 **Core Value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
 
-## v2.0 Requirements
+## v3.0 Requirements — Core Library Extraction, Studio Split & Documentation
 
-Requirements for Zeroth Studio visual workflow authoring UI. Each maps to roadmap phases.
+v3.0 is a packaging and documentation milestone. No new runtime features. Deliverables: ship `zeroth-core` on PyPI under the `zeroth.core.*` namespace, move the Vue Studio to its own public repo, write in-depth documentation for every subsystem, and formalize the monolith archive.
 
-### Canvas Foundation
+### Packaging (PKG)
 
-- [ ] **CANV-01**: User can drag nodes from palette onto a pannable, zoomable canvas
-- [ ] **CANV-02**: User can draw edges between typed node ports to create connections
-- [x] **CANV-03**: User can browse and search available node types in a categorized sidebar palette
-- [x] **CANV-04**: User can view and edit selected node properties in an inspector panel
-- [x] **CANV-05**: User can auto-layout the graph in a readable DAG arrangement
-- [x] **CANV-06**: User can save and load workflow graphs via the authoring API
-- [x] **CANV-07**: User can undo and redo canvas operations (node add/move/delete, edge add/remove)
-- [x] **CANV-08**: User can use keyboard shortcuts for common operations (delete, select-all, copy/paste, duplicate)
-- [ ] **CANV-09**: User can navigate the canvas with pan, zoom, fit-to-view, and minimap
-- [x] **CANV-10**: User can work in a responsive three-panel layout (rail, canvas, inspector) with collapsible panels
+- [ ] **PKG-01**: `econ-instrumentation-sdk` (Regulus SDK) is published to PyPI with a stable version, replacing the current local file-path dependency
+- [ ] **PKG-02**: `zeroth-core` is published to PyPI as a pip-installable library and `pip install zeroth-core` succeeds in a clean virtualenv
+- [ ] **PKG-03**: `pyproject.toml` declares optional-dependency extras for every swappable backend (`[memory-pg]`, `[memory-chroma]`, `[memory-es]`, `[dispatch]`, `[sandbox]`, `[all]`), with each extra verified installable and documented
+- [ ] **PKG-04**: Repository root contains `CHANGELOG.md` (keepachangelog format), `LICENSE`, and `CONTRIBUTING.md` suitable for a public PyPI release
+- [ ] **PKG-05**: PyPI releases are published via GitHub Actions using trusted publisher (OIDC), not a long-lived API token
+- [ ] **PKG-06**: Installing `zeroth-core` from a clean environment and running the Getting Started hello example works end-to-end (acceptance test for the whole packaging stack)
 
-### Graph Authoring API
+### Namespace Rename (RENAME)
 
-- [x] **API-01**: Studio can create, read, update, and delete workflow graphs via REST endpoints
-- [ ] **API-02**: Studio can receive real-time updates via WebSocket (execution status, validation, presence)
-- [ ] **API-03**: Studio can retrieve available node type schemas with field definitions and validation rules
-- [ ] **API-04**: Studio can trigger workflow execution and receive per-node status updates
+- [ ] **RENAME-01**: All Python source is relocated from `zeroth.*` to `zeroth.core.*` with zero deletions and zero functional changes (pure rename)
+- [ ] **RENAME-02**: The package is a PEP 420 namespace package — no top-level `zeroth/__init__.py` — so future sibling packages (`zeroth.studio`, `zeroth.ext.*`) can coexist under `zeroth.*`
+- [ ] **RENAME-03**: All internal imports, string references, entry points, and console scripts point at the new `zeroth.core.*` paths
+- [ ] **RENAME-04**: The existing test suite (280+ tests) passes against the renamed package with no skips or regressions
+- [ ] **RENAME-05**: Docstring coverage on the public surface of `zeroth.core.*` reaches ≥90% (measured by `interrogate`) with a consistent style (Google-style)
 
-### Governance Visualization
+### Documentation Content (DOCS)
 
-- [ ] **GOV-01**: User can see approval gate nodes with live status (pending/approved/rejected/escalated), SLA countdown, and who-approved attribution
-- [ ] **GOV-02**: User can view per-node audit trail (governance evidence, modification history, compliance status) in the inspector
-- [ ] **GOV-03**: User can see sandbox indicator badges on execution unit nodes showing isolation mode and resource constraints
-- [ ] **GOV-04**: Canvas enforces RBAC — viewers see read-only, operators can run but not edit, authors have full access
-- [ ] **GOV-05**: User can see token cost and usage as badges/tooltips on agent nodes after execution
-- [ ] **GOV-06**: User can see remaining tenant budget as a gauge in the Studio header
-- [ ] **GOV-07**: User can see and switch the target environment (dev/staging/prod) with visual differentiation
+- [ ] **DOCS-01**: Landing page presents a 10-line hello-world, install snippet, and a "Choose your path" split between embedding as a library and running as a governed service
+- [ ] **DOCS-02**: Getting Started is a single linear 3-section tutorial (install → first graph with one agent/tool/LLM → run in service mode with an approval gate), reaching first working output in under 5 minutes and completing in under 30
+- [ ] **DOCS-03**: Every major `zeroth.core.*` subsystem has a Concept page (what it is, why it exists, mental model, where it fits) — covering graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service, threads
+- [ ] **DOCS-04**: Every major subsystem has a Usage Guide (Overview → Minimal example → Common patterns → Pitfalls → Reference cross-link) paired with its Concept page
+- [ ] **DOCS-05**: A Governance Walkthrough tutorial shows an end-to-end run where an approval gate stops execution, an auditor reviews the trail, and a policy blocks a tool call (Zeroth's differentiator vs. LangGraph/CrewAI)
+- [ ] **DOCS-06**: A Cookbook section contains at least 10 cross-subsystem recipes at launch (examples: add a human approval step, attach pgvector memory to a node, cap a run's budget with Regulus, sandbox a Python execution unit, retry a failed webhook from the DLQ)
+- [ ] **DOCS-07**: Python API Reference is auto-generated from docstrings via mkdocstrings + Griffe for the full public surface
+- [ ] **DOCS-08**: HTTP API Reference is rendered from the FastAPI OpenAPI spec and published alongside the Python reference
+- [ ] **DOCS-09**: Configuration Reference is auto-generated from pydantic-settings schemas and documents every env var, default, and secret
+- [ ] **DOCS-10**: Deployment Guide covers local dev, docker-compose, standalone service mode, embedded-in-host-app mode, and deployments with/without the Regulus companion service
+- [ ] **DOCS-11**: Migration Guide explains how to move from the monolithic `zeroth.*` layout to `zeroth.core.*` (import rename pattern, econ SDK path swap, env var changes, Docker image retag)
+- [ ] **DOCS-12**: An `examples/` directory at the repo root contains runnable `.py` files (not notebooks) exercising the main subsystems, and CI smoke-tests each on every main commit
 
-### AI Authoring
+### Documentation Site Infrastructure (SITE)
 
-- [ ] **AUTH-01**: User can select LLM model/provider per agent node from available models
-- [ ] **AUTH-02**: User can edit prompts and system messages in a CodeMirror editor with syntax highlighting
-- [ ] **AUTH-03**: User can attach tools and execution units to agent nodes as distinct connection types
-- [ ] **AUTH-04**: User can see data flow between nodes via typed port labels and hover tooltips
-- [ ] **AUTH-05**: User can trigger workflow execution and view per-node results (input/output/tokens/cost)
-- [x] **AUTH-06**: User can see node validation indicators (missing fields, invalid connections, type mismatches)
+- [ ] **SITE-01**: Documentation is built with mkdocs-material using explicit Diátaxis IA (Tutorials / How-to Guides / Concepts / Reference as four top-level sections)
+- [ ] **SITE-02**: A GitHub Actions workflow builds and deploys the docs site to a public URL on every commit to `main`
+- [ ] **SITE-03**: Pull request previews deploy a rendered version of the changed docs so reviewers see the output before merge
+- [ ] **SITE-04**: The docs site includes built-in search and an automatically generated site map
 
-### Versioning & Collaboration
+### Studio Repo Split (STUDIO)
 
-- [ ] **COLLAB-01**: User can view side-by-side diff of graph versions showing added/removed/modified nodes and edges
-- [ ] **COLLAB-02**: User can see which other users are viewing/editing the same workflow (presence indicators)
+- [ ] **STUDIO-01**: A new public repository `rrrozhd/zeroth-studio` contains the Vue 3 + Vue Flow frontend with its full git history preserved (subtree or filter-repo)
+- [ ] **STUDIO-02**: `zeroth-studio` has its own independent CI pipeline (lint, typecheck, build, test) passing on its default branch
+- [ ] **STUDIO-03**: `zeroth-studio` consumes `zeroth-core` only via HTTP/OpenAPI — no Python imports, no shared source tree
+- [ ] **STUDIO-04**: Both repositories' READMEs cross-link to each other, and a cross-repo compatibility matrix (`zeroth-studio` version ↔ `zeroth-core` version) is documented and maintained in at least one of them
+- [ ] **STUDIO-05**: The frontend types used by `zeroth-studio` are generated from the `zeroth-core` OpenAPI spec via `openapi-typescript`, keeping the two in sync without manual edits
 
-### Deployment & Infrastructure
+### Monolith Archive (ARCHIVE)
 
-- [x] **INFRA-01**: Studio frontend is served via Nginx alongside the existing FastAPI backend in the Docker deployment
-- [ ] **INFRA-02**: Frontend types are generated from the backend OpenAPI spec to prevent type drift
+- [ ] **ARCHIVE-01**: A multi-layer archive of the pre-split monolithic repo exists and is documented: local tarball, local bare mirror, and GitHub repository `rrrozhd/zeroth-archive`
+- [ ] **ARCHIVE-02**: All 36 worktree branches, both stashes, and the detached-HEAD worktree from the ad-hoc split work are preserved in the archive and recoverable
+- [ ] **ARCHIVE-03**: The archive repository carries a visible "this repo is archived — see rrrozhd/zeroth-core and rrrozhd/zeroth-studio" notice in its README and repo description
 
-## v2.1 Requirements
+## Deferred to v0.2.x of `zeroth-core`
 
-Deferred to future release. Tracked but not in current roadmap.
+Tracked but out of scope for v3.0 milestone completion. Will be opened as new phases once a first external user has validated the core library.
 
-### Export & Templates
+- [ ] **FUTURE-01**: LibCST codemod (`python -m zeroth.core.codemods.rename_from_monolith`) that automatically rewrites `zeroth.*` imports to `zeroth.core.*` in consumer codebases
+- [ ] **FUTURE-02**: HTTP/curl tabs added inline to every subsystem usage guide (initially Python-only)
+- [ ] **FUTURE-03**: Extension-point guides — "Writing a custom memory connector", "Writing a custom LLM provider", "Writing a custom execution unit", "Writing a custom judge"
+- [ ] **FUTURE-04**: Docstring coverage badge in README
+- [ ] **FUTURE-05**: Governance case studies (real-world workflows with captured audit trails)
+- [ ] **FUTURE-06**: Algolia DocSearch (if docs traffic warrants it)
 
-- **FUTURE-01**: Governance evidence bundle export (one-click compliance artifact)
-- **FUTURE-02**: Template workflow library
-- **FUTURE-03**: Workflow import/export (JSON)
+## Deferred to `zeroth-studio` repo (v2.0 phases 24-26)
+
+These requirements are **not cancelled** — they continue in the new `zeroth-studio` repo after the split and will be roadmapped there separately.
+
+- [ ] **API-02** (from v2.0): Studio receives real-time updates via WebSocket (execution status, validation, presence)
+- [ ] **API-04** (from v2.0): Studio can trigger workflow execution and receive per-node status updates
+- [ ] **AUTH-01** through **AUTH-05** (from v2.0): Canvas execution & AI authoring (model selector, prompt editor, tool attachment, data-flow tooltips, per-node results)
+- [ ] **GOV-01** through **GOV-07** (from v2.0): Governance visualization (approval gates, audit trails, sandbox badges, RBAC-aware canvas, cost/budget display, env switching)
+- [ ] **COLLAB-01**, **COLLAB-02** (from v2.0): Graph version diff view, collaborative presence indicators
 
 ## Out of Scope
 
-Explicitly excluded. Documented to prevent scope creep.
+Explicitly excluded for v3.0. Documented to prevent scope creep.
 
 | Feature | Reason |
 |---------|--------|
-| 500+ integration nodes (n8n-style) | Zeroth's value is governed AI workflows, not integration breadth |
-| Visual RAG pipeline builder | Memory connectors handle retrieval; ingestion is user's responsibility |
-| Real-time LLM streaming on canvas | Async step-completion model; PROJECT.md explicitly excludes streaming |
-| Marketplace / community nodes | Product in itself — discovery, quality control, versioning, security |
-| Mobile-responsive canvas | Graph editors are desktop experiences; min viewport width enforced |
-| AI-generated workflow suggestions | Research project, not v2.0 feature |
-| Embedded chat/test panel | Zeroth is not a chatbot builder; test via Run button with configurable inputs |
-| No-code promise | Zeroth is medium-code; CodeMirror for prompts and code where it matters |
+| Multi-version docs site with version dropdown (`mike` plugin) | Pre-1.0 — API still shifts, stale versions confuse more than help. Revisit at 1.0. |
+| Translations / multi-language docs | FastAPI has 12 language maintainers; we have one team. Translations rot faster than code. |
+| Hand-written API reference for every class | 22K LOC — impractical and goes stale on day one. Use mkdocstrings instead. |
+| Jupyter notebook examples | Hard to version-control, diff, and CI-test. Use plain `.py` files. |
+| Video tutorials / screencasts | Expensive to produce, impossible to update in place, SEO/search unfriendly. |
+| Public Discord/Slack community at launch | Pre-1.0 support burden. GitHub Issues + Discussions only. |
+| "Awesome Zeroth" curated extension list | No ecosystem exists yet — would look abandoned. |
+| Core/platform file-level split | Superseded by the pure-rename decision — the cascading `__init__.py` breakage isn't worth it. |
+| Monorepo consolidation of `zeroth-core` + `zeroth-studio` | Directly contradicts the intentional split decision. |
+| Runtime feature work (new subsystems, new integrations) | v3.0 is packaging and docs only. New runtime work goes to v3.1+. |
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+Which phases cover which requirements. Updated after roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CANV-01 | Phase 22 | Pending |
-| CANV-02 | Phase 22 | Pending |
-| CANV-03 | Phase 23 | Complete |
-| CANV-04 | Phase 23 | Complete |
-| CANV-05 | Phase 23 | Complete |
-| CANV-06 | Phase 22 | Complete |
-| CANV-07 | Phase 23 | Complete |
-| CANV-08 | Phase 23 | Complete |
-| CANV-09 | Phase 22 | Pending |
-| CANV-10 | Phase 22 | Complete |
-| API-01 | Phase 22 | Complete |
-| API-02 | Phase 24 | Pending |
-| API-03 | Phase 22 | Pending |
-| API-04 | Phase 24 | Pending |
-| GOV-01 | Phase 25 | Pending |
-| GOV-02 | Phase 25 | Pending |
-| GOV-03 | Phase 25 | Pending |
-| GOV-04 | Phase 25 | Pending |
-| GOV-05 | Phase 25 | Pending |
-| GOV-06 | Phase 25 | Pending |
-| GOV-07 | Phase 25 | Pending |
-| AUTH-01 | Phase 24 | Pending |
-| AUTH-02 | Phase 24 | Pending |
-| AUTH-03 | Phase 24 | Pending |
-| AUTH-04 | Phase 24 | Pending |
-| AUTH-05 | Phase 24 | Pending |
-| AUTH-06 | Phase 23 | Complete |
-| COLLAB-01 | Phase 26 | Pending |
-| COLLAB-02 | Phase 26 | Pending |
-| INFRA-01 | Phase 22 | Complete |
-| INFRA-02 | Phase 22 | Pending |
+| PKG-01 | Phase 28 | Pending |
+| PKG-02 | Phase 28 | Pending |
+| PKG-03 | Phase 28 | Pending |
+| PKG-04 | Phase 28 | Pending |
+| PKG-05 | Phase 28 | Pending |
+| PKG-06 | Phase 28 | Pending |
+| RENAME-01 | Phase 27 | Pending |
+| RENAME-02 | Phase 27 | Pending |
+| RENAME-03 | Phase 27 | Pending |
+| RENAME-04 | Phase 27 | Pending |
+| RENAME-05 | Phase 27 | Pending |
+| DOCS-01 | Phase 30 | Pending |
+| DOCS-02 | Phase 30 | Pending |
+| DOCS-03 | Phase 31 | Pending |
+| DOCS-04 | Phase 31 | Pending |
+| DOCS-05 | Phase 30 | Pending |
+| DOCS-06 | Phase 31 | Pending |
+| DOCS-07 | Phase 32 | Pending |
+| DOCS-08 | Phase 32 | Pending |
+| DOCS-09 | Phase 32 | Pending |
+| DOCS-10 | Phase 32 | Pending |
+| DOCS-11 | Phase 32 | Pending |
+| DOCS-12 | Phase 31 | Pending |
+| SITE-01 | Phase 30 | Pending |
+| SITE-02 | Phase 30 | Pending |
+| SITE-03 | Phase 30 | Pending |
+| SITE-04 | Phase 30 | Pending |
+| STUDIO-01 | Phase 29 | Pending |
+| STUDIO-02 | Phase 29 | Pending |
+| STUDIO-03 | Phase 29 | Pending |
+| STUDIO-04 | Phase 29 | Pending |
+| STUDIO-05 | Phase 29 | Pending |
+| ARCHIVE-01 | Phase 27 | Pending |
+| ARCHIVE-02 | Phase 27 | Pending |
+| ARCHIVE-03 | Phase 27 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 31 total
-- Mapped to phases: 31
+- v3.0 requirements: 34 total
+- Mapped to phases: 34
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-04-09*
-*Last updated: 2026-04-09 after roadmap creation*
+
+## v2.0 Requirements (Zeroth Studio — partially shipped)
+
+Phases 22–23 shipped in v2.0. Phases 24–26 deferred to the new `zeroth-studio` repo — see "Deferred to `zeroth-studio` repo" above. v2.0 REQ-IDs are preserved for history but not re-mapped in v3.0.
+
+### Canvas Foundation
+
+- [x] **CANV-01** · [x] **CANV-02** · [x] **CANV-03** · [x] **CANV-04** · [x] **CANV-05** · [x] **CANV-06** · [x] **CANV-07** · [x] **CANV-08** · [x] **CANV-09** · [x] **CANV-10**
+
+### Graph Authoring API
+
+- [x] **API-01** · [x] **API-03** · [ ] **API-02** (→ zeroth-studio) · [ ] **API-04** (→ zeroth-studio)
+
+### Governance Visualization
+
+- [ ] **GOV-01** … **GOV-07** (→ zeroth-studio)
+
+### AI Authoring
+
+- [ ] **AUTH-01** … **AUTH-05** (→ zeroth-studio) · [x] **AUTH-06**
+
+### Versioning & Collaboration
+
+- [ ] **COLLAB-01** · [ ] **COLLAB-02** (→ zeroth-studio)
+
+### Deployment & Infrastructure
+
+- [x] **INFRA-01** · [x] **INFRA-02**
+
+---
+
+*Requirements last updated: 2026-04-10 after v3.0 milestone kickoff.*

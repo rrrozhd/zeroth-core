@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
-status: defining_requirements
-stopped_at: Milestone v3.0 initialized — requirements pending
-last_updated: "2026-04-10T15:45:00.000Z"
+status: ready_to_plan
+stopped_at: v3.0 roadmap written — ready to plan Phase 27
+last_updated: "2026-04-10T16:30:00.000Z"
 last_activity: 2026-04-10
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 27 (Monolith Archive & Namespace Rename) — not yet planned
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-10 — Milestone v3.0 started
+Status: v3.0 roadmap written; ready to plan Phase 27
+Last activity: 2026-04-10 — v3.0 REQUIREMENTS.md + ROADMAP.md written
 
-Progress: [░░░░░░░░░░] 0% (v3.0)
+Progress: [░░░░░░░░░░] 0% (v3.0, 6 phases)
 
 ## Performance Metrics
 
@@ -43,6 +43,10 @@ Progress: [░░░░░░░░░░] 0% (v3.0)
 - Files changed: 350 (+47,444 / -3,273 lines)
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 27 added: Ship Zeroth as pip-installable library (zeroth-core)
 
 ### Decisions
 
