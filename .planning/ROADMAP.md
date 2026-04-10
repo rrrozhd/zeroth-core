@@ -56,7 +56,7 @@
 
 **Milestone Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
 
-- [~] **Phase 27: Monolith Archive & Namespace Rename** — Preserve the monolithic repo in a multi-layer archive, then relocate all Python source from `zeroth.*` to `zeroth.core.*` (pure rename, zero deletions). Much of this is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/` — this phase formalizes and verifies it.
+- [~] **Phase 27: Monolith Archive & Namespace Rename** — Preserve the monolithic repo in a multi-layer archive, then relocate all Python source from `zeroth.*` to `zeroth.core.*` (pure rename, zero deletions). Much of this is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/` — this phase formalizes and verifies it. (3/4 plans complete)
 - [ ] **Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)** — Publish both packages to PyPI via trusted publisher, with optional-dependency extras declared and verified installable end-to-end.
 - [ ] **Phase 29: Studio Repo Split** — Create `rrrozhd/zeroth-studio` as a public repo with preserved git history, independent CI, HTTP-only consumption of `zeroth-core`, and cross-repo compatibility matrix.
 - [ ] **Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough** — Stand up mkdocs-material with Diátaxis IA, deploy on every main commit, and ship the "first working path" pages: landing, Getting Started, governance walkthrough tutorial.
@@ -101,7 +101,7 @@
   3. All Python source lives under `zeroth.core.*` with no top-level `zeroth/__init__.py` (PEP 420 namespace package), no deletions, no functional changes
   4. The full existing test suite (280+ tests) passes against the renamed package with zero skips and zero regressions
   5. Docstring coverage on the `zeroth.core.*` public surface reaches ≥90% (measured by `interrogate`) using a single consistent style (Google-style)
-**Plans**: TBD
+**Plans**: 3/4 plans complete
 **Notes**: Much of the rename and tarball work is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/`. This phase formalizes that scratch work — the plan will decide whether to adopt it, rebuild it, or merge-in selectively.
 
 ### Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)
