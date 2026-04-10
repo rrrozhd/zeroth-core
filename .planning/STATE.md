@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
-status: planning
+status: executing
 stopped_at: Phase 27 context gathered
-last_updated: "2026-04-10T15:42:16.829Z"
-last_activity: 2026-04-10 — v3.0 REQUIREMENTS.md + ROADMAP.md written
+last_updated: "2026-04-10T17:43:57.057Z"
+last_activity: 2026-04-10 -- Phase 27 execution started
 progress:
   total_phases: 8
   completed_phases: 2
-  total_plans: 10
+  total_plans: 14
   completed_plans: 10
   percent: 0
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** v3.0 milestone — extract `zeroth-core` as a pip-installable library, split Studio to its own repo, write comprehensive usage docs.
+**Current focus:** Phase 27 — ship-zeroth-as-pip-installable-library-zeroth-core
 
 ## Current Position
 
-Phase: 27 (Monolith Archive & Namespace Rename) — not yet planned
-Plan: —
-Status: v3.0 roadmap written; ready to plan Phase 27
-Last activity: 2026-04-10 — v3.0 REQUIREMENTS.md + ROADMAP.md written
+Phase: 27 (ship-zeroth-as-pip-installable-library-zeroth-core) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 27
+Last activity: 2026-04-10 -- Phase 27 execution started
 
 Progress: [░░░░░░░░░░] 0% (v3.0, 6 phases)
 
