@@ -8,16 +8,24 @@ Zeroth is a governed medium-code platform for building, running, and deploying p
 
 Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
 
-## Current Milestone: v2.0 Zeroth Studio
+## Current Milestone: v3.0 Core Library Extraction, Studio Split & Documentation
 
-**Goal:** Build a visual workflow authoring UI for governed multi-agent systems, using Vue 3 + Vue Flow, informed by n8n's canvas patterns but reimplemented for Zeroth's governance-first domain model.
+**Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth usage documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
 
 **Target features:**
-- Visual graph editor (Vue Flow canvas) with node placement, edge drawing, auto-layout
-- Graph authoring API (REST/WS) bridging Studio frontend to Zeroth's backend
-- Studio shell with workflow rail, canvas area, and inspector panel
-- Reusable asset authoring (agents, execution units, approval gates, memory resources)
-- Environment management and deployment-time bindings
+- `zeroth-core` PyPI distribution containing the full Python codebase under `zeroth.core.*` namespace (full rename, zero deletions, all functionality preserved)
+- `econ-instrumentation-sdk` published to PyPI to replace the local file-path dependency
+- `zeroth-studio` separate public repo containing the Vue 3 + Vue Flow frontend, depending on `zeroth-core` via HTTP API only — v2.0 phases 24-26 continue there
+- Complete, in-depth documentation for every `zeroth-core` subsystem: getting started, core concepts, per-module guides (graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service), HTTP & Python API references, integration recipes, deployment guide, migration guide
+- Full multi-layer archive of the existing monolithic repo (tarball + bare mirror + GitHub archive)
+
+**Pivot context:** v2.0 Zeroth Studio phases 22-23 are shipped; phases 24-26 (Execution & AI Authoring, Governance Visualization, Versioning & Collaboration) are **not cancelled** — they move to the new `zeroth-studio` repo with their own roadmap. This milestone is a packaging and structural change, not a scope reduction. Most of Phase 0 (preservation) and significant progress on Phase 1 (core library extraction) have been completed ad-hoc prior to formalizing this milestone.
+
+## Prior Milestone: v2.0 Zeroth Studio (partially shipped)
+
+**Status:** Phases 22-23 shipped (2026-04-09). Phases 24-26 deferred to `zeroth-studio` separate repo as part of v3.0 milestone pivot.
+
+**Goal:** Build a visual workflow authoring UI for governed multi-agent systems, using Vue 3 + Vue Flow, informed by n8n's canvas patterns but reimplemented for Zeroth's governance-first domain model.
 
 ## Current State
 
@@ -47,13 +55,19 @@ The platform is production-viable: real LLM providers, economic controls, extern
 - ✓ API versioning (/v1/), OpenAPI spec, TLS/HTTPS support — v1.1
 - ✓ Native LLM API parity: tool schemas, structured output, model params, MCP servers — v1.1
 
-### Active
+### Active (v3.0)
 
-- [ ] Visual graph editor with interactive node placement and edge drawing
-- [ ] Graph authoring API (REST/WS) for Studio frontend
-- [ ] Studio shell with workflow rail, canvas, inspector
-- [ ] Reusable asset authoring (agents, execution units, memory resources)
-- [ ] Environment management and deployment-time bindings
+- [ ] Extract all Python code into `zeroth-core` PyPI-installable library under `zeroth.core.*` namespace
+- [ ] Publish `econ-instrumentation-sdk` (Regulus SDK) to PyPI
+- [ ] Move Vue Studio frontend to separate public `zeroth-studio` repo with independent CI
+- [ ] Write in-depth documentation for every `zeroth-core` subsystem (getting started, core concepts, subsystem guides, API references, integration recipes, deployment, migration)
+- [ ] Multi-layer archive of monolithic repo (tarball, bare mirror, GitHub `rrrozhd/zeroth-archive`)
+
+### Deferred to `zeroth-studio` repo (v2.0 phases 24-26)
+
+- [ ] Canvas execution & AI authoring (WebSocket real-time updates, per-node results, model selector, prompt editor, tool attachment)
+- [ ] Governance visualization (approval gates, audit trail, sandbox badges, RBAC-aware canvas, cost/budget display)
+- [ ] Graph versioning & collaborative presence indicators
 
 ### Out of Scope
 
@@ -84,6 +98,10 @@ Mature Python backend with 280+ tests, lint clean, broad pytest coverage. Govern
 | LiteLLM as provider abstraction layer | Routes to 100+ models without per-provider adapters | ✓ Good — unified retry/token capture |
 | Worktree isolation for parallel phase development | Independent progress on subsystems | ⚠️ Revisit — creates integration wiring gaps |
 | Bootstrap wiring as dedicated integration phase | Connects independently developed subsystems | ✓ Good — effective gap closure pattern |
+| v3.0 pivot: extract core as pip-installable library before completing Studio | User needs backend library for embedding in their own apps/services; current structure couples UI and backend in one repo | — Pending |
+| Take EVERYTHING into `zeroth.core.*` (no core/platform file split) | Pragmatic: a pure rename avoids refactoring cascade from broken `__init__.py` re-exports; some core functionality requires optional deps to actually use, which is fine | — Pending |
+| PEP 420 namespace `zeroth.core.*` (no top-level `zeroth/__init__.py`) | Leaves room for future sibling packages to share the `zeroth.*` namespace without import collisions | — Pending |
+| Studio UI moves to separate public repo rather than staying in a monorepo | Independent release cadence, simpler CI, clearer separation of backend library vs frontend app | — Pending |
 
 ## Constraints
 
@@ -111,4 +129,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-09 after Phase 22 Canvas Foundation complete*
+*Last updated: 2026-04-10 — Milestone v3.0 initialized; pivoting to core library extraction and Studio repo split.*
