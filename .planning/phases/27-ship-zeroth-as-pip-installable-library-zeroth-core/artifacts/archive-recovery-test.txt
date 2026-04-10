@@ -1,0 +1,24 @@
+checkout=main
+main
+f6d8c9a docs: add archived repository notice
+39d3f08 docs(18-01): complete cross-phase integration wiring plan
+b9ce5f2 fix(18-01): remove double /v1/ prefix from cost API routes and update tests
+52ed53c feat(18-01): add DispatchSettings and wire ARQ pool, cost estimator, real memory settings in bootstrap
+7f2a125 docs(18-cross-phase-integration-wiring): create phase plan
+
+checkout=archive/stash-0
+archive/stash-0
+05f60c7 WIP on (no branch): 1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+71a6ff2 index on (no branch): 1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+1a87a5d docs(22-06): gap closure plan for studio_api async/await fix
+5ef30b4 docs(22-05): complete Docker multi-container deployment plan
+fc7f8f8 feat(22-05): add Docker multi-container deployment for Studio SPA
+
+checkout=archive/detached-wt-34170e0463cc
+archive/detached-wt-34170e0463cc
+34170e0 chore(27-01): add archive preflight automation
+a500941 docs(state): record phase 27 context session
+bdb3fc3 docs(27): capture phase context
+d5afdae docs: write v3.0 requirements and roadmap (6 phases, 34 requirements)
+94e9ba3 docs: start milestone v3.0 Core Library Extraction, Studio Split & Documentation
+

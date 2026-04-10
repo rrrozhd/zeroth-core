@@ -1,0 +1,18 @@
+$ gh repo view rrrozhd/zeroth-archive --json name,description,isArchived
+{"description":"Archived monolithic Zeroth repo — see rrrozhd/zeroth-core and rrrozhd/zeroth-studio","isArchived":false,"name":"zeroth-archive"}
+$ gh repo edit rrrozhd/zeroth-archive --visibility public --accept-visibility-change-consequences
+$ git -C /Users/dondoe/archives/zeroth-monolith/zeroth-monolith.git remote set-url origin git@github.com:rrrozhd/zeroth-archive.git
+$ git -C /Users/dondoe/archives/zeroth-monolith/zeroth-monolith.git push --mirror origin
+To github.com:rrrozhd/zeroth-archive.git
+ + 3714001...39d3f08 main -> main (forced update)
+$ git clone git@github.com:rrrozhd/zeroth-archive.git /tmp/zeroth-archive-readme
+Cloning into '/tmp/zeroth-archive-readme'...
+$ git -C /tmp/zeroth-archive-readme add README.md
+$ git -C /tmp/zeroth-archive-readme commit -m docs: add archived repository notice
+[main f6d8c9a] docs: add archived repository notice
+ 1 file changed, 2 insertions(+)
+$ git -C /tmp/zeroth-archive-readme push origin HEAD
+To github.com:rrrozhd/zeroth-archive.git
+   39d3f08..f6d8c9a  HEAD -> main
+$ gh repo edit rrrozhd/zeroth-archive --description Archived monolithic Zeroth repo — see rrrozhd/zeroth-core and rrrozhd/zeroth-studio
+$ gh repo archive rrrozhd/zeroth-archive --yes
