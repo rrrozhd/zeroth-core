@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: executing
-stopped_at: Phase 27 Plan 27-03 complete
-last_updated: "2026-04-10T18:12:17Z"
+stopped_at: Phase 27 complete
+last_updated: "2026-04-10T18:32:05Z"
 last_activity: 2026-04-10
 progress:
   total_phases: 8
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 14
-  completed_plans: 13
-  percent: 0
+  completed_plans: 14
+  percent: 38
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 27 — ship-zeroth-as-pip-installable-library-zeroth-core
+**Current focus:** Phase 28 — PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)
 
 ## Current Position
 
-Phase: 27 (ship-zeroth-as-pip-installable-library-zeroth-core) — EXECUTING
-Plan: 4 of 4
-Status: Ready to execute
+Phase: 28 (PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)) — READY FOR PLANNING
+Plan: not started
+Status: Phase 27 complete; next step is Phase 28 planning
 Last activity: 2026-04-10
 
-Progress: [░░░░░░░░░░] 0% (v3.0, 6 phases)
+Progress: [████░░░░░░] 38% (phases 22, 23, and 27 complete in the current split roadmap)
 
 ## Performance Metrics
 
@@ -47,6 +47,7 @@ Progress: [░░░░░░░░░░] 0% (v3.0, 6 phases)
 ### Roadmap Evolution
 
 - Phase 27 added: Ship Zeroth as pip-installable library (zeroth-core)
+- Phase 27 completed: archive, namespace rename, CI/docstring gate, and post-rename verification all recorded in checked-in artifacts
 
 ### Decisions
 
@@ -75,9 +76,9 @@ v2.0 (retained for reference):
 
 ### Pending Todos
 
-- Requirements & roadmap for v3.0 (in progress — via /gsd:new-milestone)
-- Execution continuation: Phase 1 of the split is partially done in /tmp/zeroth-split/zeroth-core-build (filter-repo rename + codemod + pyproject + verified test collection). After roadmap approval, this work maps onto the first phase(s) of v3.0.
-- Decide: rename ad-hoc `pre-split-head` branch commits into formal phase artifacts, or treat scratch as throwaway and rebuild inside the real phase execution.
+- Plan and execute Phase 28 publication work (`econ-instrumentation-sdk` + `zeroth-core`)
+- Configure the missing Regulus GitHub remote so the econ SDK can be published from a normal public origin
+- Complete the manual PyPI trusted-publisher setup for both packages
 
 ### Blockers/Concerns
 
@@ -87,6 +88,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-10T18:12:17Z
-Stopped at: Phase 27 Plan 27-03 complete
-Resume: Execute Plan 27-04 to add docstring coverage gates, CI verification, and the post-rename full-suite comparison
+Last session: 2026-04-10T18:32:05Z
+Stopped at: Phase 27 complete
+Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)

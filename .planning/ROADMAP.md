@@ -56,7 +56,7 @@
 
 **Milestone Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
 
-- [~] **Phase 27: Monolith Archive & Namespace Rename** — Preserve the monolithic repo in a multi-layer archive, then relocate all Python source from `zeroth.*` to `zeroth.core.*` (pure rename, zero deletions). Much of this is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/` — this phase formalizes and verifies it. (3/4 plans complete)
+- [x] **Phase 27: Monolith Archive & Namespace Rename** — Preserve the monolithic repo in a multi-layer archive, then relocate all Python source from `zeroth.*` to `zeroth.core.*` (pure rename, zero deletions). Much of this is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/` — this phase formalizes and verifies it. (4/4 plans complete, completed 2026-04-10)
 - [ ] **Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)** — Publish both packages to PyPI via trusted publisher, with optional-dependency extras declared and verified installable end-to-end.
 - [ ] **Phase 29: Studio Repo Split** — Create `rrrozhd/zeroth-studio` as a public repo with preserved git history, independent CI, HTTP-only consumption of `zeroth-core`, and cross-repo compatibility matrix.
 - [ ] **Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough** — Stand up mkdocs-material with Diátaxis IA, deploy on every main commit, and ship the "first working path" pages: landing, Getting Started, governance walkthrough tutorial.
@@ -101,8 +101,8 @@
   3. All Python source lives under `zeroth.core.*` with no top-level `zeroth/__init__.py` (PEP 420 namespace package), no deletions, no functional changes
   4. The full existing test suite (280+ tests) passes against the renamed package with zero skips and zero regressions
   5. Docstring coverage on the `zeroth.core.*` public surface reaches ≥90% (measured by `interrogate`) using a single consistent style (Google-style)
-**Plans**: 3/4 plans complete
-**Notes**: Much of the rename and tarball work is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/`. This phase formalizes that scratch work — the plan will decide whether to adopt it, rebuild it, or merge-in selectively.
+**Plans**: 4/4 plans complete
+**Notes**: Completed 2026-04-10. The final verification pass added the CI/docstring gate, captured post-rename interrogate/pytest artifacts, fixed the remaining codemod regressions in `live_scenarios/`, and proved the rename introduced no new `FAILED`/`ERROR`/`SKIPPED` entries versus baseline.
 
 ### Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)
 **Goal**: Both `econ-instrumentation-sdk` and `zeroth-core` are published to PyPI via GitHub Actions trusted publisher, a clean-venv install of `zeroth-core[all]` succeeds, and every declared optional extra is verified installable
@@ -199,7 +199,7 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 24. Execution & AI Authoring | v2.0 | — | Moved to `zeroth-studio` | — |
 | 25. Governance Visualization | v2.0 | — | Moved to `zeroth-studio` | — |
 | 26. Versioning & Collaboration | v2.0 | — | Moved to `zeroth-studio` | — |
-| 27. Monolith Archive & Namespace Rename | v3.0 | 2/4 | In Progress|  |
+| 27. Monolith Archive & Namespace Rename | v3.0 | 4/4 | Complete | 2026-04-10 |
 | 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 0/? | Not started | — |
 | 29. Studio Repo Split | v3.0 | 0/? | Not started | — |
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 0/? | Not started | — |
