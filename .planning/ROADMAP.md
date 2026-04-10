@@ -199,7 +199,7 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 24. Execution & AI Authoring | v2.0 | — | Moved to `zeroth-studio` | — |
 | 25. Governance Visualization | v2.0 | — | Moved to `zeroth-studio` | — |
 | 26. Versioning & Collaboration | v2.0 | — | Moved to `zeroth-studio` | — |
-| 27. Monolith Archive & Namespace Rename | v3.0 | 0/? | In progress (ad-hoc) | — |
+| 27. Monolith Archive & Namespace Rename | v3.0 | 1/4 | In Progress|  |
 | 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 0/? | Not started | — |
 | 29. Studio Repo Split | v3.0 | 0/? | Not started | — |
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 0/? | Not started | — |
