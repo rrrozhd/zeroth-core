@@ -34,7 +34,7 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 - [x] **DOCS-06**: A Cookbook section contains at least 10 cross-subsystem recipes at launch (examples: add a human approval step, attach pgvector memory to a node, cap a run's budget with Regulus, sandbox a Python execution unit, retry a failed webhook from the DLQ)
 - [ ] **DOCS-07**: Python API Reference is auto-generated from docstrings via mkdocstrings + Griffe for the full public surface
 - [ ] **DOCS-08**: HTTP API Reference is rendered from the FastAPI OpenAPI spec and published alongside the Python reference
-- [ ] **DOCS-09**: Configuration Reference is auto-generated from pydantic-settings schemas and documents every env var, default, and secret
+- [x] **DOCS-09**: Configuration Reference is auto-generated from pydantic-settings schemas and documents every env var, default, and secret
 - [ ] **DOCS-10**: Deployment Guide covers local dev, docker-compose, standalone service mode, embedded-in-host-app mode, and deployments with/without the Regulus companion service
 - [ ] **DOCS-11**: Migration Guide explains how to move from the monolithic `zeroth.*` layout to `zeroth.core.*` (import rename pattern, econ SDK path swap, env var changes, Docker image retag)
 - [x] **DOCS-12**: An `examples/` directory at the repo root contains runnable `.py` files (not notebooks) exercising the main subsystems, and CI smoke-tests each on every main commit
@@ -123,7 +123,7 @@ Which phases cover which requirements. Updated after roadmap creation.
 | DOCS-06 | Phase 31 | Complete |
 | DOCS-07 | Phase 32 | Pending |
 | DOCS-08 | Phase 32 | Pending |
-| DOCS-09 | Phase 32 | Pending |
+| DOCS-09 | Phase 32 | Complete |
 | DOCS-10 | Phase 32 | Pending |
 | DOCS-11 | Phase 32 | Pending |
 | DOCS-12 | Phase 31 | Complete |

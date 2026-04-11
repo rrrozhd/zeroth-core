@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: verifying
-stopped_at: Completed 31-05-cookbook-examples-and-nav-finalize-PLAN.md
-last_updated: "2026-04-11T21:05:13.392Z"
+stopped_at: Completed 32-03-configuration-reference-dump-config-PLAN.md
+last_updated: "2026-04-11T21:28:28.401Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 31
-  completed_plans: 31
-  percent: 100
+  total_plans: 37
+  completed_plans: 32
+  percent: 86
 ---
 
 # Project State
@@ -93,6 +93,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T21:05:13.390Z
-Stopped at: Completed 31-05-cookbook-examples-and-nav-finalize-PLAN.md
+Last session: 2026-04-11T21:28:28.398Z
+Stopped at: Completed 32-03-configuration-reference-dump-config-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)
