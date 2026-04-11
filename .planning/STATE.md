@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: executing
-stopped_at: Completed 29-01-preflight-in-zeroth-core-PLAN.md
-last_updated: "2026-04-11T11:24:44.563Z"
+stopped_at: Completed 29-02-filter-repo-extract-and-create-remote-PLAN.md
+last_updated: "2026-04-11T11:28:44.425Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 21
-  completed_plans: 18
-  percent: 86
+  completed_plans: 19
+  percent: 90
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 ## Current Position
 
 Phase: 29 (studio-repo-split) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-04-11
 
@@ -74,6 +74,7 @@ v2.0 (retained for reference):
 - [Phase 23]: Palette replaces workflow list conditionally using editor mode + workflow loaded check
 - [Phase 23]: Used inject/provide for cross-component validation state
 - [Phase 29]: Use SimpleNamespace stub bootstrap inside scripts/dump_openapi.py so OpenAPI generation needs no DB or secrets
+- [Phase 29]: Filter-repo produced 29 commits (not 32); planner baseline included tests/test_studio_api.py which is excluded from this filter
 
 ### Pending Todos
 
@@ -87,6 +88,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T11:24:39.418Z
-Stopped at: Completed 29-01-preflight-in-zeroth-core-PLAN.md
+Last session: 2026-04-11T11:28:44.358Z
+Stopped at: Completed 29-02-filter-repo-extract-and-create-remote-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)

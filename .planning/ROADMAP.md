@@ -131,10 +131,10 @@ Plans:
   3. `zeroth-studio`'s only contract with `zeroth-core` is HTTP/OpenAPI — its frontend types are generated from the `zeroth-core` OpenAPI spec via `openapi-typescript`
   4. Both repos' READMEs cross-link, and a `zeroth-studio × zeroth-core` compatibility matrix is documented and maintained
   5. A developer can clone `zeroth-studio`, run `npm install && npm run dev`, and develop against a running `zeroth-core` service without any cross-repo source dependencies
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 Plans:
 - [x] 29-01-preflight-in-zeroth-core-PLAN.md — add scripts/dump_openapi.py + commit snapshot; wire VITE_API_BASE_URL through apps/studio; add ESLint flat config + split typecheck/build + bundle standalone nginx.conf (in-place, so filter-repo carries it)
-- [ ] 29-02-filter-repo-extract-and-create-remote-PLAN.md — fresh --no-local clone to /tmp/zeroth-studio-split, run git filter-repo for the three paths, gh repo create rrrozhd/zeroth-studio, two-step push to main
+- [x] 29-02-filter-repo-extract-and-create-remote-PLAN.md — fresh --no-local clone to /tmp/zeroth-studio-split, run git filter-repo for the three paths, gh repo create rrrozhd/zeroth-studio, two-step push to main
 - [ ] 29-03-bootstrap-new-repo-ci-and-types-PLAN.md — copy openapi snapshot + generate types.gen.ts, add LICENSE/CHANGELOG/CONTRIBUTING/README with compat matrix, add GitHub Actions CI (lint/typecheck/build/test/drift-check), push and verify green
 - [ ] 29-04-cleanup-zeroth-core-PLAN.md — safety-gate on zeroth-studio CI green, delete apps/studio, apps/studio-mockups, tests/studio from zeroth-core (preserving tests/test_studio_api.py), add Studio section to zeroth-core README
 **UI hint**: yes (frontend repo, but no new UI features in this phase — move only)
@@ -211,7 +211,7 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 26. Versioning & Collaboration | v2.0 | — | Moved to `zeroth-studio` | — |
 | 27. Monolith Archive & Namespace Rename | v3.0 | 4/4 | Complete | 2026-04-10 |
 | 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 3/3 | Complete   | 2026-04-11 |
-| 29. Studio Repo Split | v3.0 | 1/4 | In Progress|  |
+| 29. Studio Repo Split | v3.0 | 2/4 | In Progress|  |
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 0/? | Not started | — |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 0/? | Not started | — |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 0/? | Not started | — |
