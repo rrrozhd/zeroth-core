@@ -49,10 +49,10 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 ### Studio Repo Split (STUDIO)
 
 - [ ] **STUDIO-01**: A new public repository `rrrozhd/zeroth-studio` contains the Vue 3 + Vue Flow frontend with its full git history preserved (subtree or filter-repo)
-- [ ] **STUDIO-02**: `zeroth-studio` has its own independent CI pipeline (lint, typecheck, build, test) passing on its default branch
-- [ ] **STUDIO-03**: `zeroth-studio` consumes `zeroth-core` only via HTTP/OpenAPI — no Python imports, no shared source tree
+- [x] **STUDIO-02**: `zeroth-studio` has its own independent CI pipeline (lint, typecheck, build, test) passing on its default branch
+- [x] **STUDIO-03**: `zeroth-studio` consumes `zeroth-core` only via HTTP/OpenAPI — no Python imports, no shared source tree
 - [ ] **STUDIO-04**: Both repositories' READMEs cross-link to each other, and a cross-repo compatibility matrix (`zeroth-studio` version ↔ `zeroth-core` version) is documented and maintained in at least one of them
-- [ ] **STUDIO-05**: The frontend types used by `zeroth-studio` are generated from the `zeroth-core` OpenAPI spec via `openapi-typescript`, keeping the two in sync without manual edits
+- [x] **STUDIO-05**: The frontend types used by `zeroth-studio` are generated from the `zeroth-core` OpenAPI spec via `openapi-typescript`, keeping the two in sync without manual edits
 
 ### Monolith Archive (ARCHIVE)
 
@@ -132,10 +132,10 @@ Which phases cover which requirements. Updated after roadmap creation.
 | SITE-03 | Phase 30 | Pending |
 | SITE-04 | Phase 30 | Pending |
 | STUDIO-01 | Phase 29 | Pending |
-| STUDIO-02 | Phase 29 | Pending |
-| STUDIO-03 | Phase 29 | Pending |
+| STUDIO-02 | Phase 29 | Complete |
+| STUDIO-03 | Phase 29 | Complete |
 | STUDIO-04 | Phase 29 | Pending |
-| STUDIO-05 | Phase 29 | Pending |
+| STUDIO-05 | Phase 29 | Complete |
 | ARCHIVE-01 | Phase 27 | Pending |
 | ARCHIVE-02 | Phase 27 | Pending |
 | ARCHIVE-03 | Phase 27 | Pending |

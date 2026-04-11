@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: executing
-stopped_at: Phase 27 complete
-last_updated: "2026-04-11T00:00:00Z"
-last_activity: 2026-04-11 -- Phase 28 execution started
+stopped_at: Completed 29-01-preflight-in-zeroth-core-PLAN.md
+last_updated: "2026-04-11T11:24:44.563Z"
+last_activity: 2026-04-11
 progress:
   total_phases: 8
-  completed_phases: 3
-  total_plans: 17
-  completed_plans: 14
-  percent: 82
+  completed_phases: 4
+  total_plans: 21
+  completed_plans: 18
+  percent: 86
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 28 — pypi-publishing-econ-instrumentation-sdk-zeroth-core
+**Current focus:** Phase 29 — studio-repo-split
 
 ## Current Position
 
-Phase: 28 (pypi-publishing-econ-instrumentation-sdk-zeroth-core) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 28
-Last activity: 2026-04-11 -- Phase 28 execution started
+Phase: 29 (studio-repo-split) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-04-11
 
 Progress: [████░░░░░░] 38% (phases 22, 23, and 27 complete in the current split roadmap)
 
@@ -73,6 +73,7 @@ v2.0 (retained for reference):
 - [Phase 23]: Compound command pattern for auto-layout
 - [Phase 23]: Palette replaces workflow list conditionally using editor mode + workflow loaded check
 - [Phase 23]: Used inject/provide for cross-component validation state
+- [Phase 29]: Use SimpleNamespace stub bootstrap inside scripts/dump_openapi.py so OpenAPI generation needs no DB or secrets
 
 ### Pending Todos
 
@@ -86,6 +87,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-10T18:32:05Z
-Stopped at: Phase 27 complete
+Last session: 2026-04-11T11:24:39.418Z
+Stopped at: Completed 29-01-preflight-in-zeroth-core-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)
