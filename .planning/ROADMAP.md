@@ -187,10 +187,10 @@ Plans:
   3. Configuration Reference is auto-generated from the pydantic-settings schemas and documents every env var, its default, and whether it is a secret
   4. Deployment Guide covers local development, docker-compose, standalone service mode, embedded-in-host-app mode, and deployments with and without the Regulus companion service
   5. Migration Guide walks an existing monolith user through the switch to `zeroth.core.*` — import rename pattern, econ SDK path swap, env var changes, and Docker image retag
-**Plans:** 1/6 plans executed
+**Plans:** 2/6 plans executed
 Plans:
 - [ ] 32-01-python-api-reference-mkdocstrings-PLAN.md — mkdocstrings+Griffe, 20 subsystem pages, Usage Guide cross-link rewrites (DOCS-07)
-- [ ] 32-02-http-api-reference-swagger-PLAN.md — Swagger UI embed + dump_openapi.py --check drift flag (DOCS-08)
+- [x] 32-02-http-api-reference-swagger-PLAN.md — Swagger UI embed + dump_openapi.py --check drift flag (DOCS-08)
 - [x] 32-03-configuration-reference-dump-config-PLAN.md — scripts/dump_config.py introspects pydantic-settings + generated tables (DOCS-09)
 - [ ] 32-04-deployment-guide-PLAN.md — 5 mode pages (local-dev, docker-compose, standalone-service, embedded-library, with-regulus) + index (DOCS-10)
 - [ ] 32-05-migration-guide-PLAN.md — single comprehensive monolith→zeroth.core migration page (DOCS-11)
@@ -233,4 +233,4 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 29. Studio Repo Split | v3.0 | 4/4 | Complete   | 2026-04-11 |
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete   | 2026-04-11 |
-| 32. Reference Docs, Deployment & Migration Guide | v3.0 | 1/6 | In Progress|  |
+| 32. Reference Docs, Deployment & Migration Guide | v3.0 | 2/6 | In Progress|  |
