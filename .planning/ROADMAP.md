@@ -168,7 +168,13 @@ Plans:
   3. The Cookbook section contains at least 10 cross-subsystem recipes covering the most common Zeroth tasks (approval steps, memory attachment, budget capping, sandboxing, webhook retry, etc.)
   4. The repo root contains an `examples/` directory with runnable `.py` files (no notebooks) exercising the main subsystems
   5. A CI job smoke-tests every file in `examples/` on every commit to `main`, and the job is green
-**Plans**: TBD
+**Plans:** 1/5 plans executed
+Plans:
+- [x] 31-01-subsystems-batch-a-graph-execution-PLAN.md — Concept + Usage Guide for graph, orchestrator, agents, execution_units, conditions (10 pages)
+- [ ] 31-02-subsystems-batch-b-data-state-PLAN.md — Concept + Usage Guide for mappings, memory, storage, contracts, runs (10 pages)
+- [ ] 31-03-subsystems-batch-c-governance-PLAN.md — Concept + Usage Guide for policy, approvals, audit, guardrails, identity (10 pages)
+- [ ] 31-04-subsystems-batch-d-platform-PLAN.md — Concept + Usage Guide for secrets, dispatch, econ, service, webhooks (10 pages; threads→webhooks substitution)
+- [ ] 31-05-cookbook-examples-and-nav-finalize-PLAN.md — 10 cookbook recipes, 10 runnable examples, CI matrix extension, nav finalize, mkdocs strict build gate
 **UI hint**: yes (docs content)
 
 ### Phase 32: Reference Docs, Deployment & Migration Guide
@@ -219,5 +225,5 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 3/3 | Complete   | 2026-04-11 |
 | 29. Studio Repo Split | v3.0 | 4/4 | Complete   | 2026-04-11 |
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete   | 2026-04-11 |
-| 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 0/? | Not started | — |
+| 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 1/5 | In Progress|  |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 0/? | Not started | — |
