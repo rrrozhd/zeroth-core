@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: executing
-stopped_at: Completed 30-03-getting-started-tutorial-PLAN.md
-last_updated: "2026-04-11T19:40:01.877Z"
+stopped_at: Completed 30-04-governance-walkthrough-tutorial-PLAN.md
+last_updated: "2026-04-11T19:49:25.855Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 26
-  completed_plans: 24
-  percent: 92
+  completed_plans: 25
+  percent: 96
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 ## Current Position
 
 Phase: 30 (docs-site-foundation-getting-started-governance-walkthrough) — EXECUTING
-Plan: 4 of 5 (next: 30-03-getting-started-tutorial)
+Plan: 5 of 5 (next: 30-03-getting-started-tutorial)
 Status: Ready to execute
 Last activity: 2026-04-11
 
@@ -91,6 +91,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T19:40:01.875Z
-Stopped at: Completed 30-03-getting-started-tutorial-PLAN.md
+Last session: 2026-04-11T19:49:25.852Z
+Stopped at: Completed 30-04-governance-walkthrough-tutorial-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)

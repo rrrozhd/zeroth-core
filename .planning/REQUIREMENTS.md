@@ -30,7 +30,7 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 - [x] **DOCS-02**: Getting Started is a single linear 3-section tutorial (install → first graph with one agent/tool/LLM → run in service mode with an approval gate), reaching first working output in under 5 minutes and completing in under 30
 - [ ] **DOCS-03**: Every major `zeroth.core.*` subsystem has a Concept page (what it is, why it exists, mental model, where it fits) — covering graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service, threads
 - [ ] **DOCS-04**: Every major subsystem has a Usage Guide (Overview → Minimal example → Common patterns → Pitfalls → Reference cross-link) paired with its Concept page
-- [ ] **DOCS-05**: A Governance Walkthrough tutorial shows an end-to-end run where an approval gate stops execution, an auditor reviews the trail, and a policy blocks a tool call (Zeroth's differentiator vs. LangGraph/CrewAI)
+- [x] **DOCS-05**: A Governance Walkthrough tutorial shows an end-to-end run where an approval gate stops execution, an auditor reviews the trail, and a policy blocks a tool call (Zeroth's differentiator vs. LangGraph/CrewAI)
 - [ ] **DOCS-06**: A Cookbook section contains at least 10 cross-subsystem recipes at launch (examples: add a human approval step, attach pgvector memory to a node, cap a run's budget with Regulus, sandbox a Python execution unit, retry a failed webhook from the DLQ)
 - [ ] **DOCS-07**: Python API Reference is auto-generated from docstrings via mkdocstrings + Griffe for the full public surface
 - [ ] **DOCS-08**: HTTP API Reference is rendered from the FastAPI OpenAPI spec and published alongside the Python reference
@@ -119,7 +119,7 @@ Which phases cover which requirements. Updated after roadmap creation.
 | DOCS-02 | Phase 30 | Complete |
 | DOCS-03 | Phase 31 | Pending |
 | DOCS-04 | Phase 31 | Pending |
-| DOCS-05 | Phase 30 | Pending |
+| DOCS-05 | Phase 30 | Complete |
 | DOCS-06 | Phase 31 | Pending |
 | DOCS-07 | Phase 32 | Pending |
 | DOCS-08 | Phase 32 | Pending |
