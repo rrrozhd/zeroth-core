@@ -4,7 +4,7 @@ milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: executing
 stopped_at: Completed 30-04-governance-walkthrough-tutorial-PLAN.md
-last_updated: "2026-04-11T19:49:25.855Z"
+last_updated: "2026-04-11T19:53:08.104Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 8
@@ -88,6 +88,7 @@ v2.0 (retained for reference):
 
 - PyPI trusted-publisher setup for `zeroth-core` requires manual user action — must register the publisher on pypi.org (environment `pypi`) AND test.pypi.org (environment `testpypi`) separately. econ-instrumentation-sdk publishing lives in the Regulus repo and is out of scope for Phase 28.
 - Local parent directory `/Users/dondoe/coding/zeroth/` needs to be renamed to `zeroth-archive/`; until then, both repos cannot coexist cleanly at the intended path
+- SITE-03 (PR preview deploys) deferred to follow-up phase — GitHub Pages does not natively support PR previews and the user accepted deferral during Phase 30 planning (CONTEXT D-06). Re-open if/when docs move to Cloudflare Pages or Netlify.
 
 ## Session Continuity
 
