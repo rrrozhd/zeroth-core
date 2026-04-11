@@ -171,7 +171,7 @@ Plans:
 **Plans:** 2/5 plans executed
 Plans:
 - [x] 31-01-subsystems-batch-a-graph-execution-PLAN.md — Concept + Usage Guide for graph, orchestrator, agents, execution_units, conditions (10 pages)
-- [ ] 31-02-subsystems-batch-b-data-state-PLAN.md — Concept + Usage Guide for mappings, memory, storage, contracts, runs (10 pages)
+- [x] 31-02-subsystems-batch-b-data-state-PLAN.md — Concept + Usage Guide for mappings, memory, storage, contracts, runs (10 pages)
 - [ ] 31-03-subsystems-batch-c-governance-PLAN.md — Concept + Usage Guide for policy, approvals, audit, guardrails, identity (10 pages)
 - [x] 31-04-subsystems-batch-d-platform-PLAN.md — Concept + Usage Guide for secrets, dispatch, econ, service, webhooks (10 pages; threads→webhooks substitution)
 - [ ] 31-05-cookbook-examples-and-nav-finalize-PLAN.md — 10 cookbook recipes, 10 runnable examples, CI matrix extension, nav finalize, mkdocs strict build gate
