@@ -26,7 +26,7 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 
 ### Documentation Content (DOCS)
 
-- [ ] **DOCS-01**: Landing page presents a 10-line hello-world, install snippet, and a "Choose your path" split between embedding as a library and running as a governed service
+- [x] **DOCS-01**: Landing page presents a 10-line hello-world, install snippet, and a "Choose your path" split between embedding as a library and running as a governed service
 - [x] **DOCS-02**: Getting Started is a single linear 3-section tutorial (install → first graph with one agent/tool/LLM → run in service mode with an approval gate), reaching first working output in under 5 minutes and completing in under 30
 - [ ] **DOCS-03**: Every major `zeroth.core.*` subsystem has a Concept page (what it is, why it exists, mental model, where it fits) — covering graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service, threads
 - [ ] **DOCS-04**: Every major subsystem has a Usage Guide (Overview → Minimal example → Common patterns → Pitfalls → Reference cross-link) paired with its Concept page
@@ -41,10 +41,10 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 
 ### Documentation Site Infrastructure (SITE)
 
-- [ ] **SITE-01**: Documentation is built with mkdocs-material using explicit Diátaxis IA (Tutorials / How-to Guides / Concepts / Reference as four top-level sections)
+- [x] **SITE-01**: Documentation is built with mkdocs-material using explicit Diátaxis IA (Tutorials / How-to Guides / Concepts / Reference as four top-level sections)
 - [ ] **SITE-02**: A GitHub Actions workflow builds and deploys the docs site to a public URL on every commit to `main`
 - [ ] **SITE-03**: Pull request previews deploy a rendered version of the changed docs so reviewers see the output before merge
-- [ ] **SITE-04**: The docs site includes built-in search and an automatically generated site map
+- [x] **SITE-04**: The docs site includes built-in search and an automatically generated site map
 
 ### Studio Repo Split (STUDIO)
 
@@ -115,7 +115,7 @@ Which phases cover which requirements. Updated after roadmap creation.
 | RENAME-03 | Phase 27 | Pending |
 | RENAME-04 | Phase 27 | Pending |
 | RENAME-05 | Phase 27 | Pending |
-| DOCS-01 | Phase 30 | Pending |
+| DOCS-01 | Phase 30 | Complete |
 | DOCS-02 | Phase 30 | Complete |
 | DOCS-03 | Phase 31 | Pending |
 | DOCS-04 | Phase 31 | Pending |
@@ -127,10 +127,10 @@ Which phases cover which requirements. Updated after roadmap creation.
 | DOCS-10 | Phase 32 | Pending |
 | DOCS-11 | Phase 32 | Pending |
 | DOCS-12 | Phase 31 | Pending |
-| SITE-01 | Phase 30 | Pending |
+| SITE-01 | Phase 30 | Complete |
 | SITE-02 | Phase 30 | Pending |
 | SITE-03 | Phase 30 | Pending |
-| SITE-04 | Phase 30 | Pending |
+| SITE-04 | Phase 30 | Complete |
 | STUDIO-01 | Phase 29 | Complete |
 | STUDIO-02 | Phase 29 | Complete |
 | STUDIO-03 | Phase 29 | Complete |

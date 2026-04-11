@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: executing
-stopped_at: Completed 30-01-quickstart-helper-module-PLAN.md
-last_updated: "2026-04-11T19:21:15.987Z"
+stopped_at: Completed 30-02-docs-site-scaffold-PLAN.md
+last_updated: "2026-04-11T19:29:23.920Z"
 last_activity: 2026-04-11 -- Phase 30 execution started
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 26
-  completed_plans: 22
-  percent: 85
+  completed_plans: 23
+  percent: 88
 ---
 
 # Project State
@@ -91,6 +91,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T19:21:09.201Z
-Stopped at: Completed 30-01-quickstart-helper-module-PLAN.md
+Last session: 2026-04-11T19:29:23.917Z
+Stopped at: Completed 30-02-docs-site-scaffold-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)
