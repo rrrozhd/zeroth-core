@@ -193,7 +193,7 @@ Plans:
 - [x] 32-02-http-api-reference-swagger-PLAN.md — Swagger UI embed + dump_openapi.py --check drift flag (DOCS-08)
 - [x] 32-03-configuration-reference-dump-config-PLAN.md — scripts/dump_config.py introspects pydantic-settings + generated tables (DOCS-09)
 - [ ] 32-04-deployment-guide-PLAN.md — 5 mode pages (local-dev, docker-compose, standalone-service, embedded-library, with-regulus) + index (DOCS-10)
-- [ ] 32-05-migration-guide-PLAN.md — single comprehensive monolith→zeroth.core migration page (DOCS-11)
+- [x] 32-05-migration-guide-PLAN.md — single comprehensive monolith→zeroth.core migration page (DOCS-11)
 - [ ] 32-06-finalize-nav-ci-gates-PLAN.md — mkdocs.yml nav wiring + docs.yml drift gates + strict build verification
 
 ## Progress
