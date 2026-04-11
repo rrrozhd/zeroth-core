@@ -32,7 +32,7 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 - [x] **DOCS-04**: Every major subsystem has a Usage Guide (Overview → Minimal example → Common patterns → Pitfalls → Reference cross-link) paired with its Concept page
 - [x] **DOCS-05**: A Governance Walkthrough tutorial shows an end-to-end run where an approval gate stops execution, an auditor reviews the trail, and a policy blocks a tool call (Zeroth's differentiator vs. LangGraph/CrewAI)
 - [x] **DOCS-06**: A Cookbook section contains at least 10 cross-subsystem recipes at launch (examples: add a human approval step, attach pgvector memory to a node, cap a run's budget with Regulus, sandbox a Python execution unit, retry a failed webhook from the DLQ)
-- [ ] **DOCS-07**: Python API Reference is auto-generated from docstrings via mkdocstrings + Griffe for the full public surface
+- [x] **DOCS-07**: Python API Reference is auto-generated from docstrings via mkdocstrings + Griffe for the full public surface
 - [x] **DOCS-08**: HTTP API Reference is rendered from the FastAPI OpenAPI spec and published alongside the Python reference
 - [x] **DOCS-09**: Configuration Reference is auto-generated from pydantic-settings schemas and documents every env var, default, and secret
 - [ ] **DOCS-10**: Deployment Guide covers local dev, docker-compose, standalone service mode, embedded-in-host-app mode, and deployments with/without the Regulus companion service
@@ -121,7 +121,7 @@ Which phases cover which requirements. Updated after roadmap creation.
 | DOCS-04 | Phase 31 | Complete |
 | DOCS-05 | Phase 30 | Complete |
 | DOCS-06 | Phase 31 | Complete |
-| DOCS-07 | Phase 32 | Pending |
+| DOCS-07 | Phase 32 | Complete |
 | DOCS-08 | Phase 32 | Complete |
 | DOCS-09 | Phase 32 | Complete |
 | DOCS-10 | Phase 32 | Pending |

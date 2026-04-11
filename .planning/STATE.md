@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: verifying
-stopped_at: Completed 32-02-http-api-reference-swagger-PLAN.md
-last_updated: "2026-04-11T21:29:18.968Z"
+stopped_at: Completed 32-01-python-api-reference-mkdocstrings-PLAN.md
+last_updated: "2026-04-11T21:31:28.885Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 37
-  completed_plans: 33
-  percent: 89
+  completed_plans: 34
+  percent: 92
 ---
 
 # Project State
@@ -93,6 +93,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T21:29:18.966Z
-Stopped at: Completed 32-02-http-api-reference-swagger-PLAN.md
+Last session: 2026-04-11T21:31:28.881Z
+Stopped at: Completed 32-01-python-api-reference-mkdocstrings-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)
