@@ -59,7 +59,7 @@
 - [x] **Phase 27: Monolith Archive & Namespace Rename** — Preserve the monolithic repo in a multi-layer archive, then relocate all Python source from `zeroth.*` to `zeroth.core.*` (pure rename, zero deletions). Much of this is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/` — this phase formalizes and verifies it. (4/4 plans complete, completed 2026-04-10)
 - [x] **Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)** — Publish both packages to PyPI via trusted publisher, with optional-dependency extras declared and verified installable end-to-end. (completed 2026-04-11)
 - [x] **Phase 29: Studio Repo Split** — Create `rrrozhd/zeroth-studio` as a public repo with preserved git history, independent CI, HTTP-only consumption of `zeroth-core`, and cross-repo compatibility matrix. (completed 2026-04-11)
-- [ ] **Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough** — Stand up mkdocs-material with Diátaxis IA, deploy on every main commit, and ship the "first working path" pages: landing, Getting Started, governance walkthrough tutorial.
+- [x] **Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough** — Stand up mkdocs-material with Diátaxis IA, deploy on every main commit, and ship the "first working path" pages: landing, Getting Started, governance walkthrough tutorial. (completed 2026-04-11)
 - [ ] **Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples** — Write Concept + Usage Guide pages for all ~20 subsystems, author 10+ cookbook recipes, and ship the CI-tested `examples/` directory.
 - [ ] **Phase 32: Reference Docs, Deployment & Migration Guide** — Auto-generate Python API reference via mkdocstrings, render HTTP API reference from OpenAPI, auto-generate configuration reference from pydantic-settings, and write the deployment and migration guides.
 
@@ -149,13 +149,13 @@ Plans:
   3. The landing page shows a 10-line hello-world, install snippet, and a "Choose your path" split between embedding as a library and running as a service
   4. Getting Started is a single linear 3-section tutorial (install → first graph with one agent/tool/LLM → run in service mode with an approval gate) that produces first working output in under 5 minutes and completes in under 30
   5. A Governance Walkthrough tutorial runs end-to-end with an approval gate stopping execution, an auditor reviewing the trail, and a policy blocking a tool call
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 Plans:
 - [x] 30-01-quickstart-helper-module-PLAN.md — ship zeroth.core.examples.quickstart tutorial helper + Wave 0 test scaffold (DOCS-02)
 - [x] 30-02-docs-site-scaffold-PLAN.md — mkdocs.yml, [docs] extra, Diátaxis doc tree, landing page with Choose Your Path (SITE-01, SITE-04, DOCS-01)
 - [x] 30-03-getting-started-tutorial-PLAN.md — examples/first_graph.py + examples/approval_demo.py, Getting Started pages, examples.yml CI (DOCS-01, DOCS-02)
 - [x] 30-04-governance-walkthrough-tutorial-PLAN.md — examples/governance_walkthrough.py covering approval+auditor+policy block + tutorial page (DOCS-05)
-- [ ] 30-05-docs-deploy-workflow-PLAN.md — docs.yml GHA (build-on-PR + deploy-on-main), README link, phase-gate validation, SITE-03 deferral recorded, GH Pages enablement checkpoint (SITE-02; SITE-03 deferred)
+- [x] 30-05-docs-deploy-workflow-PLAN.md — docs.yml GHA (build-on-PR + deploy-on-main), README link, phase-gate validation, SITE-03 deferral recorded, GH Pages enablement checkpoint (SITE-02; SITE-03 deferred)
 **UI hint**: yes (docs site is the UI)
 
 ### Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples
@@ -218,6 +218,6 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 27. Monolith Archive & Namespace Rename | v3.0 | 4/4 | Complete | 2026-04-10 |
 | 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 3/3 | Complete   | 2026-04-11 |
 | 29. Studio Repo Split | v3.0 | 4/4 | Complete   | 2026-04-11 |
-| 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 4/5 | In Progress|  |
+| 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 0/? | Not started | — |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 0/? | Not started | — |

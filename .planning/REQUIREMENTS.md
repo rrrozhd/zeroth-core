@@ -42,7 +42,7 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 ### Documentation Site Infrastructure (SITE)
 
 - [x] **SITE-01**: Documentation is built with mkdocs-material using explicit Diátaxis IA (Tutorials / How-to Guides / Concepts / Reference as four top-level sections)
-- [ ] **SITE-02**: A GitHub Actions workflow builds and deploys the docs site to a public URL on every commit to `main`
+- [x] **SITE-02**: A GitHub Actions workflow builds and deploys the docs site to a public URL on every commit to `main`
 - [ ] **SITE-03**: Pull request previews deploy a rendered version of the changed docs so reviewers see the output before merge
 - [x] **SITE-04**: The docs site includes built-in search and an automatically generated site map
 
@@ -128,7 +128,7 @@ Which phases cover which requirements. Updated after roadmap creation.
 | DOCS-11 | Phase 32 | Pending |
 | DOCS-12 | Phase 31 | Pending |
 | SITE-01 | Phase 30 | Complete |
-| SITE-02 | Phase 30 | Pending |
+| SITE-02 | Phase 30 | Complete |
 | SITE-03 | Phase 30 | Pending |
 | SITE-04 | Phase 30 | Complete |
 | STUDIO-01 | Phase 29 | Complete |

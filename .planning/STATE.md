@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
-status: executing
-stopped_at: Completed 30-04-governance-walkthrough-tutorial-PLAN.md
-last_updated: "2026-04-11T19:53:08.104Z"
+status: verifying
+stopped_at: Completed 30-05-docs-deploy-workflow-PLAN.md
+last_updated: "2026-04-11T19:54:47.955Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 26
-  completed_plans: 25
-  percent: 96
+  completed_plans: 26
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 Phase: 30 (docs-site-foundation-getting-started-governance-walkthrough) — EXECUTING
 Plan: 5 of 5 (next: 30-03-getting-started-tutorial)
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-11
 
 Progress: [████░░░░░░] 38% (phases 22, 23, and 27 complete in the current split roadmap)
@@ -78,6 +78,7 @@ v2.0 (retained for reference):
 - [Phase 29]: CI drift gate uses git diff --exit-code after generate:api; drift step last so earlier failures surface first
 - [Phase 29]: Added --passWithNoTests to vitest run; apps/studio has no test files yet
 - [Phase 30]: Place tutorial helpers under src/zeroth/core/examples/ (installed package) instead of top-level examples/ so docs snippets can import them against the published wheel
+- [Phase 30]: Deploy docs via `mkdocs gh-deploy --force` in a single GHA job rather than peaceiris/actions-gh-pages — matches mkdocs-material upstream recommendation, minimises marketplace trust surface
 
 ### Pending Todos
 
@@ -92,6 +93,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T19:49:25.852Z
-Stopped at: Completed 30-04-governance-walkthrough-tutorial-PLAN.md
+Last session: 2026-04-11T19:54:37.197Z
+Stopped at: Completed 30-05-docs-deploy-workflow-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)
