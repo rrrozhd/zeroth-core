@@ -4,14 +4,14 @@ milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: executing
 stopped_at: Phase 27 complete
-last_updated: "2026-04-10T18:32:05Z"
-last_activity: 2026-04-10
+last_updated: "2026-04-11T00:00:00Z"
+last_activity: 2026-04-11 -- Phase 28 execution started
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 14
+  total_plans: 17
   completed_plans: 14
-  percent: 38
+  percent: 82
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 28 — PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)
+**Current focus:** Phase 28 — pypi-publishing-econ-instrumentation-sdk-zeroth-core
 
 ## Current Position
 
-Phase: 28 (PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)) — READY FOR PLANNING
-Plan: not started
-Status: Phase 27 complete; next step is Phase 28 planning
-Last activity: 2026-04-10
+Phase: 28 (pypi-publishing-econ-instrumentation-sdk-zeroth-core) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 28
+Last activity: 2026-04-11 -- Phase 28 execution started
 
 Progress: [████░░░░░░] 38% (phases 22, 23, and 27 complete in the current split roadmap)
 
@@ -77,13 +77,11 @@ v2.0 (retained for reference):
 ### Pending Todos
 
 - Plan and execute Phase 28 publication work (`econ-instrumentation-sdk` + `zeroth-core`)
-- Configure the missing Regulus GitHub remote so the econ SDK can be published from a normal public origin
-- Complete the manual PyPI trusted-publisher setup for both packages
+- Complete the manual PyPI trusted-publisher setup for zeroth-core on pypi.org AND test.pypi.org (two separate registrations)
 
 ### Blockers/Concerns
 
-- Regulus has no GitHub remote yet — blocks publishing `econ-instrumentation-sdk` to PyPI, which blocks a clean `zeroth-core` dependency declaration
-- PyPI trusted publisher setup for `zeroth-core` and `econ-instrumentation-sdk` requires manual user action on pypi.org
+- PyPI trusted-publisher setup for `zeroth-core` requires manual user action — must register the publisher on pypi.org (environment `pypi`) AND test.pypi.org (environment `testpypi`) separately. econ-instrumentation-sdk publishing lives in the Regulus repo and is out of scope for Phase 28.
 - Local parent directory `/Users/dondoe/coding/zeroth/` needs to be renamed to `zeroth-archive/`; until then, both repos cannot coexist cleanly at the intended path
 
 ## Session Continuity
