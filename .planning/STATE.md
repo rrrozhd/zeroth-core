@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: executing
-stopped_at: Completed 29-03-bootstrap-new-repo-ci-and-types-PLAN.md
-last_updated: "2026-04-11T11:34:10.418Z"
-last_activity: 2026-04-11
+stopped_at: Completed 30-01-quickstart-helper-module-PLAN.md
+last_updated: "2026-04-11T19:21:15.987Z"
+last_activity: 2026-04-11 -- Phase 30 execution started
 progress:
   total_phases: 8
-  completed_phases: 4
-  total_plans: 21
-  completed_plans: 20
-  percent: 95
+  completed_phases: 5
+  total_plans: 26
+  completed_plans: 22
+  percent: 85
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 29 — studio-repo-split
+**Current focus:** Phase 30 — docs-site-foundation-getting-started-governance-walkthrough
 
 ## Current Position
 
-Phase: 29 (studio-repo-split) — EXECUTING
-Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-04-11
+Phase: 30 (docs-site-foundation-getting-started-governance-walkthrough) — EXECUTING
+Plan: 1 of ?
+Status: Executing Phase 30
+Last activity: 2026-04-11 -- Phase 30 execution started
 
 Progress: [████░░░░░░] 38% (phases 22, 23, and 27 complete in the current split roadmap)
 
@@ -77,6 +77,7 @@ v2.0 (retained for reference):
 - [Phase 29]: Filter-repo produced 29 commits (not 32); planner baseline included tests/test_studio_api.py which is excluded from this filter
 - [Phase 29]: CI drift gate uses git diff --exit-code after generate:api; drift step last so earlier failures surface first
 - [Phase 29]: Added --passWithNoTests to vitest run; apps/studio has no test files yet
+- [Phase 30]: Place tutorial helpers under src/zeroth/core/examples/ (installed package) instead of top-level examples/ so docs snippets can import them against the published wheel
 
 ### Pending Todos
 
@@ -90,6 +91,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T11:34:07.550Z
-Stopped at: Completed 29-03-bootstrap-new-repo-ci-and-types-PLAN.md
+Last session: 2026-04-11T19:21:09.201Z
+Stopped at: Completed 30-01-quickstart-helper-module-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)

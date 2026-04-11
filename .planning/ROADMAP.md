@@ -58,7 +58,7 @@
 
 - [x] **Phase 27: Monolith Archive & Namespace Rename** — Preserve the monolithic repo in a multi-layer archive, then relocate all Python source from `zeroth.*` to `zeroth.core.*` (pure rename, zero deletions). Much of this is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/` — this phase formalizes and verifies it. (4/4 plans complete, completed 2026-04-10)
 - [x] **Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)** — Publish both packages to PyPI via trusted publisher, with optional-dependency extras declared and verified installable end-to-end. (completed 2026-04-11)
-- [ ] **Phase 29: Studio Repo Split** — Create `rrrozhd/zeroth-studio` as a public repo with preserved git history, independent CI, HTTP-only consumption of `zeroth-core`, and cross-repo compatibility matrix.
+- [x] **Phase 29: Studio Repo Split** — Create `rrrozhd/zeroth-studio` as a public repo with preserved git history, independent CI, HTTP-only consumption of `zeroth-core`, and cross-repo compatibility matrix. (completed 2026-04-11)
 - [ ] **Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough** — Stand up mkdocs-material with Diátaxis IA, deploy on every main commit, and ship the "first working path" pages: landing, Getting Started, governance walkthrough tutorial.
 - [ ] **Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples** — Write Concept + Usage Guide pages for all ~20 subsystems, author 10+ cookbook recipes, and ship the CI-tested `examples/` directory.
 - [ ] **Phase 32: Reference Docs, Deployment & Migration Guide** — Auto-generate Python API reference via mkdocstrings, render HTTP API reference from OpenAPI, auto-generate configuration reference from pydantic-settings, and write the deployment and migration guides.
@@ -131,12 +131,12 @@ Plans:
   3. `zeroth-studio`'s only contract with `zeroth-core` is HTTP/OpenAPI — its frontend types are generated from the `zeroth-core` OpenAPI spec via `openapi-typescript`
   4. Both repos' READMEs cross-link, and a `zeroth-studio × zeroth-core` compatibility matrix is documented and maintained
   5. A developer can clone `zeroth-studio`, run `npm install && npm run dev`, and develop against a running `zeroth-core` service without any cross-repo source dependencies
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 Plans:
 - [x] 29-01-preflight-in-zeroth-core-PLAN.md — add scripts/dump_openapi.py + commit snapshot; wire VITE_API_BASE_URL through apps/studio; add ESLint flat config + split typecheck/build + bundle standalone nginx.conf (in-place, so filter-repo carries it)
 - [x] 29-02-filter-repo-extract-and-create-remote-PLAN.md — fresh --no-local clone to /tmp/zeroth-studio-split, run git filter-repo for the three paths, gh repo create rrrozhd/zeroth-studio, two-step push to main
 - [x] 29-03-bootstrap-new-repo-ci-and-types-PLAN.md — copy openapi snapshot + generate types.gen.ts, add LICENSE/CHANGELOG/CONTRIBUTING/README with compat matrix, add GitHub Actions CI (lint/typecheck/build/test/drift-check), push and verify green
-- [ ] 29-04-cleanup-zeroth-core-PLAN.md — safety-gate on zeroth-studio CI green, delete apps/studio, apps/studio-mockups, tests/studio from zeroth-core (preserving tests/test_studio_api.py), add Studio section to zeroth-core README
+- [x] 29-04-cleanup-zeroth-core-PLAN.md — safety-gate on zeroth-studio CI green, delete apps/studio, apps/studio-mockups, tests/studio from zeroth-core (preserving tests/test_studio_api.py), add Studio section to zeroth-core README
 **UI hint**: yes (frontend repo, but no new UI features in this phase — move only)
 
 ### Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough
@@ -149,7 +149,13 @@ Plans:
   3. The landing page shows a 10-line hello-world, install snippet, and a "Choose your path" split between embedding as a library and running as a service
   4. Getting Started is a single linear 3-section tutorial (install → first graph with one agent/tool/LLM → run in service mode with an approval gate) that produces first working output in under 5 minutes and completes in under 30
   5. A Governance Walkthrough tutorial runs end-to-end with an approval gate stopping execution, an auditor reviewing the trail, and a policy blocking a tool call
-**Plans**: TBD
+**Plans:** 1/5 plans executed
+Plans:
+- [x] 30-01-quickstart-helper-module-PLAN.md — ship zeroth.core.examples.quickstart tutorial helper + Wave 0 test scaffold (DOCS-02)
+- [ ] 30-02-docs-site-scaffold-PLAN.md — mkdocs.yml, [docs] extra, Diátaxis doc tree, landing page with Choose Your Path (SITE-01, SITE-04, DOCS-01)
+- [ ] 30-03-getting-started-tutorial-PLAN.md — examples/first_graph.py + examples/approval_demo.py, Getting Started pages, examples.yml CI (DOCS-01, DOCS-02)
+- [ ] 30-04-governance-walkthrough-tutorial-PLAN.md — examples/governance_walkthrough.py covering approval+auditor+policy block + tutorial page (DOCS-05)
+- [ ] 30-05-docs-deploy-workflow-PLAN.md — docs.yml GHA (build-on-PR + deploy-on-main), README link, phase-gate validation, SITE-03 deferral recorded, GH Pages enablement checkpoint (SITE-02; SITE-03 deferred)
 **UI hint**: yes (docs site is the UI)
 
 ### Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples
@@ -211,7 +217,7 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 26. Versioning & Collaboration | v2.0 | — | Moved to `zeroth-studio` | — |
 | 27. Monolith Archive & Namespace Rename | v3.0 | 4/4 | Complete | 2026-04-10 |
 | 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 3/3 | Complete   | 2026-04-11 |
-| 29. Studio Repo Split | v3.0 | 3/4 | In Progress|  |
-| 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 0/? | Not started | — |
+| 29. Studio Repo Split | v3.0 | 4/4 | Complete   | 2026-04-11 |
+| 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 1/5 | In Progress|  |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 0/? | Not started | — |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 0/? | Not started | — |
