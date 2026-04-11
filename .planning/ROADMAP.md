@@ -61,7 +61,7 @@
 - [x] **Phase 29: Studio Repo Split** — Create `rrrozhd/zeroth-studio` as a public repo with preserved git history, independent CI, HTTP-only consumption of `zeroth-core`, and cross-repo compatibility matrix. (completed 2026-04-11)
 - [x] **Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough** — Stand up mkdocs-material with Diátaxis IA, deploy on every main commit, and ship the "first working path" pages: landing, Getting Started, governance walkthrough tutorial. (completed 2026-04-11)
 - [x] **Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples** — Write Concept + Usage Guide pages for all ~20 subsystems, author 10+ cookbook recipes, and ship the CI-tested `examples/` directory. (completed 2026-04-11)
-- [ ] **Phase 32: Reference Docs, Deployment & Migration Guide** — Auto-generate Python API reference via mkdocstrings, render HTTP API reference from OpenAPI, auto-generate configuration reference from pydantic-settings, and write the deployment and migration guides.
+- [x] **Phase 32: Reference Docs, Deployment & Migration Guide** — Auto-generate Python API reference via mkdocstrings, render HTTP API reference from OpenAPI, auto-generate configuration reference from pydantic-settings, and write the deployment and migration guides. (completed 2026-04-11)
 
 ## Phase Details
 
@@ -187,14 +187,14 @@ Plans:
   3. Configuration Reference is auto-generated from the pydantic-settings schemas and documents every env var, its default, and whether it is a secret
   4. Deployment Guide covers local development, docker-compose, standalone service mode, embedded-in-host-app mode, and deployments with and without the Regulus companion service
   5. Migration Guide walks an existing monolith user through the switch to `zeroth.core.*` — import rename pattern, econ SDK path swap, env var changes, and Docker image retag
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 Plans:
 - [x] 32-01-python-api-reference-mkdocstrings-PLAN.md — mkdocstrings+Griffe, 20 subsystem pages, Usage Guide cross-link rewrites (DOCS-07)
 - [x] 32-02-http-api-reference-swagger-PLAN.md — Swagger UI embed + dump_openapi.py --check drift flag (DOCS-08)
 - [x] 32-03-configuration-reference-dump-config-PLAN.md — scripts/dump_config.py introspects pydantic-settings + generated tables (DOCS-09)
 - [x] 32-04-deployment-guide-PLAN.md — 5 mode pages (local-dev, docker-compose, standalone-service, embedded-library, with-regulus) + index (DOCS-10)
 - [x] 32-05-migration-guide-PLAN.md — single comprehensive monolith→zeroth.core migration page (DOCS-11)
-- [ ] 32-06-finalize-nav-ci-gates-PLAN.md — mkdocs.yml nav wiring + docs.yml drift gates + strict build verification
+- [x] 32-06-finalize-nav-ci-gates-PLAN.md — mkdocs.yml nav wiring + docs.yml drift gates + strict build verification
 
 ## Progress
 
@@ -233,4 +233,4 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 29. Studio Repo Split | v3.0 | 4/4 | Complete   | 2026-04-11 |
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete   | 2026-04-11 |
-| 32. Reference Docs, Deployment & Migration Guide | v3.0 | 5/6 | In Progress|  |
+| 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete   | 2026-04-11 |

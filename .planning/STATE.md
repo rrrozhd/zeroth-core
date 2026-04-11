@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: verifying
-stopped_at: Completed 32-04-deployment-guide-PLAN.md
-last_updated: "2026-04-11T21:36:47.081Z"
+stopped_at: Completed 32-06-finalize-nav-ci-gates-PLAN.md
+last_updated: "2026-04-11T21:42:17.810Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 37
-  completed_plans: 36
-  percent: 97
+  completed_plans: 37
+  percent: 100
 ---
 
 # Project State
@@ -79,6 +79,7 @@ v2.0 (retained for reference):
 - [Phase 29]: Added --passWithNoTests to vitest run; apps/studio has no test files yet
 - [Phase 30]: Place tutorial helpers under src/zeroth/core/examples/ (installed package) instead of top-level examples/ so docs snippets can import them against the published wheel
 - [Phase 30]: Deploy docs via `mkdocs gh-deploy --force` in a single GHA job rather than peaceiris/actions-gh-pages — matches mkdocs-material upstream recommendation, minimises marketplace trust surface
+- [Phase 32]: CI install step uses uv sync --all-extras so OpenAPI drift gate can import zeroth.core.service.app (transitively needs the dispatch/redis extra)
 
 ### Pending Todos
 
@@ -93,6 +94,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T21:36:47.078Z
-Stopped at: Completed 32-04-deployment-guide-PLAN.md
+Last session: 2026-04-11T21:42:12.462Z
+Stopped at: Completed 32-06-finalize-nav-ci-gates-PLAN.md
 Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)
