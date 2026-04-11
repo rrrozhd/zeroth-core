@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 ## Current Position
 
 Phase: 30 (docs-site-foundation-getting-started-governance-walkthrough) — EXECUTING
-Plan: 1 of ?
+Plan: 3 of 5 (next: 30-03-getting-started-tutorial)
 Status: Executing Phase 30
 Last activity: 2026-04-11 -- Phase 30 execution started
 
