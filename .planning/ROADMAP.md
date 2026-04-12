@@ -209,8 +209,8 @@ Plans:
   5. Contracts support an ArtifactReference type that validates the reference structure without requiring the full payload at validation time
 **Plans**: 2 plans
 Plans:
-- [x] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [x] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [ ] 34-01-PLAN.md — Core artifacts package: models, errors, protocol, Redis and filesystem stores
+- [ ] 34-02-PLAN.md — Orchestrator TTL refresh, audit evidence, contract validation, bootstrap wiring
 
 ### Phase 35: Resilient HTTP Client
 **Goal**: Agent tools and executable units have access to a platform-provided async HTTP client with managed retry, circuit breaking, connection pooling, governance gating, and audit logging
@@ -337,7 +337,7 @@ Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable)
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete | 2026-04-11 |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete | 2026-04-11 |
 | 33. Computed Data Mappings | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 34. Artifact Store | v4.0 | 0/0 | Not started | - |
+| 34. Artifact Store | v4.0 | 0/2 | Planned | - |
 | 35. Resilient HTTP Client | v4.0 | 0/0 | Not started | - |
 | 36. Prompt Template Management | v4.0 | 0/0 | Not started | - |
 | 37. Context Window Management | v4.0 | 0/0 | Not started | - |
