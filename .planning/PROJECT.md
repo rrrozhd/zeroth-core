@@ -8,26 +8,18 @@ Zeroth is a governed medium-code platform for building, running, and deploying p
 
 Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
 
-## Current Milestone: v4.0 Platform Extensions for Production Agentic Workflows
+## Current Milestone: v3.0 Core Library Extraction, Studio Split & Documentation
 
-**Goal:** Close 7 architectural gaps identified during production adoption audit, enabling zeroth-core to support parallel execution, composable subgraphs, large payloads, context window management, resilient HTTP, prompt templates, and computed data mappings.
+**Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth usage documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
 
 **Target features:**
-- Parallel fan-out / fan-in execution — spawn N parallel branches from a single node, synchronize with deterministic ordering, per-branch governance and cost tracking
-- Subgraph composition — reference published graphs as nested nodes with thread continuity, governance inheritance, and approval propagation
-- Large payload externalization — pluggable artifact store (Redis, filesystem) with TTL, audit references, and contract compatibility
-- Agent context window management — token tracking, configurable summarization triggers, pluggable strategies to prevent context overflow
-- Resilient external HTTP client — managed async HTTP with retry/backoff, circuit breaking, caching, connection pooling, capability-gated and audited
-- Prompt template management — versioned template registry with variable rendering, agent node integration, audit redaction
-- Computed data mappings — transform mapping operation using the existing condition expression engine for side-effect-free data transformation
+- `zeroth-core` PyPI distribution containing the full Python codebase under `zeroth.core.*` namespace (full rename, zero deletions, all functionality preserved)
+- `econ-instrumentation-sdk` published to PyPI to replace the local file-path dependency
+- `zeroth-studio` separate public repo containing the Vue 3 + Vue Flow frontend, depending on `zeroth-core` via HTTP API only — v2.0 phases 24-26 continue there
+- Complete, in-depth documentation for every `zeroth-core` subsystem: getting started, core concepts, per-module guides (graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service), HTTP & Python API references, integration recipes, deployment guide, migration guide
+- Full multi-layer archive of the existing monolithic repo (tarball + bare mirror + GitHub archive)
 
-**Context:** Gaps identified during a production adoption audit comparing zeroth-core against requirements of a real-world application migrating from LangGraph. All extensions must preserve existing test coverage, integrate with the governance stack, and maintain backward compatibility.
-
-## Prior Milestone: v3.0 Core Library Extraction, Studio Split & Documentation
-
-**Status:** Phases 27-32 shipped (2026-04-11). zeroth-core published to PyPI, Studio split to separate repo, full documentation site live.
-
-**Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth documentation, while moving the Vue Studio UI into a separate repo.
+**Pivot context:** v2.0 Zeroth Studio phases 22-23 are shipped; phases 24-26 (Execution & AI Authoring, Governance Visualization, Versioning & Collaboration) are **not cancelled** — they move to the new `zeroth-studio` repo with their own roadmap. This milestone is a packaging and structural change, not a scope reduction. Most of Phase 0 (preservation) and significant progress on Phase 1 (core library extraction) have been completed ad-hoc prior to formalizing this milestone.
 
 ## Prior Milestone: v2.0 Zeroth Studio (partially shipped)
 
@@ -62,21 +54,14 @@ The platform is production-viable: real LLM providers, economic controls, extern
 - ✓ Containerized deployment (Dockerfile, docker-compose, Nginx TLS, health probes) — v1.1
 - ✓ API versioning (/v1/), OpenAPI spec, TLS/HTTPS support — v1.1
 - ✓ Native LLM API parity: tool schemas, structured output, model params, MCP servers — v1.1
-- ✓ `zeroth-core` PyPI-installable library under `zeroth.core.*` namespace — v3.0
-- ✓ `econ-instrumentation-sdk` published to PyPI — v3.0
-- ✓ `zeroth-studio` separated into independent public repo with CI — v3.0
-- ✓ In-depth documentation for every subsystem (concepts, guides, API references, cookbook, deployment) — v3.0
-- ✓ Multi-layer archive of monolithic repo — v3.0
 
-### Active (v4.0)
+### Active (v3.0)
 
-- [ ] Parallel fan-out / fan-in execution with per-branch isolation, governance, and budget awareness
-- [ ] Subgraph composition with thread continuity, governance inheritance, and approval propagation
-- [ ] Large payload externalization via pluggable artifact store with TTL and audit compatibility
-- [ ] Agent context window management with token tracking and pluggable summarization
-- [ ] Resilient external HTTP client with retry, circuit breaking, caching, and governance integration
-- [ ] Prompt template management with versioned registry, variable rendering, and agent node integration
-- [ ] Computed data mappings via transform operation using condition expression engine
+- [ ] Extract all Python code into `zeroth-core` PyPI-installable library under `zeroth.core.*` namespace
+- [ ] Publish `econ-instrumentation-sdk` (Regulus SDK) to PyPI
+- [ ] Move Vue Studio frontend to separate public `zeroth-studio` repo with independent CI
+- [ ] Write in-depth documentation for every `zeroth-core` subsystem (getting started, core concepts, subsystem guides, API references, integration recipes, deployment, migration)
+- [ ] Multi-layer archive of monolithic repo (tarball, bare mirror, GitHub `rrrozhd/zeroth-archive`)
 
 ### Deferred to `zeroth-studio` repo (v2.0 phases 24-26)
 
@@ -144,4 +129,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 — Milestone v4.0 initialized; platform extensions for production agentic workflows.*
+*Last updated: 2026-04-10 — Milestone v3.0 initialized; pivoting to core library extraction and Studio repo split.*
