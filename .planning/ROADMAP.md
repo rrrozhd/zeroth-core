@@ -192,7 +192,10 @@
   2. Transform expressions can reference `payload.*`, `state.*`, and `variables.*` using the same syntax as condition expressions, and the evaluated result is validated against the target node's input contract
   3. Transform expressions are guaranteed side-effect-free: no network access, no filesystem access, no imports, no dunder attribute traversal -- enforced by the hardened expression evaluator with namespace restrictions
   4. Existing passthrough, rename, constant, and default mapping operations continue to work unchanged (backward compatibility)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 34: Artifact Store
 **Goal**: Nodes can externalize large payloads into a pluggable artifact store instead of embedding them in run state, preventing payload bloat while preserving audit traceability and contract compatibility
@@ -204,7 +207,10 @@
   3. Artifacts support configurable TTL; artifacts tied to a run are cleanable when the run is archived; TTLs are refreshed when a run is checkpointed or paused for approval (preventing dangling references)
   4. Audit records log artifact references (not full payloads); audit evidence export can optionally resolve references to retrieve full payloads
   5. Contracts support an ArtifactReference type that validates the reference structure without requiring the full payload at validation time
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 35: Resilient HTTP Client
 **Goal**: Agent tools and executable units have access to a platform-provided async HTTP client with managed retry, circuit breaking, connection pooling, governance gating, and audit logging
@@ -215,7 +221,10 @@
   2. The client retries failed requests with exponential backoff and jitter for configurable status codes (default: 408, 429, 5xx), and a per-endpoint circuit breaker opens after configurable failure thresholds and resets after a timeout
   3. Connection pools are shared or per-tenant with configurable limits, and the client resolves auth headers/tokens from the SecretResolver automatically based on endpoint configuration
   4. Every external HTTP call is gated by NETWORK_READ / NETWORK_WRITE / EXTERNAL_API_CALL capabilities, logged in audit records (URL, method, status code, latency), and subject to rate limiting
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 36: Prompt Template Management
 **Goal**: Graph authors can define versioned prompt templates and reference them from agent nodes, with Jinja2 sandboxed rendering at runtime and automatic audit redaction of secret variables
@@ -226,7 +235,10 @@
   2. Templates support variable interpolation from node input, run state, or memory using Jinja2 SandboxedEnvironment, preventing template injection attacks
   3. An agent node can reference a template by name and version instead of providing a raw instruction string; the template is resolved and rendered at runtime before the LLM invocation
   4. The rendered prompt (post-interpolation) is available in audit records; template variables containing secrets are automatically redacted in audit output
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 37: Context Window Management
 **Goal**: Agent threads track accumulated token usage and automatically apply configurable compaction strategies before context overflow, preserving conversation continuity across runs
@@ -238,7 +250,10 @@
   3. Compaction strategy is pluggable per agent node with three built-in strategies: truncation (drop oldest), observation masking (replace tool outputs with placeholders), and LLM-based summarization (condense older messages)
   4. Compaction results are stored in thread memory so they persist across runs; original messages can optionally be archived for audit retrieval
   5. Per-agent-node settings are configurable: max_context_tokens, summary_trigger_ratio, compaction_strategy, and preserve_recent_messages_count
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 38: Parallel Fan-Out / Fan-In
 **Goal**: A node can spawn N parallel execution branches that run concurrently with per-branch isolation, and a synchronization barrier collects all branch outputs into a deterministically ordered aggregated payload
@@ -249,7 +264,10 @@
   2. Each parallel branch has its own isolated execution context (visit counts, audit trail, failure tracking); a failure in one branch does not automatically fail others when configured for best-effort mode (fail-fast is also supported)
   3. Policy enforcement, audit recording, and contract validation apply independently per branch, each producing its own audit records linked to the parent run
   4. Cost attribution tracks per-branch spend; BudgetEnforcer is consulted before spawning with a pre-reservation of total estimated cost; ExecutionSettings guardrails (max_total_steps, max_visits_per_node) account for parallel branches as sum across all branches
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 39: Subgraph Composition
 **Goal**: A graph can reference another published graph as a nested subgraph node, with the orchestrator entering the subgraph as a scoped execution that inherits governance, shares thread memory, and propagates approvals back to the parent
@@ -261,7 +279,10 @@
   3. If a HumanApprovalNode inside a subgraph pauses execution, the parent run transitions to WAITING_APPROVAL; resolution resumes the subgraph and eventually the parent run
   4. The same subgraph can be referenced by multiple parent graphs and at multiple points within a single parent; subgraph references can pin to a specific deployment version or float to the latest active deployment; nested subgraphs (subgraph within a subgraph) are supported with a configurable depth limit
   5. Audit records from subgraph execution link to the parent run via parent_run_id, and node IDs are namespaced to prevent collisions across nesting levels
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 40: Integration & Service Wiring
 **Goal**: All v4.0 features are wired into the service bootstrap, the OpenAPI spec reflects the new capabilities, cross-feature interactions are tested, and documentation is updated
@@ -272,7 +293,10 @@
   2. The OpenAPI spec includes endpoints for new v4.0 capabilities (artifact retrieval, template CRUD, parallel run status) and the docs site reflects the updated API surface
   3. Cross-feature interactions work correctly: parallel branches can use artifact store for large outputs, agent nodes inside parallel branches respect context window limits, subgraph nodes inside parallel branches execute with proper governance isolation
   4. All existing tests continue to pass (backward compatibility), and new integration tests cover the cross-feature scenarios listed above
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ## Progress
 
@@ -312,7 +336,7 @@ Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable)
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete | 2026-04-11 |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete | 2026-04-11 |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete | 2026-04-11 |
-| 33. Computed Data Mappings | v4.0 | 0/0 | Not started | - |
+| 33. Computed Data Mappings | v4.0 | 0/2 | Planning complete | - |
 | 34. Artifact Store | v4.0 | 0/0 | Not started | - |
 | 35. Resilient HTTP Client | v4.0 | 0/0 | Not started | - |
 | 36. Prompt Template Management | v4.0 | 0/0 | Not started | - |
