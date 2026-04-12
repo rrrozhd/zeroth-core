@@ -165,16 +165,54 @@ Explicitly excluded for v4.0. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated after roadmap creation.
 
-*v4.0 traceability will be populated by the roadmapper.*
+### v4.0 Phase Mappings
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| — | — | — |
+| XFRM-01 | Phase 33: Computed Data Mappings | Pending |
+| XFRM-02 | Phase 33: Computed Data Mappings | Pending |
+| XFRM-03 | Phase 33: Computed Data Mappings | Pending |
+| XFRM-04 | Phase 33: Computed Data Mappings | Pending |
+| ARTF-01 | Phase 34: Artifact Store | Pending |
+| ARTF-02 | Phase 34: Artifact Store | Pending |
+| ARTF-03 | Phase 34: Artifact Store | Pending |
+| ARTF-04 | Phase 34: Artifact Store | Pending |
+| ARTF-05 | Phase 34: Artifact Store | Pending |
+| HTTP-01 | Phase 35: Resilient HTTP Client | Pending |
+| HTTP-02 | Phase 35: Resilient HTTP Client | Pending |
+| HTTP-03 | Phase 35: Resilient HTTP Client | Pending |
+| HTTP-04 | Phase 35: Resilient HTTP Client | Pending |
+| HTTP-05 | Phase 35: Resilient HTTP Client | Pending |
+| HTTP-06 | Phase 35: Resilient HTTP Client | Pending |
+| TMPL-01 | Phase 36: Prompt Template Management | Pending |
+| TMPL-02 | Phase 36: Prompt Template Management | Pending |
+| TMPL-03 | Phase 36: Prompt Template Management | Pending |
+| TMPL-04 | Phase 36: Prompt Template Management | Pending |
+| CTXW-01 | Phase 37: Context Window Management | Pending |
+| CTXW-02 | Phase 37: Context Window Management | Pending |
+| CTXW-03 | Phase 37: Context Window Management | Pending |
+| CTXW-04 | Phase 37: Context Window Management | Pending |
+| CTXW-05 | Phase 37: Context Window Management | Pending |
+| PARA-01 | Phase 38: Parallel Fan-Out / Fan-In | Pending |
+| PARA-02 | Phase 38: Parallel Fan-Out / Fan-In | Pending |
+| PARA-03 | Phase 38: Parallel Fan-Out / Fan-In | Pending |
+| PARA-04 | Phase 38: Parallel Fan-Out / Fan-In | Pending |
+| PARA-05 | Phase 38: Parallel Fan-Out / Fan-In | Pending |
+| PARA-06 | Phase 38: Parallel Fan-Out / Fan-In | Pending |
+| SUBG-01 | Phase 39: Subgraph Composition | Pending |
+| SUBG-02 | Phase 39: Subgraph Composition | Pending |
+| SUBG-03 | Phase 39: Subgraph Composition | Pending |
+| SUBG-04 | Phase 39: Subgraph Composition | Pending |
+| SUBG-05 | Phase 39: Subgraph Composition | Pending |
+| SUBG-06 | Phase 39: Subgraph Composition | Pending |
+| SUBG-07 | Phase 39: Subgraph Composition | Pending |
+| SUBG-08 | Phase 39: Subgraph Composition | Pending |
 
 **Coverage:**
-- v4.0 requirements: 35 total
-- Mapped to phases: 0 (awaiting roadmap)
-- Unmapped: 35
+- v4.0 requirements: 38 total
+- Mapped to phases: 38/38
+- Unmapped: 0
+- Integration validation (Phase 40) covers all 38 requirements collectively
 
 ---
 
@@ -208,4 +246,4 @@ Phases 22–23 shipped in v2.0. Phases 24–26 deferred to the new `zeroth-studi
 
 ---
 
-*Requirements last updated: 2026-04-12 after v4.0 milestone kickoff.*
+*Requirements last updated: 2026-04-12 after v4.0 roadmap creation.*

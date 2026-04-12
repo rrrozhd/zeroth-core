@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Platform Extensions for Production Agentic Workflows
-status: defining-requirements
-stopped_at: Milestone initialized
+status: ready-to-plan
+stopped_at: Roadmap created, ready to plan Phase 33
 last_updated: "2026-04-12"
 last_activity: 2026-04-12
 progress:
-  total_phases: 0
+  total_phases: 8
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,31 +21,26 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Defining requirements for v4.0
+**Current focus:** Phase 33 — Computed Data Mappings
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 33 of 40 (Computed Data Mappings) — first of 8 v4.0 phases
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-12 — Milestone v4.0 started
+Status: Ready to plan
+Last activity: 2026-04-12 — Roadmap created for v4.0
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
-**Velocity (v1.1):**
+**Velocity (v3.0):**
 
-- Total plans completed: 30
-- Phases: 11 (Phases 11-21)
-- Timeline: 4 days (2026-04-06 to 2026-04-09)
-- Commits: 168
-- Files changed: 350 (+47,444 / -3,273 lines)
+- Total plans completed: 27 (Phases 27-32)
+- Phases: 6 (Phases 27-32)
+- Timeline: 2 days (2026-04-10 to 2026-04-11)
 
 ## Accumulated Context
-
-### Roadmap Evolution
-
-- v4.0 milestone initialized: 7 architectural gaps identified during production adoption audit (LangGraph migration comparison)
-- Gaps 1 (fan-out/fan-in) and 2 (subgraph composition) should be designed together — fan-out into parallel subgraph invocations is a key use case
 
 ### Decisions
 
@@ -53,27 +48,25 @@ See: .planning/PROJECT.md Key Decisions table
 
 Recent (v4.0):
 
-- All extensions must preserve existing test coverage and backward compatibility
-- All new features must integrate with existing governance stack (audit, policy, guardrails, secrets, cost tracking)
-- Fan-out and subgraph composition designed together (shared execution model concerns)
-
-v3.0 (retained for reference):
-
-- v3.0 pivot: extract core as pip-installable library before finishing Studio
-- Take EVERYTHING into `zeroth.core.*` namespace — pure rename, no file-level core/platform split
-- PEP 420 namespace package (no top-level `zeroth/__init__.py`)
-- Studio moves to separate public repo — independent release cadence
+- All 7 features build on existing dependency tree with zero new packages
+- Jinja2 promoted from transitive to explicit dependency (templates)
+- Custom circuit breaker (~60 LOC) over unmaintained aiobreaker/pybreaker
+- XFRM ships first (smallest, enables fan-in aggregation)
+- PARA + SUBG ship last (hardest, touch core _drive() loop)
+- Phases 35/36/37 are independent and parallelizable
 
 ### Pending Todos
 
-(None — fresh milestone)
+(None)
 
 ### Blockers/Concerns
 
-(None identified yet)
+- Phase 38 (Parallel): _drive() loop shared-state mutation hazard requires careful branch isolation design
+- Phase 38 (Parallel): Budget pre-reservation mechanics need specification during planning
+- Phase 39 (Subgraph): Governance inheritance rules (parent-ceiling/child-floor) are novel — recommend research-phase
 
 ## Session Continuity
 
 Last session: 2026-04-12
-Stopped at: Milestone v4.0 initialized, defining requirements
-Resume: Complete requirements definition, then create roadmap
+Stopped at: Roadmap created for v4.0 milestone (8 phases, 38 requirements mapped)
+Resume: `/gsd-plan-phase 33` to begin Computed Data Mappings
