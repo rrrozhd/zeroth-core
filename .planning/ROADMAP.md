@@ -223,8 +223,8 @@ Plans:
   4. Every external HTTP call is gated by NETWORK_READ / NETWORK_WRITE / EXTERNAL_API_CALL capabilities, logged in audit records (URL, method, status code, latency), and subject to rate limiting
 **Plans**: 2 plans
 Plans:
-- [x] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [ ] 35-01-PLAN.md — Core http package: models, errors, circuit breaker, rate limiter, ResilientHttpClient
+- [ ] 35-02-PLAN.md — Bootstrap wiring, orchestrator integration, governance integration tests
 
 ### Phase 36: Prompt Template Management
 **Goal**: Graph authors can define versioned prompt templates and reference them from agent nodes, with Jinja2 sandboxed rendering at runtime and automatic audit redaction of secret variables
@@ -237,8 +237,8 @@ Plans:
   4. The rendered prompt (post-interpolation) is available in audit records; template variables containing secrets are automatically redacted in audit output
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [ ] 36-01-PLAN.md — Template registry, Jinja2 renderer, models, errors
+- [ ] 36-02-PLAN.md — Agent node integration, audit redaction, bootstrap wiring
 
 ### Phase 37: Context Window Management
 **Goal**: Agent threads track accumulated token usage and automatically apply configurable compaction strategies before context overflow, preserving conversation continuity across runs
@@ -252,8 +252,8 @@ Plans:
   5. Per-agent-node settings are configurable: max_context_tokens, summary_trigger_ratio, compaction_strategy, and preserve_recent_messages_count
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [ ] 37-01-PLAN.md — Token tracker, compaction strategies, models
+- [ ] 37-02-PLAN.md — Agent node integration, thread persistence, bootstrap wiring
 
 ### Phase 38: Parallel Fan-Out / Fan-In
 **Goal**: A node can spawn N parallel execution branches that run concurrently with per-branch isolation, and a synchronization barrier collects all branch outputs into a deterministically ordered aggregated payload
@@ -266,8 +266,8 @@ Plans:
   4. Cost attribution tracks per-branch spend; BudgetEnforcer is consulted before spawning with a pre-reservation of total estimated cost; ExecutionSettings guardrails (max_total_steps, max_visits_per_node) account for parallel branches as sum across all branches
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [ ] 38-01-PLAN.md — Parallel branch model, fan-out splitter, fan-in barrier
+- [ ] 38-02-PLAN.md — Drive loop integration, governance isolation, budget enforcement
 
 ### Phase 39: Subgraph Composition
 **Goal**: A graph can reference another published graph as a nested subgraph node, with the orchestrator entering the subgraph as a scoped execution that inherits governance, shares thread memory, and propagates approvals back to the parent
@@ -281,8 +281,8 @@ Plans:
   5. Audit records from subgraph execution link to the parent run via parent_run_id, and node IDs are namespaced to prevent collisions across nesting levels
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [ ] 39-01-PLAN.md — Subgraph node model, reference resolution, governance inheritance
+- [ ] 39-02-PLAN.md — Drive loop nesting, approval propagation, audit namespacing
 
 ### Phase 40: Integration & Service Wiring
 **Goal**: All v4.0 features are wired into the service bootstrap, the OpenAPI spec reflects the new capabilities, cross-feature interactions are tested, and documentation is updated
@@ -295,8 +295,8 @@ Plans:
   4. All existing tests continue to pass (backward compatibility), and new integration tests cover the cross-feature scenarios listed above
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [ ] 40-01-PLAN.md — Service bootstrap wiring, OpenAPI updates
+- [ ] 40-02-PLAN.md — Cross-feature integration tests, backward compatibility
 
 ## Progress
 
@@ -338,7 +338,7 @@ Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable)
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete | 2026-04-11 |
 | 33. Computed Data Mappings | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 34. Artifact Store | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 35. Resilient HTTP Client | v4.0 | 0/0 | Not started | - |
+| 35. Resilient HTTP Client | v4.0 | 0/2 | Planned | - |
 | 36. Prompt Template Management | v4.0 | 0/0 | Not started | - |
 | 37. Context Window Management | v4.0 | 0/0 | Not started | - |
 | 38. Parallel Fan-Out / Fan-In | v4.0 | 0/0 | Not started | - |
