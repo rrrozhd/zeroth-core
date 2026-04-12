@@ -1,379 +1,377 @@
-# Feature Research
+# Feature Landscape
 
-**Domain:** Python library packaging + in-depth documentation + frontend repo split (v3.0 Core Library Extraction, Studio Split & Documentation)
-**Researched:** 2026-04-10
-**Confidence:** HIGH (exemplars are well-known, actively maintained, and their documentation patterns are stable industry practice)
-
-## Research Scope
-
-This milestone is a packaging and documentation milestone for an existing mature Python backend (~22K LOC source, ~18K LOC tests, 280+ tests, 20+ subsystems). Feature research focuses exclusively on the NEW deliverables:
-
-1. `zeroth-core` PyPI-installable library structure & metadata
-2. In-depth documentation for every subsystem
-3. `zeroth-studio` frontend repo separation
-4. Migration support for users of the monolithic repo
-
-Existing backend features (graph, orchestrator, agents, memory, etc.) are NOT re-researched.
-
-## Exemplars Studied
-
-| Exemplar | What We Learned | Link |
-|----------|----------------|------|
-| **FastAPI** | Tutorial-first narrative docs with progressive disclosure; hand-written reference; multi-language scaffolding; Swagger/ReDoc for HTTP API | [fastapi.tiangolo.com](https://fastapi.tiangolo.com/) |
-| **Pydantic** | Unified docs site with strong "Concepts" section + auto-generated API reference; version dropdown; migration guide as first-class page | [docs.pydantic.dev](https://docs.pydantic.dev/latest/) |
-| **SQLAlchemy** | Narrative Unified Tutorial + massive reference; explicitly treats reference as primary artifact; unified 1.4/2.0/2.1 tutorial reuse | [docs.sqlalchemy.org](https://docs.sqlalchemy.org/en/20/) |
-| **LangChain** | Explicit adoption of Diátaxis (Tutorials / How-to / Conceptual / API Reference); [doc refresh blog post](https://blog.langchain.com/langchain-documentation-refresh/) | [python.langchain.com](https://python.langchain.com/) |
-| **Django** | Pioneered the four-doc-types-per-topic model that became Diátaxis; topic-oriented TOC | (referenced in Diátaxis origin) |
-| **Typer** | Tightly-scoped Getting Started: install → first command → progressive tutorial stepping through features in a single linear flow | typer.tiangolo.com |
-| **Diátaxis framework** | Tutorials / How-to Guides / Reference / Explanation as orthogonal documentation quadrants — THE dominant IA pattern | [diataxis.fr](https://diataxis.fr/) |
-| **mkdocstrings + Griffe** | Auto-generate API reference from docstrings; supports Google/NumPy/Sphinx styles; cross-references between narrative and reference | [mkdocstrings.github.io](https://mkdocstrings.github.io/) |
-| **LibCST RenameCommand** | Automated codemod for package renames (e.g. `zeroth.*` → `zeroth.core.*`); rewrites imports in user codebases | [libcst.readthedocs.io](https://libcst.readthedocs.io/en/latest/codemods.html) |
-
-## Common Pattern Extracted (The "Standard Shape")
-
-Every exemplar converges on roughly this top-level IA:
-
-```
-1. Home / Why [Library]          (one-paragraph pitch + install + 10-line example)
-2. Getting Started / Tutorial    (progressive, ONE linear path, ~30 minutes end-to-end)
-3. Concepts / Explanation        (what it is, why it exists, mental model per subsystem)
-4. How-to Guides / Recipes       (task-oriented, "how do I X")
-5. API Reference                 (auto-generated, module-by-module, cross-linked)
-6. Deployment / Operations       (production concerns)
-7. Migration                     (from prior versions / prior names)
-8. Contributing                  (for library developers)
-9. Release notes / Changelog
-```
-
-Zeroth-specific additions (because it is simultaneously a library AND an HTTP service):
-
-```
-- HTTP API Reference             (alongside Python API Reference — OpenAPI-sourced)
-- Service Mode guide             (running as a FastAPI service vs embedding as a library)
-- Governance guide               (approvals, audit, policy — Zeroth's differentiator)
-```
+**Domain:** Platform extensions for production agentic workflow orchestration
+**Researched:** 2026-04-12
+**Overall confidence:** HIGH (cross-platform evidence from LangGraph, Temporal, Prefect, Airflow, Conductor, Semantic Kernel, n8n)
 
 ---
 
-## Feature Landscape
+## Table Stakes
 
-### Table Stakes (Users Expect These)
+Features users expect from a production-grade agent orchestration platform. Missing = blocks real-world adoption (especially for teams migrating from LangGraph or similar).
 
-Features whose absence makes a 0.1.0 library release feel broken or unusable.
+| Feature | Why Expected | Complexity | Depends On (existing zeroth-core) | Notes |
+|---------|-------------|------------|----------------------------------|-------|
+| **Parallel fan-out/fan-in** | Every workflow platform supports this. LangGraph Send(), Temporal activities, Prefect map(), Airflow dynamic task mapping all provide it. Users cannot model real workloads (batch processing, multi-source retrieval, parallel agent evaluation) without it. | **HIGH** | RuntimeOrchestrator (sequential step loop must become parallel-aware), RunRepository (branch state tracking), BudgetEnforcer (per-branch cost isolation), AuditRepository (per-branch audit trails), guardrails (per-branch visit counting) | The single hardest feature. Requires fundamental changes to the orchestrator's step execution loop. |
+| **Computed data mappings** | n8n expressions, Azure Data Factory derived columns, Airflow XCom transforms all provide this. Current zeroth mappings (passthrough/rename/constant/default) cannot derive new values from existing data -- a basic workflow need. | **LOW** | MappingExecutor, MappingOperation union type, _SafeEvaluator (conditions/evaluator.py -- reuse directly), EdgeMapping model | Lowest risk of the 7. The expression engine already exists in conditions/evaluator.py and supports arithmetic, comparisons, string ops, ternary. Just wire it as a new MappingOperation variant. |
+| **Resilient HTTP client** | Agent nodes routinely call external APIs. Without managed resilience (retry, backoff, circuit breaking), any external dependency failure cascades into workflow failure. Every production system needs this. Temporal has it built into activities. Prefect uses httpx with retries. | **MEDIUM** | SecretResolver (API key injection), AuditRepository (HTTP call logging), PolicyGuard (capability-gated access), config/settings.py (circuit breaker thresholds) | Well-understood patterns. httpx + tenacity is the standard Python stack. The novel part is integrating with zeroth's governance: capability checks before HTTP calls, audit logging of requests/responses, secret injection for auth headers. |
+| **Large payload externalization** | Temporal has a 2MB event history limit and uses Payload Codecs for offloading. Conductor enforces soft barriers at 3-5MB. Argo Workflows externalizes all artifacts to S3/GCS. Without this, graphs passing large LLM outputs, documents, or embeddings between nodes will hit memory/storage limits. | **MEDIUM** | RunRepository (replace inline payload storage with references), MappingExecutor (dereference artifact refs transparently), contracts/registry (artifact-aware validation), AuditRepository (store references not payloads) | The pattern is well-established: store payload in blob store, pass reference through the graph. Key design decision is transparency -- callers should not know whether a payload is inline or externalized. |
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **`pip install zeroth-core` works and resolves cleanly** | Non-negotiable for "pip-installable library" | MEDIUM | PEP 621 `pyproject.toml` with optional-dependencies extras (`[memory-pg]`, `[memory-chroma]`, `[dispatch]`, `[all]`). Requires `econ-instrumentation-sdk` on PyPI first. |
-| **PEP 420 namespace package `zeroth.core.*`** | Decision already logged; leaves room for `zeroth.studio`, `zeroth.ext.*` siblings | MEDIUM | No top-level `zeroth/__init__.py`. Entire rename is a rename-only (no re-export glue), per design decision. |
-| **Landing page with <10-line hello world** | Every exemplar does this; users decide in 30 seconds | SMALL | Example: build trivial graph, run it, print result. Must be copy-pasteable, must actually run. |
-| **Getting Started tutorial (single linear path)** | Typer/FastAPI pattern; Getting Started is NOT a menu | MEDIUM | 3 sections: (1) install + 10-line hello, (2) first graph with one agent + one tool + LLM call, (3) run in service mode. ~30 min end-to-end. First working output in <5 minutes. |
-| **Concept pages for every major subsystem** | LangChain "Conceptual Guides"; SQLAlchemy narrative | LARGE | ~20 subsystems: graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service, threads. Each is an Explanation-quadrant page: what it is, why it exists, mental model, where it fits. ~500-1500 words each. |
-| **Per-subsystem usage guide** | Pydantic per-concept pages | LARGE | For each subsystem: Overview → Core Concepts → Minimal Example → Common Patterns → Pitfalls → Reference cross-link. Mirrors LangChain's structure. |
-| **Auto-generated Python API reference via mkdocstrings** | Django/Pydantic/SQLAlchemy all have one; hand-writing reference for 22K LOC is impractical | MEDIUM | Use `mkdocstrings[python]` + Griffe. Requires docstring coverage sweep across public surface — flag for PITFALLS. |
-| **HTTP API reference (OpenAPI-sourced)** | Zeroth ships a FastAPI service; users need both embeddings AND service docs | SMALL | Already have OpenAPI spec. Render via `neoteroi-mkdocs` swagger/redoc plugin or serve `/docs` endpoint and link. |
-| **Install guide with all optional extras documented** | Zeroth has many optional backends (pgvector, Chroma, Elasticsearch, ARQ, Docker sandbox) | SMALL | Matrix: "I want to use X → install `zeroth-core[x]`". |
-| **Configuration reference** | pydantic-settings drives everything; users will hit it immediately | SMALL | Every env var, every default, every secret. Auto-generatable from pydantic-settings schema. |
-| **Deployment guide** | Docker-compose and Nginx TLS ship in the repo; users need to know how to stand it up | MEDIUM | Cover: local dev, docker-compose, standalone service, embedded in host app, with/without Regulus companion, with/without Postgres. |
-| **Migration guide from monolith → `zeroth-core`** | Existing users (even internal) have `from zeroth.graph import ...` imports | MEDIUM | Single page covering (a) the rename pattern, (b) the LibCST codemod (or sed-level equivalent), (c) econ SDK path swap, (d) env var changes if any, (e) Docker image retag. |
-| **Changelog / release notes** | PyPI releases need them; [keepachangelog.com](https://keepachangelog.com/) format | SMALL | `CHANGELOG.md` at repo root + rendered on docs site. |
-| **`zeroth-studio` in its own public repo with independent CI** | Decision already logged | MEDIUM | Repo: `rrrozhd/zeroth-studio`. Own `package.json`, own CI, own release tags. Consumes `zeroth-core` via HTTP only. |
-| **Studio README pointing at `zeroth-core`** | Discoverability: devs finding Studio first must know where the backend lives | SMALL | Cross-link both READMEs. |
-| **Archive of monolithic repo (tarball + bare mirror + GitHub `rrrozhd/zeroth-archive`)** | Decision already logged; mostly done ad-hoc | SMALL | Finalize the ad-hoc archive, document where each layer lives, add a "this repo is archived" notice. |
-| **License + CONTRIBUTING files** | PyPI convention; users check before depending | SMALL | Reuse existing. |
-| **Docs site deployed on every commit to main** | Industry baseline (mkdocs gh-deploy) | SMALL | GitHub Actions workflow, publish to `gh-pages` or Cloudflare Pages. |
+---
 
-### Differentiators (Competitive Advantage)
+## Differentiators
 
-Features that would make Zeroth's docs noticeably better than a median Python library's docs, aligned with the "governance-first" core value.
+Features that set zeroth apart. Not expected by every user, but highly valued by teams building production agent systems.
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| **Diátaxis-explicit IA** | LangChain adopted this and wrote a blog post about the improvement. Users find what they need faster. Reviewers/contributors know where new content goes. | SMALL (IA, not content) | Label every page as Tutorial / How-to / Concept / Reference in frontmatter. Four top-level TOC entries, not 15. |
-| **Governance walkthrough tutorial** | This is Zeroth's actual differentiator vs LangGraph/CrewAI/Semantic Kernel. A tutorial that shows an approval gate stopping execution, an auditor reviewing the trail, and a policy blocking a tool call is unique. | MEDIUM | ~2000 words + runnable example. Tutorial-quadrant content. |
-| **Recipes cookbook** (cross-subsystem how-tos) | Answers "how do I do X" where X spans 3-4 subsystems | MEDIUM | Examples: "add a human approval step to an agent tool call", "attach a pgvector memory to a graph node", "cap a run's budget with Regulus", "sandbox a Python execution unit", "retry a failed webhook from the DLQ". 10-15 recipes at launch. |
-| **Runnable examples directory** (`examples/` in repo) | FastAPI does this; examples stay in sync because CI runs them | MEDIUM | Each example is a complete, minimal, runnable Python file with a README. CI smoke-tests them. Link inline from docs pages. |
-| **LibCST codemod for the rename** | Automates migration; dramatically lowers upgrade friction | MEDIUM | `python -m zeroth.core.codemods.rename_from_monolith <path>`. Wraps `libcst.codemod.commands.rename.RenameCommand`. Worth it because the rename pattern is mechanical. |
-| **"Choose your path" landing page** | Library-vs-service is genuinely confusing for Zeroth (it is both) | SMALL | Two prominent cards on home: "Embed as a library" vs "Run as a governed API service". Each links to a different Getting Started path. |
-| **Per-subsystem Pitfalls callouts** | Zeroth has 20 subsystems with real production footguns (sandbox timeouts, approval SLAs, memory retention, economic budget overshoot) | MEDIUM | Inline `!!! warning` callouts on each subsystem page. Drawn directly from our PITFALLS.md research. |
-| **HTTP API + Python API side-by-side** | Every subsystem has both a Python interface and an HTTP interface; showing both on one page is unusual and valuable | MEDIUM | Tabbed code blocks: `Python` / `HTTP` / `curl`. Forces us to verify parity and flags gaps. |
-| **"What's indexed vs not" docstring coverage badge** | Honest signal to users about which parts are well-documented | SMALL | `interrogate` or `docstr-coverage` in CI, badge in README. |
-| **Documented extension points** | Zeroth has several (memory connectors, LLM providers, execution units, judges) — documenting them unlocks the ecosystem | MEDIUM | "Writing a custom memory connector" / "Writing a custom execution unit" / etc. How-to quadrant. |
-| **Cross-repo version compatibility matrix** (zeroth-core × zeroth-studio) | Prevents "I upgraded Studio and it broke" issues | SMALL | Single table: "zeroth-studio 0.2.x works with zeroth-core 0.1.x-0.3.x". Maintained in both repos. |
+| Feature | Value Proposition | Complexity | Depends On (existing zeroth-core) | Notes |
+|---------|-------------------|------------|----------------------------------|-------|
+| **Subgraph composition** | LangGraph subgraphs and Temporal child workflows support this, but most platforms implement it as a second-class citizen (Airflow deprecated SubDagOperator in favor of TaskGroups which are UI-only). Zeroth can differentiate by making subgraphs first-class: governance inheritance, thread continuity, approval propagation, and budget isolation across nested graphs. | **HIGH** | Graph model (needs SubgraphNode type), GraphRepository (version-resolved subgraph loading), RuntimeOrchestrator (recursive execution or flattening), PolicyGuard (governance inheritance), BudgetEnforcer (nested budget scoping), ApprovalService (approval propagation), thread state (continuity across parent/child) | Second hardest feature. LangGraph's approach (shared state keys vs isolated state) maps well to zeroth's mapping system, but governance inheritance is novel and zeroth-specific. |
+| **Agent context window management** | Most frameworks punt on this entirely -- LangChain has ConversationSummaryBufferMemory but it is basic. Semantic Kernel added ChatHistoryReducer in v1.35.0 (2025). Anthropic's context engineering guide emphasizes this as critical. Zeroth already tracks tokens via InstrumentedProviderAdapter; adding managed context windows with pluggable strategies (truncation, summarization, observation masking) would be a strong differentiator. | **MEDIUM** | AgentRunner (token tracking per call), PromptAssembler (context budget enforcement), InstrumentedProviderAdapter (token usage data), thread state store (conversation history), MemoryConnectorResolver (external memory for summaries) | JetBrains research (Dec 2025) found observation masking outperforms LLM summarization while being 52% cheaper. Implement both strategies but default to the simpler one. |
+| **Prompt template management** | Dedicated prompt versioning platforms (PromptLayer, Langfuse, Maxim AI) exist but are external services. Embedding versioned prompt templates directly in the orchestrator -- with variable rendering, audit redaction, and agent node integration -- gives teams a self-contained solution. No production agent framework has this built-in well. | **LOW-MEDIUM** | AgentNodeData.instruction (currently a raw string -- becomes template_ref), contracts/registry (pattern for versioned registry), AuditRepository (template version tracking), SecretResolver (pattern for variable resolution), PromptAssembler (render templates before assembly) | The registry pattern already exists in contracts/registry.py. Prompt templates are simpler than contracts (just strings with variables). The novel value is audit-aware rendering that redacts sensitive variables. |
 
-### Anti-Features (Commonly Requested, Often Problematic)
+---
 
-Features that sound obviously good but waste effort or create maintenance burden for a 0.1.0 release.
+## Anti-Features
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| **Multi-version docs site (v0.1 / v0.2 / latest dropdown)** | "Mature libraries have it" | Pre-1.0, API is still shifting. `mike` plugin adds CI complexity. Stale old versions confuse more than help. Pydantic does this but they are v2.12 with real users on v1. | Ship only `latest`. Add version dropdown at 1.0. Until then, link to git tags for historical docs. |
-| **Documentation in multiple languages** | "FastAPI does it" | FastAPI has 12 language maintainers. We have one team. Translations rot faster than code. | English only. Accept PRs for translations later if a maintainer emerges. |
-| **Hand-written API reference for every class** | "Higher quality than auto-generated" | 22K LOC. Would take months. Goes out of sync on day one. Every exemplar except tiny libraries uses auto-generation. | mkdocstrings + Griffe. Hand-write only the curated narrative pages. |
-| **Interactive Jupyter notebook examples** | "Jupyter is popular for AI" | Notebooks are hard to version-control, hard to diff, hard to CI-test, and get stale. LangChain has notebook cookbooks and [their own blog post](https://blog.langchain.com/langchain-documentation-refresh/) admits this is a pain point. | Plain `.py` files in `examples/` directory with README. CI-runnable. Copy-pasteable into notebooks if users want. |
-| **Video tutorials / screencasts** | "Accessibility, different learning styles" | Massively expensive to produce, impossible to update in-place when API changes, requires separate hosting, SEO/search unfriendly. | Written tutorials only. Community members can produce videos later. |
-| **Public Discord/Slack support channel at launch** | "Community building" | Pre-1.0 libraries drown their own maintainers in live support. Sets expectation of responsiveness we can't meet. | GitHub Issues + GitHub Discussions only. Discord/Slack post-1.0. |
-| **"Awesome Zeroth" curated extension list** | "Ecosystem growth" | There is no ecosystem yet. Premature. Will sit empty and look abandoned. | Revisit at 1.0 when third-party extensions exist. |
-| **Auto-generated CLI reference from `--help` output** | "Nice consistency" | Zeroth is primarily a library + HTTP service, not a CLI tool. Small CLI surface. Manual page is simpler and stays current. | Hand-written CLI page covering the ~5 commands. |
-| **Docs-as-code in RST + Sphinx** | "Sphinx is the Python standard" | Author is more productive in Markdown. mkdocs-material rendering is better out-of-box. **Caveat:** mkdocs-material is moving to "minimal maintenance" in late 2026 per [squidfunk](https://squidfunk.github.io/mkdocs-material/alternatives/); Zensical is the successor (still alpha). | Use mkdocs-material now, re-evaluate migration path in 2026 Q4. Sphinx is the safer LONG-term bet if we want to avoid a future migration. **Flag for STACK.md decision.** |
-| **Live documentation search via Algolia DocSearch** | "FastAPI has it" | Requires Algolia approval and setup. Local Lunr search is free and sufficient for a 0.1.0 site. | Built-in mkdocs search. Algolia later if traffic warrants. |
-| **Monorepo with `zeroth-core` + `zeroth-studio` together** | "Simpler CI", "atomic commits" | Directly contradicts the existing design decision to split. Would re-couple release cadences we already decided to uncouple. | Honor the split decision. Two repos. Cross-repo contracts via HTTP API + OpenAPI schema. |
-| **Real-time docs preview with editing** | "GitBook is nicer" | GitBook costs money, locks content in their platform, harder to git-review. | mkdocs serve + PR preview deploys (Cloudflare Pages or Netlify) gives 90% of the benefit. |
-| **Porting every subsystem guide to both Python and HTTP simultaneously at v0.1** | "Parity is nice" | Doubles initial effort. Can ship Python narrative first and add HTTP tabs incrementally. | Python narrative first for all 20 subsystems. HTTP tabs added in a follow-up phase. |
+Features to explicitly NOT build. Based on platform comparison and zeroth's architectural constraints.
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| **Distributed parallel execution across workers** | Temporal and Prefect distribute parallel branches across worker pools. This requires distributed state coordination, message queuing, and complex failure handling. Zeroth's modular monolith architecture (single-process RuntimeOrchestrator with durable dispatch) is not designed for this. | In-process asyncio.gather() for parallel branches within a single worker. The existing RunWorker already has max_concurrency=8 via semaphore. Parallel branches execute as concurrent tasks within the same worker process. Scale by running more workers, not distributing branches. |
+| **Full expression language / DSL for computed mappings** | n8n uses JavaScript expressions. Azure Data Factory has a full expression language with 100+ functions. Building a rich DSL creates maintenance burden, security surface, and learning curve. | Reuse the existing _SafeEvaluator which supports arithmetic, comparisons, boolean logic, string concatenation, ternary expressions, list/dict construction. This is sufficient for data mappings. Add a small set of pure built-in functions (len, str, int, float, upper, lower, keys, values) if needed. |
+| **External prompt management platform integration** | PromptLayer, Langfuse, and Maxim AI are dedicated prompt platforms. Building adapters for each creates coupling and maintenance burden. | Build a self-contained PromptTemplateRegistry. If users want to sync from external platforms, they can write a loader that populates the registry. The registry API is the integration point, not per-platform adapters. |
+| **Automatic context summarization as default behavior** | LLM-based summarization adds latency (~13-15% longer runs per JetBrains research), costs tokens, and can obscure stopping signals. It is not always the right strategy. | Make context management pluggable with strategies. Default to observation masking (cheaper, faster, often better). Offer summarization as opt-in. Let users configure trigger thresholds and strategy per agent node. |
+| **Artifact store as a general-purpose object store** | Conductor's external payload storage is specifically for workflow payloads, not arbitrary files. Building a general-purpose object store adds scope. | Artifact store handles only workflow intermediate data: node outputs that exceed a size threshold. It is not a file upload service. TTL-based cleanup prevents unbounded growth. |
+| **Subgraph runtime flattening** | Airflow's SubDagOperator flattened subDAGs into the parent, causing scheduling issues (deprecated in Airflow 2.0+). LangGraph compiles subgraphs but preserves isolation. | Execute subgraphs as recursive RuntimeOrchestrator invocations with their own Run, preserving isolation. Parent sees subgraph as a single node with input/output contracts. This avoids the scheduling complexity that killed Airflow's SubDagOperator. |
+| **HTTP response caching in the resilient client** | Caching external API responses requires cache invalidation logic, storage management, and correctness guarantees that are out of scope. | The resilient HTTP client handles retry/backoff/circuit-breaking only. If users need caching, they can wrap calls with their own cache layer or use httpx-cache. Caching is a separate concern from resilience. |
+
+---
+
+## Detailed Feature Analysis
+
+### 1. Parallel Fan-Out / Fan-In
+
+**How platforms do it:**
+
+| Platform | Mechanism | Key Insight |
+|----------|-----------|-------------|
+| **LangGraph** | `Send()` API creates dynamic parallel tasks at runtime. State reducers (e.g., `operator.add`) merge results. Each parallel branch gets independent worker state. | Runtime-determined parallelism. Reducer functions define merge semantics. |
+| **Temporal** | `workflow.ExecuteActivity()` returns futures. `Promise.all()` waits for all. Child Workflows partition large fan-outs (1000 children x 1000 activities = 1M activities). | Futures-based. Event history limits require child workflow partitioning for large fan-outs. |
+| **Prefect** | `task.map()` over iterables. Dynamic children are first-class tasks (can succeed, fail, retry, pause independently). DaskExecutor for distributed parallelism. | First-class mapped tasks. Each branch has full lifecycle. |
+| **Airflow** | `expand()` for dynamic task mapping (since 2.3). Creates mapped task instances at runtime. Concurrency controlled by `max_active_tasks`. | Runtime-determined. XCom for result passing. Recent issues with dynamically mapped TaskGroups. |
+
+**Zeroth-specific design considerations:**
+- Per-branch audit trails (unique to zeroth's governance model)
+- Per-branch budget tracking via BudgetEnforcer (no platform does this)
+- Per-branch policy enforcement via PolicyGuard
+- Result aggregation via computed mappings (new transform operation)
+- Deterministic ordering of results regardless of completion order
+- Guardrail enforcement: max_total_steps and max_visits_per_node apply across all branches
+
+**Recommended approach:** LangGraph's Send() pattern adapted for zeroth. A fan-out edge specifies an expression that produces a list; the orchestrator spawns one branch per list element via asyncio.gather(). A fan-in barrier node collects results using a computed mapping with a reduce expression. Each branch gets its own audit trail and budget scope.
+
+---
+
+### 2. Subgraph Composition
+
+**How platforms do it:**
+
+| Platform | Mechanism | Key Insight |
+|----------|-----------|-------------|
+| **LangGraph** | Compiled subgraphs as nodes. Two communication patterns: shared state keys (automatic) or isolated state with explicit transformation. Subgraphs inherit parent checkpointer. | Shared vs isolated state is the key design decision. |
+| **Temporal** | Child Workflows with full isolation (own event history). Parent cancellation propagates. Child can outlive parent (ParentClosePolicy). | Full isolation by default. Explicit parent-child lifecycle control. |
+| **Prefect** | Subflows share parent flow run context. Parent settings inherited. Can be invoked synchronously or asynchronously. | Shared context, simple invocation model. |
+| **Airflow** | SubDagOperator (deprecated) -- flattened subDAGs caused scheduling issues. TaskGroup -- UI-only grouping, no runtime isolation. | Airflow tried and failed with runtime subgraph flattening. TaskGroup is display-only. |
+
+**Zeroth-specific design considerations:**
+- SubgraphNode references a published Graph by graph_id + version
+- Input/output contracts enforced at the subgraph boundary (via EdgeMapping)
+- Governance inheritance: parent's policy_bindings propagate to child unless overridden
+- Budget scoping: child gets a sub-budget from parent's remaining budget
+- Approval propagation: child's HumanApprovalNodes are visible to parent's approval service
+- Thread continuity: child can read parent's thread state (configurable)
+- The child creates its own Run (Temporal's isolation model, not Airflow's flattening)
+
+**Recommended approach:** Temporal's child workflow isolation model. SubgraphNode is a new node type. The orchestrator recursively invokes itself for the child graph, creating a child Run. The child Run's input comes from the parent's edge mapping; the child's output is returned to the parent via the subgraph node's output contract. Policy and capability bindings are inherited by default (can be overridden). Budget is scoped (child cannot exceed parent's remaining allocation).
+
+---
+
+### 3. Large Payload Externalization
+
+**How platforms do it:**
+
+| Platform | Mechanism | Key Insight |
+|----------|-----------|-------------|
+| **Conductor** | ExternalPayloadStorage with soft barriers (5MB) and hard barriers (10MB). Three backends: S3, Azure Blob, PostgreSQL. Fully transparent to workers. | Two-tier threshold (externalize vs reject). Transparency is critical. |
+| **Temporal** | Payload Codec (DataDog large-payload-codec). Codecs transform bytes-to-bytes in the serialization pipeline. Applied after Payload Converter. Transparent to workflow code. | Codec layer in the serialization pipeline. Third-party solution, not built-in. |
+| **Argo Workflows** | Artifact repository (S3/GCS/Azure/HTTP). All outputs are artifacts by default. Explicit artifact declarations in workflow spec. | Artifacts are first-class, not transparent. Requires explicit declaration. |
+
+**Zeroth-specific design considerations:**
+- Pluggable backends: Redis (default for dev), filesystem (default for tests), S3-compatible (production)
+- Configurable threshold (default: 1MB soft barrier, 10MB hard barrier)
+- ArtifactRef replaces inline payload in Run state -- transparent to MappingExecutor
+- TTL-based cleanup with configurable retention
+- Audit references: audit trail records ArtifactRef (not the full payload) with hash for integrity verification
+- Contract compatibility: validation happens on the original data before externalization
+
+**Recommended approach:** Conductor's transparent externalization model. An ArtifactStore protocol with pluggable backends. The RunRepository transparently externalizes payloads exceeding the soft threshold. MappingExecutor transparently dereferences ArtifactRef values. Hard threshold rejects payloads entirely. TTL cleanup prevents unbounded growth.
+
+---
+
+### 4. Agent Context Window Management
+
+**How platforms do it:**
+
+| Platform | Mechanism | Key Insight |
+|----------|-----------|-------------|
+| **Semantic Kernel** | ChatHistoryReducer (v1.35.0+). Two built-in reducers: truncation and summarization. Configurable target_count, threshold_count, auto_reduce. System messages always preserved. | Pluggable strategy with sensible defaults. System message preservation is critical. |
+| **LangChain** | ConversationSummaryBufferMemory. Fixed window + summary of older messages. Token counting via tiktoken. | Basic but functional. Single strategy, not pluggable. |
+| **Anthropic** | Context engineering principles: compaction, structured note-taking, sub-agent architectures, just-in-time retrieval. Emphasizes "smallest set of high-signal tokens." | Strategic guidance, not library code. Key insight: less context is often better. |
+| **JetBrains Research** | Compared observation masking vs LLM summarization. Observation masking achieved 2.6% higher solve rates while being 52% cheaper. Summarization extended run times by 13-15%. | Simpler approach (masking) outperforms sophisticated approach (summarization). |
+
+**Zeroth-specific design considerations:**
+- Token tracking already exists via InstrumentedProviderAdapter
+- PromptAssembler currently does not enforce token budgets
+- Strategies: truncation (drop oldest), observation masking (replace old outputs with placeholders), summarization (LLM-based compression)
+- Per-agent-node configuration: each AgentNode can have its own context strategy and thresholds
+- System messages and tool definitions always preserved (Semantic Kernel pattern)
+- Integration with thread state: reducer operates on thread history before prompt assembly
+
+**Recommended approach:** Semantic Kernel's ChatHistoryReducer pattern adapted for zeroth. A ContextWindowManager with pluggable strategies. Default to observation masking (cheapest, fastest, empirically best per JetBrains research). Offer truncation as simplest fallback and summarization as opt-in. Configure per AgentNode via execution_config. Token budget enforced in PromptAssembler before LLM call.
+
+---
+
+### 5. Resilient External HTTP Client
+
+**How production systems do it:**
+
+| Pattern | Implementation | Key Insight |
+|---------|---------------|-------------|
+| **Retry with exponential backoff + jitter** | tenacity library (Python standard). Configurable retry conditions, wait strategies, stop conditions. | Jitter prevents synchronized retry storms across workers. |
+| **Circuit breaker** | Three states: closed (normal), open (failing, reject immediately), half-open (testing recovery). Opens after N consecutive failures. | Prevents hammering a down service. Critical for agent nodes that call the same API repeatedly. |
+| **Connection pooling** | httpx.AsyncClient with connection limits. Reuse connections across requests within a worker. | Reduces TCP/TLS handshake overhead for repeated calls to same host. |
+| **Timeout layering** | Connect timeout (short), read timeout (medium), total timeout (long). httpx supports all three. | Different timeout types for different failure modes. |
+
+**Zeroth-specific design considerations:**
+- Capability-gated: agent must have `http:call` capability to use the client
+- Audit-logged: every external HTTP call recorded in audit trail (URL, method, status, duration)
+- Secret-injected: auth headers resolved via SecretResolver before the call
+- Redaction-aware: request/response bodies redacted in audit per existing AuditSerializer patterns
+- Circuit breaker state per (host, port) pair, shared across nodes in a run
+- Budget-aware: HTTP calls with token cost (e.g., calling paid APIs) can debit budget
+
+**Recommended approach:** Wrap httpx.AsyncClient with tenacity for retry/backoff and a simple circuit breaker. The client is a service-level singleton (one per worker process) with per-host circuit breaker state. Exposed to agent nodes and executable units via a ResilientHTTPClient that takes a capability check, secret resolution, and audit logging as constructor dependencies. Not a general-purpose HTTP library -- a governed, audited HTTP client.
+
+---
+
+### 6. Prompt Template Management
+
+**How platforms do it:**
+
+| Platform | Mechanism | Key Insight |
+|----------|-----------|-------------|
+| **PromptLayer** | Versioned prompt registry with A/B testing, analytics, and deployment environments. | External SaaS. Overkill for embedded use. |
+| **Langfuse** | Open-source prompt management with versioning, environment labels, and observability integration. | Good model but requires separate deployment. |
+| **LangChain** | PromptTemplate with variable substitution. Hub for sharing. No built-in versioning. | Template rendering without lifecycle management. |
+| **Maxim AI** | Full prompt lifecycle: authoring, versioning, evaluation, deployment with environment promotion. | Enterprise-grade. Indicates the direction the market is heading. |
+
+**Zeroth-specific design considerations:**
+- PromptTemplateRegistry follows the exact pattern of contracts/registry.py (versioned, named, Pydantic models)
+- Templates are strings with `{variable}` placeholders (Jinja2 is overkill; Python str.format_map is sufficient)
+- AgentNodeData.instruction becomes a template_ref pointing to a registered template
+- Rendering happens in PromptAssembler before LLM call
+- Audit trail records template_ref + version + rendered variables (with redaction)
+- Templates are immutable once published (same lifecycle as Graph: draft -> published -> archived)
+
+**Recommended approach:** A PromptTemplateRegistry mirroring contracts/registry.py. Templates are Pydantic models with name, version, body (template string), variables (list of expected variable names), and lifecycle status. Rendering uses Python's str.format_map with variable values resolved from the node's input payload and runtime context. Audit records template version used and variables provided (redacted per existing patterns). No Jinja2 dependency -- keep it simple.
+
+---
+
+### 7. Computed Data Mappings
+
+**How platforms do it:**
+
+| Platform | Mechanism | Key Insight |
+|----------|-----------|-------------|
+| **n8n** | Expression engine using Tournament templating + JavaScript. Inline expressions in `{{ }}` brackets. Data transformation functions for common operations. | Inline expressions in node parameters. Immediate preview. |
+| **Azure Data Factory** | Mapping Data Flow with Expression Builder. 100+ built-in functions. Local variables for intermediate computations. Derived column transformation. | Rich expression language with dedicated IDE. |
+| **Airflow** | XCom for inter-task data passing. Jinja2 templates for dynamic values. TaskFlow API with explicit return values. | Template-based with explicit data passing. |
+| **Salesforce Flow** | Transform element for data mapping. Field-to-field mapping with formula support. | UI-driven mapping with formula expressions. |
+
+**Zeroth-specific design considerations:**
+- Add a `transform` operation to the existing MappingOperation discriminated union
+- TransformMappingOperation has: target_path (where to write), expression (string), source_paths (list of input paths to bind as variables)
+- The expression is evaluated by the existing _SafeEvaluator from conditions/evaluator.py
+- Side-effect-free: the evaluator only supports pure expressions (no function calls, no imports, no assignments)
+- The existing evaluator already supports: arithmetic (+, -, *, /, %), comparisons, boolean logic, ternary (if/else), list/dict/set literals, subscript access, attribute access
+- May need to add a small set of pure built-in functions to the evaluator's namespace (len, str, int, float, upper, lower, keys, values, items, sorted, min, max, sum)
+
+**Recommended approach:** Add TransformMappingOperation to the MappingOperation union. The executor resolves source_paths from the input payload, builds a namespace dict, and passes the expression to _SafeEvaluator. Example: `target_path: "full_name"`, `expression: "first + ' ' + last"`, `source_paths: {"first": "user.first_name", "last": "user.last_name"}`. This reuses 100% of the existing expression engine with zero new parsing code.
 
 ---
 
 ## Feature Dependencies
 
 ```
-PyPI package published (`zeroth-core` + `econ-instrumentation-sdk`)
-    └──required by──> Install guide can be tested end-to-end
-    └──required by──> Getting Started tutorial can work
-    └──required by──> docs site "pip install" copy-paste is honest
+                    Computed Mappings
+                          |
+                          v
+Parallel Fan-Out -----> [needs: computed mappings for fan-in aggregation]
+       |
+       v
+Subgraph Composition --> [needs: parallel fan-out for parallel subgraph invocation]
+       |
+       v
+Large Payload Store ---> [benefits from being in place before parallel/subgraph
+                          since those multiply intermediate data]
 
-Rename complete (`zeroth.*` → `zeroth.core.*`)
-    └──required by──> Auto-generated API reference (mkdocstrings paths)
-    └──required by──> Migration guide (can reference real new paths)
-    └──required by──> LibCST codemod (targets the real paths)
+Agent Context Mgmt ----> [independent; token tracking already exists]
 
-Docstring coverage sweep on public surface
-    └──required by──> Auto-generated API reference is useful
-    └──required by──> Per-subsystem usage guide can cross-link to reference
+Resilient HTTP ---------> [independent; can be built in any order]
 
-Concept pages (~20 subsystems)
-    └──required by──> Per-subsystem usage guides (usage guides reference concepts)
-    └──required by──> Recipes cookbook (recipes cite concepts)
-
-Getting Started tutorial
-    └──required by──> Landing page (landing links to Getting Started)
-    └──required by──> Governance walkthrough (reuses Getting Started's setup)
-
-Runnable examples in `examples/`
-    └──enhances──> Concept pages (inline snippets link to full examples)
-    └──enhances──> Recipes cookbook (recipes ARE examples + prose)
-    └──required by──> CI smoke test for examples
-
-HTTP API reference
-    └──requires──> OpenAPI spec is current (already true)
-    └──enhances──> Per-subsystem usage guide (HTTP tab)
-
-Studio repo split
-    └──required by──> Cross-repo compatibility matrix
-    └──required by──> Studio README cross-links
-    └──blocks──> Studio phases 24-26 development (they move to new repo)
-
-Archive of monolith
-    └──required by──> Migration guide's "old repo is archived" notice
-    └──mostly done ad-hoc──> Needs formalization only
+Prompt Templates -------> [independent; can be built in any order]
 ```
 
-### Dependency Notes
+**Dependency chain (must-respect ordering):**
+1. Computed Mappings (no deps, enables aggregation expressions for fan-in)
+2. Parallel Fan-Out/Fan-In (uses computed mappings for result aggregation)
+3. Subgraph Composition (builds on parallel execution for parallel subgraph invocation)
 
-- **API reference requires docstring coverage:** Auto-generated reference is only as good as the docstrings. A coverage sweep (target: 95% on public surface) is a hard prerequisite. Use `interrogate` or `docstr-coverage` in CI.
-- **Rename must land before docs writing:** Writing concept pages against `zeroth.graph` and then globally rewriting to `zeroth.core.graph` wastes editor time. Sequence: rename → docstring sweep → narrative docs.
-- **PyPI publish must land before Getting Started can be tested:** The `pip install zeroth-core` copy-paste in Getting Started is a lie until the package exists on PyPI. TestPyPI is acceptable for pre-release validation.
-- **`econ-instrumentation-sdk` must publish before `zeroth-core`:** It's a hard dependency (currently a local file path). Sequence: econ SDK to PyPI → zeroth-core to PyPI.
-- **Studio split blocks v2.0 phases 24-26:** Those phases can only resume once `zeroth-studio` has its own repo, CI, and working dev loop against a `zeroth-core` API.
-
----
-
-## MVP Definition
-
-### Launch With (v0.1.0 of `zeroth-core` + `zeroth-studio` split + v0.1 docs)
-
-Minimum viable product — what's needed for the milestone to be "done" and the library to be usable by a first external user.
-
-**Library packaging:**
-- [ ] `econ-instrumentation-sdk` published to PyPI (blocks everything else)
-- [ ] `zeroth-core` published to PyPI with `zeroth.core.*` namespace
-- [ ] `pyproject.toml` with optional-dependency extras documented
-- [ ] `CHANGELOG.md` + license + contributing files at repo root
-
-**Documentation (Diátaxis-organized):**
-- [ ] Landing page with 10-line hello world + install + "choose your path" cards
-- [ ] Getting Started: 3-section linear tutorial (install → hello graph → run in service mode), <30 min end-to-end, first output in <5 min
-- [ ] Concept pages for all ~20 subsystems (~500-1500 words each)
-- [ ] Usage guides for all ~20 subsystems (Overview → Example → Patterns → Pitfalls → Reference link)
-- [ ] Governance walkthrough tutorial (Zeroth's differentiator)
-- [ ] Auto-generated Python API reference via mkdocstrings
-- [ ] HTTP API reference (rendered from OpenAPI)
-- [ ] Configuration reference (auto-generated from pydantic-settings)
-- [ ] Deployment guide (local / docker-compose / service mode / embedded)
-- [ ] Migration guide (monolith → `zeroth.core.*`)
-- [ ] 10-15 recipes in a Cookbook section
-- [ ] `examples/` directory with CI-tested runnable examples
-- [ ] Docs site deployed on every main commit
-
-**Studio split:**
-- [ ] `rrrozhd/zeroth-studio` public repo created
-- [ ] Vue 3 frontend moved with history preserved
-- [ ] Independent CI passing
-- [ ] README cross-links both ways
-- [ ] Cross-repo compatibility matrix documented
-
-**Archive:**
-- [ ] Ad-hoc monolith archive formalized (tarball, bare mirror, `rrrozhd/zeroth-archive`)
-- [ ] Archive notice on old repo
-
-### Add After Validation (v0.2.x)
-
-Features to add once first external users have validated the core library.
-
-- [ ] LibCST codemod for the rename (only worth building if users report mechanical migration pain)
-- [ ] HTTP API tabs added inline to every subsystem usage guide (currently Python-only)
-- [ ] Extension point guides (custom memory connector, custom LLM provider, custom execution unit)
-- [ ] Algolia DocSearch (only if traffic warrants)
-- [ ] Docstring coverage badge in README
-- [ ] Governance case studies (real-world workflows with audit trails)
-
-### Future Consideration (v1.0+)
-
-- [ ] Multi-version docs site (`mike` plugin) — only once there are enough releases to matter
-- [ ] Translations — only if maintainers emerge
-- [ ] Video tutorials / screencasts
-- [ ] Discord/Slack community channel
-- [ ] "Awesome Zeroth" curated list
-- [ ] Monorepo reconsolidation evaluation (unlikely; split is intentional)
-- [ ] Migration off mkdocs-material to Zensical or Sphinx (forced by 2026 Q4 mkdocs-material maintenance change)
+**Independent features (can be built in any order, before or after the chain):**
+- Resilient HTTP Client
+- Prompt Template Management
+- Agent Context Window Management
+- Large Payload Externalization (though benefits from being available before subgraphs produce large intermediate data)
 
 ---
 
-## Feature Prioritization Matrix
+## Cross-Platform Comparison
 
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| `zeroth-core` on PyPI | HIGH | MEDIUM | P1 |
-| `econ-instrumentation-sdk` on PyPI | HIGH (blocks above) | LOW | P1 |
-| Landing page + hello world | HIGH | LOW | P1 |
-| Getting Started (3 sections) | HIGH | MEDIUM | P1 |
-| Concept pages × 20 subsystems | HIGH | HIGH | P1 |
-| Usage guides × 20 subsystems | HIGH | HIGH | P1 |
-| Auto-generated Python API reference | HIGH | MEDIUM | P1 |
-| HTTP API reference | MEDIUM | LOW | P1 |
-| Migration guide | HIGH | MEDIUM | P1 |
-| Configuration reference | HIGH | LOW | P1 |
-| Deployment guide | HIGH | MEDIUM | P1 |
-| Recipes cookbook (10-15) | MEDIUM | MEDIUM | P1 |
-| `examples/` dir with CI tests | MEDIUM | MEDIUM | P1 |
-| `zeroth-studio` repo split | HIGH | MEDIUM | P1 |
-| Archive formalization | LOW | LOW | P1 (cleanup) |
-| Governance walkthrough tutorial | HIGH (differentiator) | MEDIUM | P1 |
-| Docstring coverage sweep | MEDIUM (enables reference quality) | MEDIUM | P1 |
-| Cross-repo compatibility matrix | MEDIUM | LOW | P1 |
-| LibCST codemod | MEDIUM | MEDIUM | P2 |
-| HTTP/Python side-by-side tabs | MEDIUM | MEDIUM | P2 |
-| Extension point guides | MEDIUM | MEDIUM | P2 |
-| Docstring coverage badge | LOW | LOW | P2 |
-| Multi-version docs (`mike`) | LOW (pre-1.0) | MEDIUM | P3 |
-| Translations | LOW | HIGH | P3 |
-| Video tutorials | LOW | HIGH | P3 |
-| Discord/Slack community | LOW (pre-1.0) | HIGH (support burden) | P3 |
+### Parallel Execution
 
-**Priority key:**
-- **P1:** Must have for v3.0 milestone completion
-- **P2:** Should have, add in v0.2.x iterations
-- **P3:** Defer until post-1.0
+| Platform | Mechanism | Dynamic? | State Merge | Governance |
+|----------|-----------|----------|-------------|------------|
+| **LangGraph** | Send() API + state reducers | Yes (runtime) | operator.add reducer on annotated state fields | None built-in |
+| **Temporal** | workflow.ExecuteActivity() futures + Promise.all() | Yes | Manual aggregation in workflow code | Activity-level timeouts, retries |
+| **Prefect** | task.map() over iterables | Yes | Automatic via Prefect state | Task-level retries, timeouts |
+| **Airflow** | expand() dynamic task mapping | Yes (since 2.3) | XCom push/pull | Pool-based concurrency limits |
+| **Zeroth (proposed)** | Fan-out edge type or Send-style API | Yes (runtime) | Computed mapping with reduce expression | Per-branch budget, audit, policy -- **unique** |
 
----
+### Subgraph Composition
 
-## Exemplar Feature Analysis
+| Platform | Mechanism | State Isolation | Governance Inheritance |
+|----------|-----------|----------------|----------------------|
+| **LangGraph** | Compiled subgraphs as nodes | Shared keys or isolated state | None |
+| **Temporal** | Child Workflows | Full isolation (own event history) | Parent cancellation propagates |
+| **Prefect** | Subflows | Shared flow run context | Parent flow settings inherited |
+| **Airflow** | TaskGroup (UI-only) / deprecated SubDagOperator | TaskGroup: none. SubDag: full | None |
+| **Zeroth (proposed)** | SubgraphNode referencing published Graph | Isolated Run with mapped I/O | Policy, capability, budget inheritance -- **unique** |
 
-| Feature | FastAPI | Pydantic | LangChain | SQLAlchemy | Our Approach |
-|---------|---------|----------|-----------|------------|--------------|
-| **IA framework** | Progressive narrative tutorial | Concepts + Reference | Explicit Diátaxis | Unified Tutorial + Reference | Explicit Diátaxis (LangChain pattern) |
-| **Getting Started length** | Long progressive tutorial | Short + "Why Pydantic" | Short tutorial + "Quickstart" | Long narrative | **Short linear 3-section** (Typer pattern) |
-| **API reference style** | Hand-written references | Auto-generated | Auto-generated | Mostly auto + curated | **Auto-generated via mkdocstrings** |
-| **Examples location** | Inline + separate tutorial repo | Inline | `cookbook/` notebooks + inline | Inline | **`examples/` `.py` files + inline** (FastAPI pattern, minus tutorial repo) |
-| **Multi-version docs** | Yes | Yes (v1 vs v2 dropdown) | Yes (v0.1 / v0.2 / latest) | Yes (1.4 / 2.0 / 2.1) | **No** (pre-1.0 — defer) |
-| **Migration guide** | Not applicable | First-class page (v1→v2) | First-class page (v0.1→v0.2) | Migration section per version | **First-class page** (monolith → core) |
-| **Doc engine** | MkDocs Material | MkDocs Material | Docusaurus (TS-based) | Sphinx | **MkDocs Material** (with Zensical migration flag) |
-| **Cookbook/recipes** | "Advanced User Guide" | N/A | Large cookbook | Distributed in reference | **Dedicated Cookbook section** (LangChain pattern) |
-| **Translations** | 12 languages | English only | English only | English only | **English only** |
-| **Frontend UI separation** | N/A | N/A | LangSmith is separate closed-source product | N/A | `zeroth-studio` separate public repo |
+### Large Payload Externalization
+
+| Platform | Mechanism | Threshold | Transparent? |
+|----------|-----------|-----------|-------------|
+| **Conductor** | ExternalPayloadStorage (S3/Azure/Postgres) | Configurable soft (5MB) / hard (10MB) barriers | Yes -- fully transparent to workers |
+| **Temporal** | Payload Codec (DataDog large-payload-codec) | 2MB event history limit | Yes -- codec layer is transparent |
+| **Argo Workflows** | Artifact repository (S3/GCS/Azure/HTTP) | All outputs are artifacts by default | No -- explicit artifact declarations |
+| **Zeroth (proposed)** | ArtifactStore with pluggable backends (Redis/filesystem) | Configurable threshold | Yes -- transparent via ArtifactRef in run state |
+
+### Context Window Management
+
+| Platform | Mechanism | Strategies | Pluggable? |
+|----------|-----------|-----------|------------|
+| **Semantic Kernel** | ChatHistoryReducer (v1.35.0+) | Truncation, Summarization | Yes -- custom reducers |
+| **LangChain** | ConversationSummaryBufferMemory | Summary buffer (fixed window + summary) | Limited |
+| **Anthropic (guidance)** | Context engineering principles | Compaction, sub-agents, just-in-time retrieval | Framework-level guidance |
+| **Zeroth (proposed)** | ContextWindowManager with pluggable strategies | Truncation, observation masking, summarization | Yes -- strategy pattern with per-node config |
 
 ---
 
-## Information Architecture Recommendation (for ARCHITECTURE.md / REQUIREMENTS.md)
+## MVP Recommendation
 
-```
-zeroth-core docs site
-├── Home                                  (Explanation + Tutorial entry)
-│   ├── 10-line hello world
-│   ├── Install
-│   └── "Choose your path" (library vs service)
-├── Getting Started                       (Tutorial quadrant)
-│   ├── 1. Install & first graph
-│   ├── 2. Add an agent with an LLM and a tool
-│   └── 3. Run in service mode with an approval gate
-├── Concepts                              (Explanation quadrant)
-│   ├── Why Zeroth / governance model
-│   ├── Graph authoring
-│   ├── Orchestrator runtime
-│   ├── Agents & LLM providers
-│   ├── Execution units & sandbox
-│   ├── Memory connectors
-│   ├── Contracts registry
-│   ├── Runs, threads, conditions, mappings
-│   ├── Policy, approvals, audit
-│   ├── Secrets & identity
-│   ├── Guardrails
-│   ├── Dispatch & workers
-│   ├── Economics (Regulus)
-│   ├── Storage backends
-│   └── Service mode
-├── Guides                                (How-to quadrant)
-│   ├── Per-subsystem usage guides (~20)
-│   ├── Deployment (local / docker-compose / service / embedded)
-│   ├── Extension points (custom memory / provider / execution unit) [v0.2]
-│   └── Governance walkthrough
-├── Cookbook / Recipes                    (How-to quadrant)
-│   └── 10-15 cross-subsystem recipes
-├── Reference                             (Reference quadrant)
-│   ├── Python API (auto-generated, mkdocstrings)
-│   ├── HTTP API (OpenAPI-rendered)
-│   ├── Configuration (pydantic-settings-sourced)
-│   └── CLI
-├── Migration                             (Reference quadrant)
-│   └── Monolith → `zeroth.core.*`
-├── Changelog
-└── Contributing
-```
+### Phase 1: Foundation (build first, unblocks everything)
+1. **Computed data mappings** -- Lowest complexity, highest leverage. Adds `transform` operation to MappingOperation union. Reuses _SafeEvaluator. Unblocks fan-in aggregation expressions.
+2. **Prompt template management** -- Low-medium complexity, independent. Versioned registry pattern already proven in contracts/registry.py. Immediate value for agent authoring.
+3. **Resilient HTTP client** -- Medium complexity, independent. Well-understood patterns (httpx + tenacity). Immediate value for any agent calling external APIs.
 
-Total initial pages: roughly **80-100** counting all per-subsystem concept + guide pairs, recipes, and reference stubs.
+### Phase 2: Parallel Execution (hardest, most impactful)
+4. **Parallel fan-out/fan-in** -- High complexity. Requires RuntimeOrchestrator changes, per-branch isolation, result aggregation via computed mappings.
+5. **Large payload externalization** -- Medium complexity. Should land alongside or before parallel execution since parallel branches multiply intermediate data.
+
+### Phase 3: Composition and Intelligence
+6. **Subgraph composition** -- High complexity, builds on parallel execution patterns. Governance inheritance is the differentiator.
+7. **Agent context window management** -- Medium complexity, but benefits from all other features being stable. Token tracking already exists; this adds strategy layer.
+
+**Defer:** Context management can move earlier if there is user demand -- it is independent of the dependency chain.
 
 ---
 
-## Open Questions for REQUIREMENTS.md
+## Complexity Budget
 
-1. **Doc engine decision:** mkdocs-material now vs Sphinx for longevity? Flag the mkdocs-material "minimal maintenance in late 2026" risk in STACK.md.
-2. **Docstring style:** Google-style, NumPy-style, or Sphinx-style? Must be consistent for mkdocstrings. (Recommendation: Google-style — most readable in source, well-supported by Griffe.)
-3. **Docstring coverage target:** 95% on public surface? 100%? `interrogate` threshold?
-4. **Recipe count for v0.1:** 10? 15? 20? (Recommendation: 10 for launch, grow organically.)
-5. **Examples `.py` vs notebooks:** Confirm `.py` files (recommended) — notebooks are a documented anti-feature above.
-6. **Migration guide scope:** Does it also cover deployments (Docker image retag, env var names) or only Python imports?
-7. **Cross-repo compat matrix ownership:** Lives in `zeroth-core` docs, `zeroth-studio` docs, or both?
-8. **Codemod priority:** Build LibCST codemod in v0.1 or defer to v0.2 once we hear user migration pain?
+| Feature | Est. LOC | Est. Tests | Risk Level | Confidence |
+|---------|---------|-----------|------------|------------|
+| Computed data mappings | 150-250 | 30-40 | LOW | HIGH -- expression engine exists |
+| Prompt template management | 300-500 | 40-60 | LOW | HIGH -- registry pattern exists |
+| Resilient HTTP client | 400-600 | 50-70 | LOW | HIGH -- httpx+tenacity well-proven |
+| Parallel fan-out/fan-in | 800-1200 | 80-120 | HIGH | MEDIUM -- orchestrator surgery required |
+| Large payload externalization | 400-600 | 40-60 | MEDIUM | HIGH -- Conductor/Temporal patterns clear |
+| Subgraph composition | 600-900 | 60-90 | HIGH | MEDIUM -- governance inheritance is novel |
+| Agent context window management | 400-600 | 50-70 | MEDIUM | HIGH -- Semantic Kernel patterns clear |
+
+**Total estimate:** ~3,050-4,650 LOC source + ~350-510 tests
 
 ---
 
 ## Sources
 
-- [Diátaxis framework (diataxis.fr)](https://diataxis.fr/) — the dominant documentation IA pattern
-- [LangChain documentation refresh blog](https://blog.langchain.com/langchain-documentation-refresh/) — explicit Diátaxis adoption retrospective
-- [LangChain Documentation Style Guide](https://python.langchain.com/v0.2/docs/contributing/documentation/style_guide/)
-- [FastAPI official docs](https://fastapi.tiangolo.com/) — tutorial-first narrative pattern
-- [Pydantic docs](https://docs.pydantic.dev/latest/) — concepts + auto-generated reference pattern
-- [SQLAlchemy Unified Tutorial](https://docs.sqlalchemy.org/en/20/) — narrative + reference split
-- [mkdocstrings overview](https://mkdocstrings.github.io/) — auto-generated API reference tooling
-- [mkdocstrings-python usage](https://mkdocstrings.github.io/python/usage/)
-- [Real Python: Build Python docs with MkDocs](https://realpython.com/python-project-documentation-with-mkdocs/)
-- [Switching From Sphinx to MkDocs (Towards Data Science)](https://towardsdatascience.com/switching-from-sphinx-to-mkdocs-documentation-what-did-i-gain-and-lose-04080338ad38/)
-- [Material for MkDocs — Alternatives page (Zensical transition notice)](https://squidfunk.github.io/mkdocs-material/alternatives/)
-- [LibCST codemods tutorial](https://libcst.readthedocs.io/en/latest/codemods_tutorial.html)
-- [LibCST RenameCommand source](https://github.com/Instagram/LibCST/blob/main/libcst/codemod/commands/rename.py)
-- [Keep a Changelog](https://keepachangelog.com/)
-- [Scientific Python Development Guide — Writing documentation](https://learn.scientific-python.org/development/guides/docs/)
+### Parallel Fan-Out/Fan-In
+- [LangGraph Map-Reduce with Send() API](https://medium.com/ai-engineering-bootcamp/map-reduce-with-the-send-api-in-langgraph-29b92078b47d) -- MEDIUM confidence
+- [Temporal Fan-Out Child Workflows](https://community.temporal.io/t/long-running-workflow-with-significant-fan-out-of-child-workflows/17975) -- HIGH confidence
+- [Temporal Child Workflow Docs](https://docs.temporal.io/child-workflows) -- HIGH confidence
+- [Prefect Task Mapping: Scaling to Thousands](https://www.prefect.io/blog/beyond-loops-how-prefect-s-task-mapping-scales-to-thousands-of-parallel-tasks) -- MEDIUM confidence
+- [Airflow Dynamic Task Mapping Docs](https://airflow.apache.org/docs/apache-airflow/stable/authoring-and-scheduling/dynamic-task-mapping.html) -- HIGH confidence
+- [LangGraph Parallelization Techniques](https://deepwiki.com/langchain-ai/langchain-academy/7.3-parallelization-techniques) -- MEDIUM confidence
+
+### Subgraph Composition
+- [LangGraph Subgraphs Official Docs](https://docs.langchain.com/oss/python/langgraph/use-subgraphs) -- HIGH confidence
+- [Temporal Child Workflows Docs](https://docs.temporal.io/child-workflows) -- HIGH confidence
+- [Airflow TaskGroup vs SubDagOperator](https://www.astronomer.io/docs/learn/task-groups) -- HIGH confidence
+- [Scaling LangGraph: Subgraphs Trade-Offs](https://aipractitioner.substack.com/p/scaling-langgraph-agents-parallelization) -- MEDIUM confidence
+- [Airflow SubDagOperator Deprecation (AIP-34)](https://cwiki.apache.org/confluence/display/AIRFLOW/AIP-34+TaskGroup:+A+UI+task+grouping+concept+as+an+alternative+to+SubDagOperator) -- HIGH confidence
+
+### Large Payload Externalization
+- [Conductor External Payload Storage Docs](https://conductor-oss.github.io/conductor/documentation/advanced/externalpayloadstorage.html) -- HIGH confidence
+- [Temporal Large Payload Codec (DataDog)](https://github.com/DataDog/temporal-large-payload-codec) -- HIGH confidence
+- [Temporal Payload Codec Docs](https://docs.temporal.io/payload-codec) -- HIGH confidence
+- [Temporal Data Conversion Docs](https://docs.temporal.io/dataconversion) -- HIGH confidence
+
+### Agent Context Window Management
+- [Anthropic: Effective Context Engineering for AI Agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) -- HIGH confidence
+- [Semantic Kernel Python Context Management](https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-python-context-management/) -- HIGH confidence
+- [Semantic Kernel ChatHistoryReducer API](https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel.contents.history_reducer.chat_history_reducer.chathistoryreducer) -- HIGH confidence
+- [JetBrains Research: Efficient Context Management (Dec 2025)](https://blog.jetbrains.com/research/2025/12/efficient-context-management/) -- HIGH confidence
+- [Agenta: Top Techniques for Context Length](https://agenta.ai/blog/top-6-techniques-to-manage-context-length-in-llms) -- MEDIUM confidence
+- [LLM Context Window Limitations 2026 (Atlan)](https://atlan.com/know/llm-context-window-limitations/) -- MEDIUM confidence
+
+### Resilient HTTP
+- [Tenacity Library (GitHub)](https://github.com/jd/tenacity) -- HIGH confidence
+- [resilient-httpx (httpx + tenacity)](https://github.com/galthran-wq/resilient-httpx) -- MEDIUM confidence
+- [pyresilience (retry + circuit breaker)](https://pypi.org/project/pyresilience/) -- MEDIUM confidence
+- [Building Resilient HTTP Clients with Tenacity](https://medium.com/@ansh.chaturmohta/building-resilient-http-clients-a-deep-dive-into-retry-logic-with-pythons-tenacity-513bc927042b) -- MEDIUM confidence
+
+### Prompt Template Management
+- [Braintrust: Best Prompt Versioning Tools 2025](https://www.braintrust.dev/articles/best-prompt-versioning-tools-2025) -- MEDIUM confidence
+- [Maxim AI: Prompt Versioning Best Practices 2025](https://www.getmaxim.ai/articles/prompt-versioning-and-its-best-practices-2025/) -- MEDIUM confidence
+- [LaunchDarkly: Prompt Versioning Guide](https://launchdarkly.com/blog/prompt-versioning-and-management/) -- MEDIUM confidence
+- [ZenML: Best Prompt Management Tools](https://www.zenml.io/blog/best-prompt-management-tools) -- MEDIUM confidence
+
+### Computed Data Mappings
+- [n8n Expression Engine Docs](https://docs.n8n.io/data/expressions/) -- HIGH confidence
+- [n8n Data Transformation Approaches](https://docs.n8n.io/data/transforming-data/) -- HIGH confidence
+- [n8n Expressions for Data Transformation](https://docs.n8n.io/data/expressions-for-transformation/) -- HIGH confidence
+- [Azure Data Factory Expression Builder](https://learn.microsoft.com/en-us/azure/data-factory/concepts-data-flow-expression-builder) -- MEDIUM confidence
 
 ---
-*Feature research for: v3.0 Core Library Extraction, Studio Split & Documentation*
-*Researched: 2026-04-10*
-*Confidence: HIGH — exemplar patterns are stable, well-known industry practice; only open uncertainty is the 2026 Q4 mkdocs-material maintenance transition.*
+*Feature research for: v4.0 Platform Extensions for Production Agentic Workflows*
+*Researched: 2026-04-12*
+*Confidence: HIGH -- all 7 features have clear precedent in production platforms; zeroth's governance integration is the novel differentiator.*
