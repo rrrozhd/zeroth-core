@@ -1,9 +1,74 @@
 # Requirements: Zeroth
 
-**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-10 (v3.0 milestone)
+**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-12 (v4.0 milestone)
 **Core Value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
 
-## v3.0 Requirements — Core Library Extraction, Studio Split & Documentation
+## v4.0 Requirements — Platform Extensions for Production Agentic Workflows
+
+v4.0 closes 7 architectural gaps identified during a production adoption audit comparing zeroth-core against real-world LangGraph migration requirements. All extensions preserve existing test coverage, integrate with the governance stack, and maintain backward compatibility.
+
+### Parallel Execution (PARA)
+
+- [ ] **PARA-01**: A node can spawn N parallel execution branches from its output, where each branch receives a slice of the output (e.g., one item from a list)
+- [ ] **PARA-02**: A synchronization barrier waits for all spawned branches to complete before proceeding, collecting branch outputs into an aggregated payload with deterministic ordering (by branch index)
+- [ ] **PARA-03**: Each parallel branch has its own isolated execution context (visit counts, audit trail, failure tracking) — a failure in one branch does not automatically fail others (configurable: fail-fast vs best-effort)
+- [ ] **PARA-04**: Policy enforcement, audit recording, and contract validation apply independently per branch, each producing its own audit records
+- [ ] **PARA-05**: Cost attribution tracks per-branch spend; BudgetEnforcer is consulted before spawning branches with a pre-reservation of total estimated cost across N branches
+- [ ] **PARA-06**: ExecutionSettings guardrails (max_total_steps, max_visits_per_node) account for parallel branches as sum across branches, not per-branch
+
+### Subgraph Composition (SUBG)
+
+- [ ] **SUBG-01**: A graph can reference another published graph as a subgraph node; the subgraph's entry contract must be compatible with the referencing edge's mapping output
+- [ ] **SUBG-02**: When the orchestrator reaches a subgraph node, it enters the referenced graph as a nested scope; the subgraph's final output maps back to the parent graph's expected input for the next node
+- [ ] **SUBG-03**: Subgraph execution shares the parent's thread_id; agents inside subgraphs can participate in the same thread memory (configurable per-node via thread_participation)
+- [ ] **SUBG-04**: The parent graph's policies apply as a baseline; the subgraph can further restrict but not relax capabilities; audit records link to the parent run via parent_run_id
+- [ ] **SUBG-05**: If a HumanApprovalNode inside a subgraph pauses execution, the parent run transitions to WAITING_APPROVAL; resolution resumes the subgraph and eventually the parent
+- [ ] **SUBG-06**: The same subgraph definition can be referenced by multiple parent graphs and at multiple points within a single parent graph
+- [ ] **SUBG-07**: Subgraph references can pin to a specific deployment version or float to the latest active deployment
+- [ ] **SUBG-08**: Nested subgraphs (subgraph within a subgraph) are supported with a configurable depth limit
+
+### Large Payload Externalization (ARTF)
+
+- [ ] **ARTF-01**: A pluggable artifact store interface exists for large payloads, separate from run state, with implementations for Redis and local filesystem
+- [ ] **ARTF-02**: Nodes can emit an ArtifactReference (store, key, content_type, size) as part of their output; the reference is stored in run history while the payload lives in the artifact store
+- [ ] **ARTF-03**: Artifacts support configurable TTL; artifacts tied to a run are cleanable when the run is archived
+- [ ] **ARTF-04**: Audit records log artifact references (not full payloads); the audit evidence export can optionally resolve references to full payloads
+- [ ] **ARTF-05**: Contracts support an ArtifactReference type that validates the reference structure without requiring the full payload at validation time
+
+### Context Window Management (CTXW)
+
+- [ ] **CTXW-01**: Approximate token count of accumulated agent messages per thread is tracked using the LLM provider's tokenizer (via litellm.token_counter)
+- [ ] **CTXW-02**: When token count exceeds a configurable threshold, a compaction strategy is applied before the next LLM invocation (default: observation masking of older messages)
+- [ ] **CTXW-03**: Compaction strategy is pluggable per agent node (built-in: truncation, observation masking, LLM-based summarization)
+- [ ] **CTXW-04**: Compaction results are stored in thread memory so they persist across runs; original messages can optionally be archived for audit
+- [ ] **CTXW-05**: Per-agent-node settings are configurable: max_context_tokens, summary_trigger_ratio, compaction_strategy, preserve_recent_messages_count
+
+### Resilient HTTP Client (HTTP)
+
+- [ ] **HTTP-01**: A platform-provided async HTTP client is available to agent tools and executable units, configurable per-node or per-tool
+- [ ] **HTTP-02**: Configurable retry with exponential backoff and jitter; retryable status codes configurable (default: 408, 429, 5xx)
+- [ ] **HTTP-03**: Per-endpoint circuit breaker with configurable failure threshold and reset timeout
+- [ ] **HTTP-04**: Shared or per-tenant connection pools with configurable limits
+- [ ] **HTTP-05**: External HTTP calls are gated by NETWORK_READ / NETWORK_WRITE / EXTERNAL_API_CALL capabilities, logged in audit records (URL, method, status, latency), and subject to rate limiting
+- [ ] **HTTP-06**: HTTP client resolves auth headers/tokens from the SecretResolver automatically based on configuration
+
+### Prompt Template Management (TMPL)
+
+- [ ] **TMPL-01**: A template registry stores and versions prompt templates by name, analogous to the contract registry
+- [ ] **TMPL-02**: Templates support variable interpolation from node input, run state, or memory using Jinja2 SandboxedEnvironment
+- [ ] **TMPL-03**: Agent nodes can reference a template by name+version instead of providing a raw instruction string; template is rendered at runtime
+- [ ] **TMPL-04**: The rendered prompt (post-interpolation) is available in audit records; template variables containing secrets are redacted
+
+### Computed Data Mappings (XFRM)
+
+- [ ] **XFRM-01**: A new transform mapping operation evaluates an expression against the source payload and writes the result to the target path
+- [ ] **XFRM-02**: Transform expressions use the same expression evaluation engine as conditions (the existing _SafeEvaluator) and can access payload.*, state.*, variables.*
+- [ ] **XFRM-03**: The output of a transform expression is validated against the target node's input contract
+- [ ] **XFRM-04**: Transform expressions are guaranteed side-effect-free (no network, no filesystem, no imports); the expression evaluator enforces this with hardened namespace restrictions
+
+---
+
+## v3.0 Requirements — Core Library Extraction, Studio Split & Documentation (shipped)
 
 v3.0 is a packaging and documentation milestone. No new runtime features. Deliverables: ship `zeroth-core` on PyPI under the `zeroth.core.*` namespace, move the Vue Studio to its own public repo, write in-depth documentation for every subsystem, and formalize the monolith archive.
 
@@ -60,16 +125,17 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 - [ ] **ARCHIVE-02**: All 36 worktree branches, both stashes, and the detached-HEAD worktree from the ad-hoc split work are preserved in the archive and recoverable
 - [ ] **ARCHIVE-03**: The archive repository carries a visible "this repo is archived — see rrrozhd/zeroth-core and rrrozhd/zeroth-studio" notice in its README and repo description
 
-## Deferred to v0.2.x of `zeroth-core`
+## Future Requirements
 
-Tracked but out of scope for v3.0 milestone completion. Will be opened as new phases once a first external user has validated the core library.
+Tracked but out of scope for v4.0. Will be opened as new phases once current gaps are closed.
 
-- [ ] **FUTURE-01**: LibCST codemod (`python -m zeroth.core.codemods.rename_from_monolith`) that automatically rewrites `zeroth.*` imports to `zeroth.core.*` in consumer codebases
-- [ ] **FUTURE-02**: HTTP/curl tabs added inline to every subsystem usage guide (initially Python-only)
-- [ ] **FUTURE-03**: Extension-point guides — "Writing a custom memory connector", "Writing a custom LLM provider", "Writing a custom execution unit", "Writing a custom judge"
-- [ ] **FUTURE-04**: Docstring coverage badge in README
-- [ ] **FUTURE-05**: Governance case studies (real-world workflows with captured audit trails)
-- [ ] **FUTURE-06**: Algolia DocSearch (if docs traffic warrants it)
+- **FUTURE-01**: LibCST codemod for automatic `zeroth.*` → `zeroth.core.*` import rewriting
+- **FUTURE-02**: HTTP/curl tabs in subsystem usage guides
+- **FUTURE-03**: Extension-point guides (custom memory connectors, LLM providers, execution units, judges)
+- **FUTURE-04**: Distributed parallel execution across workers (currently in-process asyncio only)
+- **FUTURE-05**: HTTP response caching in resilient client (separate concern from resilience)
+- **FUTURE-06**: S3/GCS artifact store backend (Redis + filesystem sufficient for v4.0)
+- **FUTURE-07**: Model fallback chains / streaming responses
 
 ## Deferred to `zeroth-studio` repo (v2.0 phases 24-26)
 
@@ -83,67 +149,32 @@ These requirements are **not cancelled** — they continue in the new `zeroth-st
 
 ## Out of Scope
 
-Explicitly excluded for v3.0. Documented to prevent scope creep.
+Explicitly excluded for v4.0. Documented to prevent scope creep.
 
 | Feature | Reason |
 |---------|--------|
-| Multi-version docs site with version dropdown (`mike` plugin) | Pre-1.0 — API still shifts, stale versions confuse more than help. Revisit at 1.0. |
-| Translations / multi-language docs | FastAPI has 12 language maintainers; we have one team. Translations rot faster than code. |
-| Hand-written API reference for every class | 22K LOC — impractical and goes stale on day one. Use mkdocstrings instead. |
-| Jupyter notebook examples | Hard to version-control, diff, and CI-test. Use plain `.py` files. |
-| Video tutorials / screencasts | Expensive to produce, impossible to update in place, SEO/search unfriendly. |
-| Public Discord/Slack community at launch | Pre-1.0 support burden. GitHub Issues + Discussions only. |
-| "Awesome Zeroth" curated extension list | No ecosystem exists yet — would look abandoned. |
-| Core/platform file-level split | Superseded by the pure-rename decision — the cascading `__init__.py` breakage isn't worth it. |
-| Monorepo consolidation of `zeroth-core` + `zeroth-studio` | Directly contradicts the intentional split decision. |
-| Runtime feature work (new subsystems, new integrations) | v3.0 is packaging and docs only. New runtime work goes to v3.1+. |
+| Distributed parallel execution across workers | In-process asyncio is sufficient; scale by running more workers |
+| Full expression language / DSL for mappings | Existing `_SafeEvaluator` is sufficient; a DSL adds complexity without proportional value |
+| Automatic context summarization as default | Research shows observation masking outperforms summarization; summarization is opt-in only |
+| HTTP response caching | Separate concern from resilience; defer to future milestone |
+| Subgraph runtime flattening | Airflow tried this and deprecated it; use recursive invocation with isolation |
+| General-purpose object store | Artifact store handles only workflow intermediate data with TTL cleanup |
+| Real-time streaming responses | Async invocation model is sufficient for v4.0 |
 
 ## Traceability
 
 Which phases cover which requirements. Updated after roadmap creation.
 
+*v4.0 traceability will be populated by the roadmapper.*
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PKG-01 | Phase 28 | Pending |
-| PKG-02 | Phase 28 | Pending |
-| PKG-03 | Phase 28 | Pending |
-| PKG-04 | Phase 28 | Pending |
-| PKG-05 | Phase 28 | Pending |
-| PKG-06 | Phase 28 | Pending |
-| RENAME-01 | Phase 27 | Pending |
-| RENAME-02 | Phase 27 | Pending |
-| RENAME-03 | Phase 27 | Pending |
-| RENAME-04 | Phase 27 | Pending |
-| RENAME-05 | Phase 27 | Pending |
-| DOCS-01 | Phase 30 | Complete |
-| DOCS-02 | Phase 30 | Complete |
-| DOCS-03 | Phase 31 | Complete |
-| DOCS-04 | Phase 31 | Complete |
-| DOCS-05 | Phase 30 | Complete |
-| DOCS-06 | Phase 31 | Complete |
-| DOCS-07 | Phase 32 | Complete |
-| DOCS-08 | Phase 32 | Complete |
-| DOCS-09 | Phase 32 | Complete |
-| DOCS-10 | Phase 32 | Complete |
-| DOCS-11 | Phase 32 | Complete |
-| DOCS-12 | Phase 31 | Complete |
-| SITE-01 | Phase 30 | Complete |
-| SITE-02 | Phase 30 | Complete |
-| SITE-03 | Phase 30 | Pending |
-| SITE-04 | Phase 30 | Complete |
-| STUDIO-01 | Phase 29 | Complete |
-| STUDIO-02 | Phase 29 | Complete |
-| STUDIO-03 | Phase 29 | Complete |
-| STUDIO-04 | Phase 29 | Complete |
-| STUDIO-05 | Phase 29 | Complete |
-| ARCHIVE-01 | Phase 27 | Pending |
-| ARCHIVE-02 | Phase 27 | Pending |
-| ARCHIVE-03 | Phase 27 | Pending |
+| — | — | — |
 
 **Coverage:**
-- v3.0 requirements: 34 total
-- Mapped to phases: 34
-- Unmapped: 0
+- v4.0 requirements: 35 total
+- Mapped to phases: 0 (awaiting roadmap)
+- Unmapped: 35
 
 ---
 
@@ -177,4 +208,4 @@ Phases 22–23 shipped in v2.0. Phases 24–26 deferred to the new `zeroth-studi
 
 ---
 
-*Requirements last updated: 2026-04-10 after v3.0 milestone kickoff.*
+*Requirements last updated: 2026-04-12 after v4.0 milestone kickoff.*
