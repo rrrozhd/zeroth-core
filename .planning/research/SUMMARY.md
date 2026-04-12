@@ -1,167 +1,184 @@
 # Project Research Summary
 
-**Project:** Zeroth Studio -- Visual Workflow Editor
-**Domain:** Visual workflow authoring UI for governed multi-agent AI platform
-**Researched:** 2026-04-09
+**Project:** zeroth-core v4.0 Platform Extensions
+**Domain:** Governed agent orchestration platform -- parallel execution, composition, artifact stores, context management, resilient HTTP, prompt templates, computed mappings
+**Researched:** 2026-04-12
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Zeroth Studio is a visual graph editor frontend (Vue 3 SPA) layered on top of an already-complete governed multi-agent backend (v1.1). The domain is well-understood: six competing platforms (n8n, Dify, Langflow, Flowise, Rivet, ComfyUI) establish a clear table-stakes feature set -- drag-and-drop canvas, edge drawing, node inspector, save/load, undo/redo, execution visualization. The recommended stack (Vue 3, Vue Flow, Pinia, Tailwind CSS 4, Reka UI headless components) is mature, version-verified, and follows the same patterns n8n uses without copying its code. No new backend dependencies are needed; the existing FastAPI/Postgres/Redis stack supports all Studio requirements through new REST routes and WebSocket endpoints.
+Zeroth v4.0 extends the existing governed agent orchestration platform with 7 capabilities that production teams expect: parallel fan-out/fan-in execution, subgraph composition, large payload externalization, agent context window management, a resilient HTTP client, prompt template management, and computed data mappings. Research across LangGraph, Temporal, Prefect, Airflow, Conductor, Semantic Kernel, and n8n confirms that the first four are table stakes for real-world adoption, while context management, subgraph governance inheritance, and built-in prompt versioning are differentiators no competing platform does well. The critical finding is that all 7 features can be built with zero new PyPI dependencies -- the existing stack (asyncio.TaskGroup, httpx, tenacity, litellm, Jinja2, redis, pydantic) already provides every library needed.
 
-The recommended approach is phased delivery with strict scope discipline. Phase 1 delivers a single-user canvas that can place nodes, draw edges, configure properties, and save/load graphs via REST -- nothing more. WebSocket, collaboration, and advanced undo/redo are deferred to later phases. This ordering is driven by the single most dangerous pitfall identified: over-engineering infrastructure (real-time sync, CRDTs, plugin systems) before validating that the core editing loop feels good. The existing backend sophistication creates pressure to match it immediately in the frontend; resisting that pressure is critical.
+The recommended approach follows a dependency-aware build order across three phases. Computed mappings and the artifact store ship first because they are foundational (mappings enable fan-in aggregation; artifacts prevent payload bloat during parallel execution). The resilient HTTP client, prompt templates, and context window management are independent and can be built in parallel. Parallel fan-out/fan-in and subgraph composition ship last because they are the most complex, touch the core orchestrator loop, and benefit from all earlier infrastructure being in place. This ordering minimizes risk: the hardest features build on stable foundations rather than being built first and retrofitted.
 
-Zeroth Studio's defensible differentiation is governance visualization -- approval gate status, audit trails, sandbox indicators, RBAC-aware editing, per-node cost attribution. No competitor surfaces any of these. However, the same governance data creates the biggest UX risk: cluttering the canvas with badges and indicators until the workflow graph is unreadable. The research strongly recommends a three-level progressive disclosure model (single icon on canvas, details in inspector, deep dives in dedicated panels) established in Phase 1 and enforced throughout.
+The primary risks are concentrated in two areas. First, parallel execution introduces shared-state mutation hazards -- the current `_drive()` loop mutates the `Run` object in-place, and concurrent branches will corrupt state unless each branch operates on an isolated context with atomic fan-in merging. Second, subgraph composition creates governance scope leak risks where child graphs inherit parent permissions they should not have, and infinite recursion through self-referencing graphs. Both require careful upfront design (isolated branch contexts, governance scoping, depth limits, and publish-time cycle detection) rather than bolt-on fixes.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The frontend stack is fully decided and version-verified. Vue 3.5.x with Pinia 3 for state, Vue Flow 1.48.x for the graph canvas, dagre 3.0.0 for auto-layout, Reka UI 2.9.x (headless) with Tailwind CSS 4 for UI components, CodeMirror 6 for code editing, and VueUse 14.x for composable utilities including WebSocket. The backend requires no new packages -- FastAPI's native WebSocket, existing Redis pub/sub, and existing GraphRepository cover all needs.
+All 7 features build on zeroth's existing dependency tree with no new packages. The only change to `pyproject.toml` is promoting Jinja2 from a transitive dependency (via litellm) to an explicit one, which changes nothing at install time but prevents breakage if litellm ever drops it. This is the optimal outcome: no version conflicts, no new supply-chain risk.
 
-**Core technologies:**
-- **Vue Flow 1.48.x**: Interactive flow canvas with pan/zoom/drag/edge-drawing -- same library n8n uses, MIT licensed
-- **Reka UI 2.9.x + Tailwind CSS 4**: Headless accessible components with full visual control -- pre-styled libraries (Element Plus, Vuetify) fight custom graph editor UIs
-- **Pinia 3**: Single source of truth for graph state; Vue Flow derives its rendering from the Pinia store via a useCanvasMapping composable
-- **VueUse useWebSocket**: Reactive WebSocket client with auto-reconnect, replacing unmaintained alternatives
-- **ky**: 2KB HTTP client wrapping native Fetch -- replaces Axios at 15% of the bundle size
-- **openapi-typescript**: Generates frontend types from FastAPI's OpenAPI spec, keeping Pydantic models and TypeScript types in sync automatically
+**Core technologies (all existing):**
+- `asyncio.TaskGroup` (stdlib, Python 3.12+): Parallel fan-out/fan-in -- structured concurrency with automatic cancellation on failure, superior to `asyncio.gather()` for fail-fast semantics
+- `litellm.token_counter()` (already pinned): Context window management -- model-aware tokenization for OpenAI, Anthropic, Cohere without adding tiktoken as a direct dependency
+- `httpx.AsyncClient` + `tenacity` (both already pinned): Resilient HTTP -- retry with backoff on HTTP status codes (not just connection errors), connection pooling, layered timeouts
+- `Jinja2 SandboxedEnvironment` (transitive via litellm): Prompt template rendering -- prevents template injection attacks
+- `_SafeEvaluator` (existing in conditions/evaluator.py): Computed mappings -- already supports arithmetic, string ops, comparisons, ternary, list/dict construction; zero new parsing code needed
+- `redis` (already in dispatch extra): Artifact store backend with `SETEX` for TTL-based storage
+- Custom circuit breaker (~60 LOC): All async circuit breaker libraries are unmaintained; the pattern is simple enough to implement in-house with `asyncio.Lock`
+
+**Do NOT add:** `aiobreaker`/`pybreaker` (unmaintained), `celery`/`dramatiq` (overkill for in-process parallelism), `networkx` (existing graph validation suffices), `jsonpath-ng`/`jmespath` (existing evaluator suffices), `aiofiles` (use `asyncio.to_thread` instead).
 
 ### Expected Features
 
 **Must have (table stakes):**
-- Drag-and-drop node placement on pannable/zoomable canvas
-- Edge drawing between typed ports with connection validation
-- Node palette sidebar with search/filter by category
-- Inspector panel for node configuration (properties, settings)
-- Auto-layout via dagre, canvas navigation (pan/zoom/fit/minimap)
-- Save/load workflows via REST API with dirty-state indicator
-- Keyboard shortcuts (delete, select-all, copy/paste, undo)
-- Workflow execution trigger with per-node status badges
-- Per-node execution results viewer (input/output/tokens/cost)
-- Model/provider selector per agent node (100+ models via LiteLLM)
-- Prompt editor with CodeMirror 6
+- Parallel fan-out/fan-in -- every workflow platform (LangGraph Send(), Temporal activities, Prefect map(), Airflow expand()) supports this; users cannot model batch processing, multi-source retrieval, or parallel agent evaluation without it
+- Computed data mappings -- current mappings (passthrough/rename/constant/default) cannot derive new values; this is a basic workflow need that n8n, Azure Data Factory, and Airflow all provide
+- Resilient HTTP client -- agent nodes routinely call external APIs; without managed retry/backoff/circuit-breaking, any external dependency failure cascades into workflow failure
+- Large payload externalization -- Temporal has a 2MB event history limit, Conductor enforces 3-5MB barriers; without this, graphs passing large LLM outputs or documents between nodes hit memory/storage limits
 
-**Should have (differentiators -- Zeroth's governance moat):**
-- Approval gate visualization with SLA timers and status badges
-- Audit trail overlay per node (tamper-evident governance evidence)
-- RBAC-aware canvas (read-only for viewers, restricted for operators)
-- Sandbox indicator badges on execution unit nodes
-- Token cost overlay and budget gauge (Regulus cost attribution)
-- Environment-aware canvas with deployment-target indicators
+**Should have (differentiators):**
+- Subgraph composition with governance inheritance -- most platforms treat subgraphs as second-class; zeroth can differentiate with first-class governance inheritance, thread continuity, approval propagation, and budget isolation across nested graphs
+- Agent context window management -- most frameworks punt on this; zeroth's pluggable strategy pattern (observation masking by default, summarization opt-in) with per-node configuration would be a strong differentiator
+- Prompt template management -- no production agent framework has built-in versioned prompt templates with audit redaction; self-contained alternative to external platforms like PromptLayer/Langfuse
 
-**Defer (v2.1+):**
-- Workflow versioning diff view (HIGH complexity)
-- Collaborative presence indicators (requires WebSocket presence infra)
-- Governance evidence bundle export (backend exists; UI is low priority)
-- Template workflow library (content effort, not engineering)
+**Defer (anti-features -- explicitly do NOT build):**
+- Distributed parallel execution across workers (use in-process asyncio; scale by running more workers)
+- Full expression language / DSL for mappings (existing `_SafeEvaluator` is sufficient)
+- Automatic context summarization as default (default to observation masking; summarization is opt-in)
+- HTTP response caching in the resilient client (separate concern from resilience)
+- Subgraph runtime flattening (Airflow tried this and deprecated it; use recursive invocation with isolation)
+- General-purpose object store (artifact store handles only workflow intermediate data with TTL cleanup)
 
 ### Architecture Approach
 
-The architecture uses Nginx as the single entry point -- serving the Vue SPA as static files and reverse-proxying API/WebSocket traffic to FastAPI. The frontend follows a feature-sliced directory structure (canvas, inspector, workflow-rail, validation, execution, environments) with a shared layer for API client, auth, and reusable UI components. The critical architectural pattern is the useCanvasMapping composable that bridges Zeroth's Graph Pydantic model and Vue Flow's internal node/edge format bidirectionally. All canvas mutations flow through useCanvasOperations which updates the Pinia graphStore (single source of truth) and optionally syncs to the backend.
+The architecture follows four key patterns already established in zeroth-core: (1) Protocol + Pluggable Backend for new subsystems (ArtifactStore, CompactionStrategy, GraphResolver), (2) Optional Injection via RuntimeOrchestrator fields defaulting to None for backward compatibility, (3) Governance-by-Default for every new capability touching external resources, and (4) Atomic Superstep for parallelism where all branches in a group must complete before state updates apply.
 
-**Major components:**
-1. **Nginx** -- TLS termination, static file serving, reverse proxy for /v2/ REST and /ws/ WebSocket
-2. **FastAPI v2 Studio API** -- Thin REST wrapper around existing GraphRepository for graph/node/edge CRUD, validation, asset catalog
-3. **WebSocket Hub** -- Connection manager grouped by graph_id, topic-based message routing, Redis pub/sub for multi-worker broadcast
-4. **Vue SPA (studio/)** -- Feature-sliced Vue 3 app: canvas (Vue Flow), inspector, workflow rail, validation panel, execution panel
-5. **graphStore (Pinia)** -- Single source of truth for the Graph document; canvas and inspector derive state from it reactively
+**Major components (new modules):**
+1. `zeroth.core.orchestrator.parallel` -- ParallelDispatcher, BranchContext; handles concurrent branch spawning via asyncio.TaskGroup, isolated per-branch state, and atomic fan-in merging
+2. `zeroth.core.orchestrator.subgraph` -- SubgraphRunner, GraphResolver; recursive graph invocation with governance inheritance, budget scoping, and depth limiting
+3. `zeroth.core.artifacts` -- ArtifactStore protocol with RedisArtifactStore and FilesystemArtifactStore; transparent externalization of payloads exceeding configurable threshold
+4. `zeroth.core.agent_runtime.context` -- ContextWindowManager with pluggable CompactionStrategy (truncation, observation masking, summarization); enforces token budgets in PromptAssembler
+5. `zeroth.core.http` -- ResilientHTTPClient wrapping httpx with tenacity retry, custom circuit breaker, capability gating, and audit logging
+6. `zeroth.core.prompts` -- PromptTemplateRegistry (versioned, DB-backed), TemplateRenderer (Jinja2 SandboxedEnvironment); mirrors ContractRegistry pattern
+7. `zeroth.core.mappings` (extension) -- TransformMappingOperation added to existing MappingOperation union; delegates to existing `_SafeEvaluator`
+
+**Existing components requiring modification:**
+- `RuntimeOrchestrator._drive()` -- detect parallel groups, dispatch via ParallelDispatcher; add SubgraphNode handler
+- `Run` model -- add `parallel_groups`, `parent_run_id` fields
+- `MappingOperation` union -- add TransformMappingOperation variant
+- `AgentConfig` / `AgentNodeData` -- add context_window_config, template_ref fields
+- `PromptAssembler` -- add template resolution and token budget enforcement
+- `ZerothSettings` -- add ArtifactSettings, HTTPClientSettings, ContextWindowSettings
 
 ### Critical Pitfalls
 
-1. **n8n license contamination** -- n8n's SUL license prohibits code derivation. Use n8n as UX reference (screenshots only), never open its source during implementation. Establish clean-room policy before Phase 1.
-2. **Over-engineering before core validation** -- Do not build WebSocket sync, CRDTs, or plugin systems before the basic edit-save-reload loop works and feels good. Phase 1 must be REST-only, single-user, zero-collaboration.
-3. **Performance collapse at 50+ nodes** -- Custom governance decorators on every node compound rendering cost. Use shallowRef for node arrays, memoize node components, keep governance badges to single icons (no rich sub-components), profile at 50/100/200 nodes as gating criteria.
-4. **Graph state divergence / data loss** -- Optimistic canvas edits can diverge from backend-validated state. Implement client-side validation mirroring governance rules, draft vs. published state model, debounced auto-save with conflict detection.
-5. **Governance UI clutter** -- Surfacing all governance data on the canvas destroys readability. Enforce three-level progressive disclosure: one icon on canvas, details in inspector, deep dives in dedicated panels. Test the canvas with governance decorators disabled -- if it is not clean without them, the base UX is broken.
-6. **Node type explosion** -- Build ONE generic StudioNode component driven by type configuration data, not one custom component per domain type. Maximum 2-3 custom node components total.
+1. **Parallel fan-out corrupts shared Run state** -- The `_drive()` loop mutates Run in-place (visit counts, payloads, history, pending nodes). Concurrent branches will corrupt state at every `await` yield point. Prevention: each branch must operate on an isolated BranchContext; merge atomically at fan-in. This is the foundational design decision -- get it wrong and everything else breaks.
+
+2. **Parallel branches break budget enforcement (N-fold cost multiplication)** -- BudgetEnforcer's TTL cache means N branches all read the same stale spend value and all pass. Prevention: pre-reserve total estimated cost before fan-out, enforce per-branch sub-budgets, reconcile actual spend after fan-in.
+
+3. **Expression injection in computed mappings via AST evaluator escape** -- The `_SafeEvaluator` allows `ast.Attribute` access that can chain to `__class__.__bases__[0].__subclasses__()` (see CVE-2025-68613, CVSS 9.9 in n8n). Prevention: convert all namespace values to plain dicts via `.model_dump()`; denylist dunder attributes; block all function calls in mapping expressions; add fuzz testing.
+
+4. **Artifact references become dangling after TTL expiry** -- Runs paused for approval or replayed from checkpoint will find artifact data evicted. Prevention: refresh TTLs on checkpoint writes; pin artifacts for paused runs; fail with specific `ArtifactExpiredError` rather than passing stale references.
+
+5. **Subgraph governance scope leaks** -- Child graphs inherit parent permissions they should not have; node ID collisions across nested graphs corrupt enforcement records. Prevention: "parent is ceiling, child is floor" inheritance rule; namespace all node IDs in nested execution; create cascading GovernanceScope.
 
 ## Implications for Roadmap
 
-Based on research, the project naturally divides into 4 phases driven by dependency ordering and risk mitigation.
+Based on research, suggested phase structure:
 
-### Phase 1: Canvas Foundation and Dev Infrastructure
-**Rationale:** Everything depends on a working canvas with save/load. The dev workflow (Vite + FastAPI proxy + Docker) must be established before any feature work. This phase also establishes the clean-room policy, generic StudioNode pattern, and progressive disclosure hierarchy -- decisions that are expensive to change later.
-**Delivers:** Single-user visual editor that can create, edit, and persist workflow graphs. Three-panel layout. Basic node palette with all Zeroth node types. Inspector panel with property editing. Auto-layout. Keyboard shortcuts.
-**Addresses:** All 13 table-stakes features from FEATURES.md (canvas interaction, save/load, node palette, inspector, navigation, auto-layout, keyboard shortcuts)
-**Avoids:** Over-engineering (Pitfall 3), Vue Flow container sizing (Pitfall 2), n8n license contamination (Pitfall 1), node type explosion (Pitfall 10), inspector scope creep (Pitfall 11), deployment friction (Pitfall 8)
-**Backend work:** v2 Studio REST API (thin wrapper around GraphRepository), Nginx config updates, Docker multi-stage build with Node.js frontend stage
+### Phase 1: Foundation (Computed Mappings + Artifact Store)
+**Rationale:** Computed mappings have zero dependencies, the smallest scope (~150-250 LOC), and are a prerequisite for fan-in aggregation expressions. The artifact store is also dependency-free and must be in place before parallel execution multiplies intermediate data. Building these first exercises the PR/test pipeline on low-risk changes.
+**Delivers:** Transform mapping operation in edge mappings; pluggable artifact storage with Redis and filesystem backends; transparent externalization/resolution of large payloads.
+**Addresses:** Table stakes: computed data mappings, large payload externalization.
+**Avoids:** Pitfall 7 (expression injection) -- must harden `_SafeEvaluator` with dunder denylist and dict-only namespaces BEFORE exposing computed mappings to user input. Pitfall 5 (artifact TTL) -- must implement TTL refresh on checkpoint writes from day one.
+**Estimated scope:** ~550-850 LOC + ~70-100 tests.
 
-### Phase 2: Execution Visualization and Governance Layer
-**Rationale:** With the core editing loop validated, add the execution feedback loop (run workflows, see per-node status) and Zeroth's governance differentiators. WebSocket is introduced here for execution status push (read-only, server-to-client) -- not for graph editing.
-**Delivers:** Run button with per-node execution status. Approval gate visualization with SLA timers. Audit trail overlay in inspector. Sandbox badges. RBAC-aware canvas (read-only mode). Node validation indicators. Governance overlay toggle.
-**Addresses:** All Phase 2 features from FEATURES.md (execution, approval gates, audit trail, RBAC, sandbox indicators, validation)
-**Avoids:** WebSocket complexity creep (Pitfall 9 -- WS is read-only push only), governance UI clutter (Pitfall 6 -- progressive disclosure enforced), graph state divergence (Pitfall 5 -- inline validation added)
+### Phase 2: Independent Capabilities (HTTP Client + Prompt Templates + Context Management)
+**Rationale:** These three features touch entirely different subsystems (new http module, new prompts module, agent_runtime) with no overlap. They can be developed in parallel by different contributors. None depends on Phase 1 outputs, but landing them before the complex Phase 3 work means the platform has a broader capability surface to stress-test.
+**Delivers:** Governed resilient HTTP client with retry/backoff/circuit-breaker; versioned prompt template registry with Jinja2 sandboxed rendering; pluggable context window management with observation masking, truncation, and summarization strategies.
+**Addresses:** Table stakes: resilient HTTP client. Differentiators: prompt template management, agent context window management.
+**Avoids:** Pitfall 9 (circuit breaker tenant leak) -- scope breakers by (tenant_id, host), not globally. Pitfall 10 (prompt injection via templates) -- type variables as trusted/untrusted, wrap untrusted in delimiters. Pitfall 6 (summarization data loss) -- default to observation masking, implement pinned facts for critical values.
+**Estimated scope:** ~1,100-1,700 LOC + ~140-200 tests.
 
-### Phase 3: Advanced Authoring and Economics
-**Rationale:** With editing and execution working, add the authoring power features (CodeMirror prompt editor, model selector, tool attachment) and Zeroth's economic differentiators (token cost overlay, budget gauge). These features have no blocking dependencies on earlier phases beyond a working canvas and execution pipeline.
-**Delivers:** CodeMirror-powered prompt/system-message editor. Model/provider selector per agent node. Token cost overlay per node. Budget gauge in header. Environment-aware canvas with environment selector. Variable/context passing visualization. Tool/function attachment to agent nodes.
-**Addresses:** All Phase 3 features from FEATURES.md (prompt editor, model selector, cost overlay, budget gauge, environments, variable visualization, tool attachment)
-**Avoids:** Performance collapse (Pitfall 4 -- stress test at 200 nodes as exit criterion)
+### Phase 3: Parallel Execution + Subgraph Composition
+**Rationale:** These are the two hardest features (~1,400-2,100 LOC combined), both touch the core `_drive()` loop, and they share critical integration surfaces (subgraph nodes inside parallel branches, tree-shaped budget carving, correlated audit trails). They benefit from all Phase 1-2 infrastructure being stable. They should be co-designed even if built sequentially (parallel first, then subgraph).
+**Delivers:** Fan-out/fan-in parallel execution with per-branch isolation, budget scoping, and configurable failure policies; subgraph composition with governance inheritance, thread continuity, approval propagation, and recursion guards.
+**Addresses:** Table stakes: parallel fan-out/fan-in. Differentiators: subgraph composition with governance inheritance.
+**Avoids:** Pitfall 1 (shared state corruption) -- isolated BranchContext with atomic fan-in merge. Pitfall 2 (budget multiplication) -- pre-reserve before fan-out. Pitfall 8 (checkpoint corruption) -- ParallelExecutionGroup model, checkpoint only at fan-out start and fan-in complete. Pitfall 3 (infinite recursion) -- publish-time cycle detection + runtime depth guard. Pitfall 4 (governance scope leak) -- namespaced node IDs, GovernanceScope cascade.
+**Estimated scope:** ~1,400-2,100 LOC + ~140-210 tests.
 
-### Phase 4: Collaboration and Advanced Governance
-**Rationale:** Deferred features that are high-value but not launch-critical. Each requires significant infrastructure (WebSocket presence, graph diff computation, evidence bundling) that should not delay the core product.
-**Delivers:** Workflow versioning with visual diff view. Collaborative presence indicators. Governance evidence bundle export. Undo/redo (snapshot-based, not command-pattern). Template workflow library.
-**Addresses:** All deferred features from FEATURES.md
-**Avoids:** Undo/redo corruption (Pitfall 7 -- use snapshot approach, not command pattern)
+### Integration Phase
+**Rationale:** After all features land, wire everything into service bootstrap, update OpenAPI spec, validate cross-feature interactions.
+**Delivers:** End-to-end integration; updated API surface; cross-feature interaction testing.
 
 ### Phase Ordering Rationale
 
-- **Phase 1 before everything:** The Graph Authoring API and canvas are the critical path. Every other feature depends on a working canvas with save/load. Dev infrastructure (Vite proxy, Docker build) must exist before any feature work.
-- **Phase 2 before Phase 3:** Execution visualization validates the end-to-end loop (author -> run -> inspect results). Governance features are Zeroth's differentiator and should ship before authoring refinements.
-- **Phase 3 before Phase 4:** Authoring power features (prompt editor, model selector) serve individual users. Collaboration features serve teams -- smaller audience initially.
-- **WebSocket phasing:** REST-only in Phase 1. Read-only push in Phase 2. Bidirectional (if needed) in Phase 4. This avoids WebSocket complexity creep (Pitfall 9).
+- **Dependency chain drives order:** Computed mappings enable fan-in aggregation (Phase 1 before Phase 3). Artifact store prevents payload bloat during parallel execution (Phase 1 before Phase 3).
+- **Independence enables parallelism:** HTTP client, prompt templates, and context management touch different subsystems with no overlap (Phase 2 can be parallelized across contributors).
+- **Risk is back-loaded intentionally:** The hardest features (parallel execution, subgraph composition) ship last, building on stable foundations. This avoids the antipattern of building the riskiest feature first and retrofitting everything else around it.
+- **Pitfall avoidance is front-loaded:** Expression injection hardening (Pitfall 7) ships with computed mappings in Phase 1. TTL management (Pitfall 5) ships with the artifact store in Phase 1. These are security-critical and must not be deferred.
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 1:** Vue Flow integration patterns -- container sizing, custom node rendering, and the useCanvasMapping bridge between Zeroth Graph models and Vue Flow elements need careful prototyping
-- **Phase 2:** WebSocket message protocol design -- topic-based routing, authentication on connect, reconnection semantics need a focused design spike
-- **Phase 4:** Undo/redo implementation strategy -- snapshot vs. command pattern tradeoffs, undo boundaries, memory management need dedicated research
+- **Phase 3 (Parallel Execution):** The superstep model, branch isolation, checkpoint extension, and budget reservation require careful design. The orchestrator surgery is the highest-risk change in the entire v4.0 scope. Recommend `/gsd-research-phase` for the parallel dispatch design before implementation.
+- **Phase 3 (Subgraph Composition):** Governance inheritance rules (parent-ceiling/child-floor), cross-graph cycle detection at publish time, and approval propagation across nested runs are novel -- no existing platform does this well. Recommend `/gsd-research-phase` for governance inheritance design.
 
 Phases with standard patterns (skip research-phase):
-- **Phase 3:** All technologies are well-documented (CodeMirror 6, model selector dropdowns, budget display components). Standard CRUD + display patterns.
+- **Phase 1 (Computed Mappings):** Well-documented pattern -- add one model variant and one case to the executor. Existing `_SafeEvaluator` is already battle-tested.
+- **Phase 1 (Artifact Store):** Conductor and Temporal patterns are thoroughly documented. Protocol + pluggable backend is an established zeroth pattern.
+- **Phase 2 (HTTP Client):** httpx + tenacity is the standard Python resilience stack. Circuit breaker is ~60 LOC.
+- **Phase 2 (Prompt Templates):** Registry pattern already proven in ContractRegistry. Jinja2 SandboxedEnvironment is well-documented.
+- **Phase 2 (Context Management):** Semantic Kernel's ChatHistoryReducer pattern is well-documented. litellm token counting API is stable.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All versions verified via npm April 2026. Compatibility matrix validated. No speculative choices. |
-| Features | HIGH | Cross-referenced 6 competing platforms. Table stakes verified against n8n, Dify, Langflow, Flowise, Rivet, ComfyUI. Differentiators grounded in existing backend capabilities. |
-| Architecture | HIGH | Feature-sliced Vue structure, Nginx reverse proxy, REST + WebSocket split all follow established patterns. n8n's architecture validates the approach without copying code. |
-| Pitfalls | HIGH | Vue Flow container sizing, performance at scale, and undo/redo corruption verified against official docs and community reports. License risk verified against n8n SUL text. |
+| Stack | HIGH | All dependencies verified in local environment; version compatibility confirmed; zero new packages needed |
+| Features | HIGH | Cross-platform evidence from 7 production platforms (LangGraph, Temporal, Prefect, Airflow, Conductor, Semantic Kernel, n8n); clear table-stakes vs differentiator classification |
+| Architecture | HIGH | Existing codebase verified via direct source reading; integration points mapped to specific files and methods; patterns validated against production platforms |
+| Pitfalls | HIGH | 10 pitfalls identified with specific code-level corruption vectors; cross-feature integration pitfalls documented; CVE-2025-68613 provides concrete evidence for expression injection risk |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **OpenAPI-to-TypeScript generation pipeline:** The openapi-typescript workflow needs validation during Phase 1 setup. Verify it handles Zeroth's discriminated union types correctly.
-- **Vue Flow custom node performance at scale:** The 50/100/200 node performance targets are based on React Flow benchmarks. Vue Flow may differ. Prototype and benchmark early in Phase 1.
-- **Graph document size for WebSocket:** Large graphs (100+ nodes) transmitted as full JSON over WebSocket may need delta/patch compression. Assess during Phase 2.
-- **RBAC integration with canvas interactions:** How granular should permission checks be? Per-node? Per-operation? Design work needed in Phase 2.
-- **ky version pinning:** ky was recommended as "latest" without a pinned version. Pin at install time.
+- **Parallel branch failure policy design:** The research identifies fail-fast, fail-after-all, and continue-with-partial as options, but the optimal default and configuration UX need design work during Phase 3 planning.
+- **Budget reservation mechanics:** Pre-reserving cost before fan-out requires estimating per-branch cost. The estimation accuracy for different LLM providers and the reconciliation protocol with Regulus need specification.
+- **Subgraph approval propagation UX:** When a child subgraph hits an approval gate, how does this surface in the parent run's API and Studio UI? The approval service integration needs design.
+- **Jinja2 vs str.format_map for templates:** STACK.md recommends Jinja2 (SandboxedEnvironment, conditionals, loops); FEATURES.md recommends str.format_map (simpler). Resolution: use Jinja2 SandboxedEnvironment -- the security properties (sandbox) and expressiveness (conditionals for complex prompts) justify the negligible complexity increase over str.format_map.
+- **Observation masking implementation details:** JetBrains research shows observation masking outperforms summarization (2.6% higher solve rate, 52% cheaper), but the specific masking strategy (replace with placeholder, replace with summary, replace with hash) needs specification during Phase 2 planning.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [npm package registry](https://www.npmjs.com/) -- version verification for all frontend packages
-- [Vue Flow documentation](https://vueflow.dev/) -- container sizing, custom nodes, troubleshooting
-- [React Flow performance guide](https://reactflow.dev/learn/advanced-use/performance) -- shared architecture performance patterns
-- [FastAPI WebSocket docs](https://fastapi.tiangolo.com/advanced/websockets/) -- native WebSocket support
-- [Tailwind CSS v4 docs](https://tailwindcss.com/) -- Vite plugin integration
-- [Reka UI GitHub](https://github.com/unovue/reka-ui) -- headless component verification
-- [n8n SUL license text](https://docs.n8n.io/sustainable-use-license/) -- license restriction verification
-- Zeroth codebase and PROJECT.md -- backend capabilities verification
+- Zeroth codebase direct inspection: `runtime.py`, `evaluator.py`, `models.py`, `budget.py`, `prompt.py`
+- [Python asyncio.TaskGroup docs](https://docs.python.org/3/library/asyncio-task.html)
+- [LiteLLM Token Counting docs](https://docs.litellm.ai/docs/count_tokens)
+- [httpx Resource Limits / Transports docs](https://www.python-httpx.org/advanced/resource-limits/)
+- [Temporal Child Workflows docs](https://docs.temporal.io/child-workflows)
+- [Conductor External Payload Storage docs](https://conductor-oss.github.io/conductor/documentation/advanced/externalpayloadstorage.html)
+- [Semantic Kernel ChatHistoryReducer](https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-python-context-management/)
+- [JetBrains Research: Efficient Context Management (Dec 2025)](https://blog.jetbrains.com/research/2025/12/efficient-context-management/)
+- [Airflow Dynamic Task Mapping docs](https://airflow.apache.org/docs/apache-airflow/stable/authoring-and-scheduling/dynamic-task-mapping.html)
+- [LangGraph Subgraphs docs](https://docs.langchain.com/oss/python/langgraph/use-subgraphs)
+- [Anthropic: Effective Context Engineering for AI Agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
 
 ### Secondary (MEDIUM confidence)
-- [n8n Architecture (DeepWiki)](https://deepwiki.com/n8n-io/n8n/) -- canvas architecture, command pattern, design system patterns
-- [Feature-Sliced Design](https://feature-sliced.design/) -- frontend directory structure patterns
-- [npm-compare component libraries](https://npm-compare.com/) -- download comparisons for UI library selection
-- [Graph visualization UX guide (Cambridge Intelligence)](https://cambridge-intelligence.com/) -- progressive disclosure patterns
+- [CVE-2025-68613: n8n Expression Injection RCE (CVSS 9.9)](https://nvd.nist.gov/vuln/detail/CVE-2025-68613)
+- [OWASP LLM01:2025 Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/)
+- [n8n Expression Engine docs](https://docs.n8n.io/data/expressions/)
+- [LangGraph Map-Reduce with Send() API](https://medium.com/ai-engineering-bootcamp/map-reduce-with-the-send-api-in-langgraph-29b92078b47d)
+- [Scaling LangGraph Agents: Parallelization, Subgraphs, Map-Reduce](https://aipractitioner.substack.com/p/scaling-langgraph-agents-parallelization)
+- [Braintrust: Best Prompt Versioning Tools 2025](https://www.braintrust.dev/articles/best-prompt-versioning-tools-2025)
+- [Context Rot: How Increasing Input Tokens Impacts LLM Performance](https://research.trychroma.com/context-rot)
 
 ### Tertiary (LOW confidence)
-- Community blog posts on FastAPI + Vue deployment -- patterns validated against official docs but specifics may vary
+- None -- all findings corroborated by multiple sources.
 
 ---
-*Research completed: 2026-04-09*
+*Research completed: 2026-04-12*
 *Ready for roadmap: yes*

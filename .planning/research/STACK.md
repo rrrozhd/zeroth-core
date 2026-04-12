@@ -1,605 +1,275 @@
-# Stack Research — v3.0 Core Library Extraction, Studio Split & Documentation
+# Stack Research: v4.0 Platform Extensions
 
-**Domain:** Python library packaging + technical documentation site + cross-repo frontend consumer
-**Researched:** 2026-04-10
-**Confidence:** HIGH (packaging + docs toolchain); MEDIUM (OpenAPI-in-docs integration pattern); HIGH (hosting)
+**Domain:** Agent orchestration platform -- parallel execution, composition, artifact stores, context management, resilient HTTP, prompt templates, computed mappings
+**Researched:** 2026-04-12
+**Confidence:** HIGH
 
-> Scope note: this document ONLY lists what v3.0 *adds* or *changes*. The existing runtime stack (FastAPI, SQLAlchemy, Alembic, LiteLLM, Pydantic, ARQ, Redis, pgvector, Chroma, Elasticsearch, governai, econ-instrumentation-sdk, ruff, pytest, pytest-asyncio, uv, hatchling, Python 3.12+) is considered settled and NOT re-evaluated here. Supersedes the v2.0 Studio stack research.
+## Executive Summary
 
----
+All 7 platform extensions can be built with **zero new PyPI dependencies**. The existing dependency tree already provides every library needed: `asyncio.TaskGroup` for parallel execution (stdlib, Python 3.12), `litellm.token_counter` for context window management (litellm already pinned), `httpx.AsyncClient` with `tenacity` for resilient HTTP (both already pinned), `Jinja2` for prompt templates (already a transitive dependency via litellm), and the existing AST-based `_SafeEvaluator` for computed mappings. Circuit breaking is lightweight enough to implement in-house (~60 lines) rather than pulling in an unmaintained library.
 
-## TL;DR — Additions for v3.0
+This is the optimal outcome. No version conflicts, no new supply-chain risk, no optional-extras proliferation.
 
-1. **PyPI publishing:** `uv build` + `pypa/gh-action-pypi-publish@release/v1` via GitHub Actions with **OIDC trusted publishing**; TestPyPI first, PyPI on tag. No API tokens in secrets.
-2. **Docs site:** **MkDocs Material** + **mkdocstrings[python]** (Griffe backend) + **mike** for versioning, published to **GitHub Pages**. Markdown-first, Python API reference auto-generated from docstrings via static AST parsing (no runtime imports needed).
-3. **OpenAPI-in-docs:** **neoteroi-mkdocs** OpenAPI Docs plugin renders FastAPI's exported `openapi.json` into native MkDocs Material pages, plus a **ReDoc** static HTML page for the "fat reference" view.
-4. **Docstring style:** **Google-style docstrings** (mkdocstrings-python default, best rendering, works with Griffe type extraction).
-5. **Cross-repo consumer (`zeroth-studio`):** consume core via a release-asset-pinned `openapi.json` committed to `zeroth-studio`, feeding `openapi-typescript` (TS types) + `@hey-api/openapi-ts` (typed client). HTTP-only boundary, no npm SDK.
-6. **Hatchling namespace config:** replace `packages = ["src/zeroth"]` with `sources = ["src"]` + `only-include = ["src/zeroth/core"]` to ship ONLY `zeroth/core/*` and keep the `zeroth` namespace PEP 420 implicit.
-7. **Cleanup:** dedupe `psycopg` (keep `>=3.3`) and `litellm` (keep `>=1.83,<2.0`) in `pyproject.toml`.
+## Existing Stack (DO NOT change)
 
----
+These are already in `pyproject.toml` and verified in the environment:
 
-## Recommended Stack
+| Technology | Installed Version | Purpose | Relevant to v4.0 |
+|------------|-------------------|---------|-------------------|
+| Python | 3.12+ | Runtime | `asyncio.TaskGroup` for parallel fan-out/fan-in |
+| httpx | 0.28.1 | HTTP client | Resilient HTTP client (Feature 5) |
+| tenacity | 9.1.4 | Retry logic | HTTP retry with backoff (Feature 5) |
+| cachetools | 7.0.5 | In-memory caching | Response caching for HTTP client (Feature 5) |
+| litellm | 1.83.0 | LLM routing | `token_counter()` / `acount_tokens()` for context management (Feature 4) |
+| tiktoken | 0.12.0 | Tokenization | Transitive via litellm; local fallback tokenizer |
+| Jinja2 | 3.1.6 | Template engine | Transitive via litellm; prompt template rendering (Feature 6) |
+| redis | 5.3.1 | KV store | Artifact store backend (Feature 3) |
+| pydantic | 2.12.5 | Data models | All new models and contracts |
+| pydantic-settings | 2.13+ | Configuration | Settings for new subsystems |
+| FastAPI | 0.135.1 | API framework | Any new endpoints |
+| SQLAlchemy | 2.0.49 | ORM/DB | Persistence for templates, artifacts metadata |
+| asyncio (stdlib) | 3.12 | Concurrency | `TaskGroup` for fan-out/fan-in |
 
-### Core Additions
+## Feature-by-Feature Stack Mapping
 
-| Technology | Version (Apr 2026) | Purpose | Why Recommended |
-|---|---|---|---|
-| **uv** | 0.11.x (already installed) | Build frontend / dep mgmt / `uv build` produces wheel + sdist | Already the project's package manager; `uv build` delegates to hatchling; no reason to switch. |
-| **hatchling** | >=1.27 | PEP 517 build backend (already used) | Already the backend; supports PEP 420 namespace packages via `only-include`. Switching backends (e.g., to uv_build) is unnecessary churn and uv_build has known PEP 420 limitations (astral-sh/uv#14451). |
-| **pypa/gh-action-pypi-publish** | `release/v1` (moving tag; pin by SHA for supply-chain hardening) | GitHub Actions step that uploads wheel+sdist to (Test)PyPI via OIDC | The "blessed" PyPA action. Built-in trusted-publishing support via `id-token: write`, generates Sigstore attestations by default, no long-lived tokens. |
-| **PyPI Trusted Publishers (OIDC)** | PyPI feature | Tokenless publishing from GitHub Actions | Eliminates API token theft risk; short-lived OIDC tokens minted per workflow run. PyPI's official recommendation. |
-| **MkDocs** | 1.6.x (pulled by Material) | Static site generator (markdown → HTML) | De-facto Python-ecosystem doc SSG. Simpler than Sphinx for Markdown-first workflows. |
-| **mkdocs-material** | 9.7.6 (Mar 2026) | Theme, search, nav, admonitions, code highlighting, dark mode | Ubiquitous, accessible, fast, first-class offline search (lunr), excellent code blocks, supported by mkdocstrings. Free tier is sufficient; Insiders not required. |
-| **mkdocstrings** | >=0.27 | MkDocs plugin that renders Python API reference inline | Native Material integration — lets guides and API ref cross-link via `[Graph][zeroth.core.graph.models.Graph]`. |
-| **mkdocstrings-python** | 2.0.3 | Python handler for mkdocstrings (Griffe-backed) | Uses Griffe to parse source **statically** (no import side-effects — critical since our code imports FastAPI, psycopg, Redis, etc.). Supports Google / NumPy / Sphinx docstring styles. Renders type annotations with auto cross-references. |
-| **Griffe** | 1.x (transitive) | Static Python AST parser for API extraction | Static parsing means mkdocstrings does NOT execute `import zeroth.core.service` during docs build → docs CI needs no Postgres/Redis/etc. Major advantage over Sphinx autodoc. |
-| **mike** | >=2.1 | Versioned docs deployment to `gh-pages` branch | Standard for MkDocs versioning; Material has first-class support via `extra.version.provider: mike`. Each tagged release gets its own `/vX.Y/` URL; `latest` alias points at newest. |
-| **neoteroi-mkdocs** | >=1.1 | MkDocs plugin that converts OpenAPI 3 JSON → Material-styled Markdown endpoint reference | Produces documentation that matches the rest of the site (fonts, search, admonitions, nav). Unlike an iframe'd Swagger UI, its output is crawlable and searchable by the MkDocs lunr index. |
-| **@redocly/cli** (ReDoc) | 1.x / 2.x | Single-file "fat reference" HTML for OpenAPI schema | Complementary to neoteroi — ReDoc is the best dense single-page API browser. Generate once per release, drop at `/reference/http/redoc/index.html`. |
-| **GitHub Pages** | — | Docs hosting | Free, unlimited, custom domain (CNAME), HTTPS via Let's Encrypt, native `mike`+`gh-pages` workflow. |
+### Feature 1: Parallel Fan-Out / Fan-In Execution
 
-### Supporting Libraries (docs build-time only)
+**New dependencies: NONE**
 
-| Library | Version | Purpose | When to Use |
-|---|---|---|---|
-| **pymdown-extensions** | >=10 | Markdown extensions (tabbed code, admonitions, mermaid, keys) | Pulled in by mkdocs-material recommended config; enables "Python / HTTP / curl" tabs in examples. |
-| **mkdocs-gen-files** | >=0.5 | Programmatic page generation during build | Generates per-module API reference pages by walking `src/zeroth/core/` — avoids hand-maintaining nav for every module. Standard mkdocstrings recipe. |
-| **mkdocs-literate-nav** | >=0.6 | Sidebar nav defined in `SUMMARY.md` instead of `mkdocs.yml` | Lets `mkdocs-gen-files` emit `SUMMARY.md` with the generated module tree for a fully dynamic API nav. |
-| **mkdocs-section-index** | >=0.3 | Attach `index.md` to section headers | Cleaner nav UX (a section header is also a landing page). |
-| **mkdocs-macros-plugin** | >=1.3 (optional) | Jinja templating in Markdown | For injecting version numbers, env matrices, shared snippets into guides. |
-| **import-linter** | >=2 | Enforce that `zeroth.core.*` does not import forbidden modules | Carried over from the split design; runs in CI as a lint step. Polices future drift even though v3.0 is a pure rename. |
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Concurrent branch spawning | `asyncio.TaskGroup` (stdlib) | Built into Python 3.12; provides structured concurrency with automatic cancellation on failure; stronger guarantees than `asyncio.gather()` |
+| Synchronization barrier | `asyncio.TaskGroup` exit + result collection | `async with` block ensures all branches complete before fan-in proceeds |
+| Per-branch isolation | Dict-based context copying | Each branch gets a deep copy of the input payload; no shared mutable state |
+| Budget tracking per branch | Existing `BudgetEnforcer` + `CostEstimator` | Already wired into `RuntimeOrchestrator._dispatch_node`; each branch runs through the same instrumented path |
 
-### Cross-Repo Consumer (`zeroth-studio`) Tooling
+**Integration points:**
+- `RuntimeOrchestrator._drive()` loop needs a new code path: when a `ParallelNode` is encountered, spawn N branches via `TaskGroup` instead of processing sequentially
+- `Run.pending_node_ids` needs extension to represent parallel branch sets (e.g., list-of-lists or a `ParallelBranchSet` model)
+- `RunHistoryEntry` needs branch indexing for audit trail ordering
+- Existing `_SafeEvaluator` handles merge expressions for fan-in result combination
 
-| Library | Version | Purpose | Why |
-|---|---|---|---|
-| **openapi-typescript** | 7.x | Converts `openapi.json` → TypeScript `types.ts` (no runtime) | Zero-runtime type generation, actively maintained, clean `components['schemas']` types. Decouples Studio from a heavy SDK generator. |
-| **@hey-api/openapi-ts** | 0.60.x | Generates a typed fetch client from OpenAPI | Modern successor to `openapi-typescript-codegen`. Tree-shakable, TS-first. Alternative: **orval** (more opinionated around TanStack Query). |
-| **GitHub Release asset pattern** | — | `zeroth-core` CI publishes `openapi.json` as a release asset on each tag; `zeroth-studio` CI downloads it into `src/generated/` | Deterministic, offline-capable, no need to boot a live core during Studio CI. |
+**Why NOT `asyncio.gather()`:** `TaskGroup` cancels remaining tasks on first exception (fail-fast), which matches the existing `failure_policy: "fail_fast"` default in `ExecutionSettings`. `gather()` with `return_exceptions=True` collects all errors but lets failing branches waste resources.
 
-### Development Tools
+### Feature 2: Subgraph Composition
 
-| Tool | Purpose | Notes |
-|---|---|---|
-| **uv build** | `uv build` → `dist/*.whl` + `dist/*.tar.gz` | Replaces `python -m build`. Respects hatchling `[tool.hatch.build.targets.wheel]`. |
-| **uv publish** | Optional manual publish | Prefer the GitHub Action for real publishes; `uv publish` is handy for TestPyPI smoke tests from a dev machine. |
-| **twine check** | Validates README rendering on PyPI | `uvx twine check dist/*` before first publish. Catches broken RST/MD in `long_description`. |
-| **pip install --index-url https://test.pypi.org/simple/** | TestPyPI verification | Verify the package installs cleanly from TestPyPI before cutting the real PyPI release. |
+**New dependencies: NONE**
 
----
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Nested graph invocation | `RuntimeOrchestrator.run_graph()` (existing) | Already supports running a graph with initial input; subgraph invocation is a recursive call |
+| Graph resolution | `GraphRepository` (existing) | Published graphs can be looked up by reference |
+| Governance inheritance | `PolicyGuard` + `policy_bindings` (existing) | Parent graph policies propagate to child via policy binding merge |
+| Thread continuity | `thread_id` passthrough (existing) | `run_graph()` already accepts `thread_id`; pass parent's thread to child |
 
-## Installation (new deps only)
+**Integration points:**
+- New `SubgraphNode` type alongside `AgentNode`, `ExecutableUnitNode`, `HumanApprovalNode`
+- `RuntimeOrchestrator._dispatch_node()` gains a `SubgraphNode` handler that calls `run_graph()` recursively
+- Contract validation: subgraph's entry node input contract must be compatible with the parent edge's output
+- Governance: merge parent `policy_bindings` with child graph's own bindings (parent wins on conflict)
 
-```bash
-# Docs toolchain — as a uv dep group, NOT runtime deps
-uv add --group docs \
-  "mkdocs-material>=9.7.6" \
-  "mkdocstrings[python]>=0.27" \
-  "mike>=2.1" \
-  "mkdocs-gen-files>=0.5" \
-  "mkdocs-literate-nav>=0.6" \
-  "mkdocs-section-index>=0.3" \
-  "pymdown-extensions>=10" \
-  "neoteroi-mkdocs>=1.1"
+### Feature 3: Large Payload Externalization (Artifact Store)
 
-# Boundary lint
-uv add --group dev "import-linter>=2"
+**New dependencies: NONE**
 
-# ReDoc static bundle (invoked in CI via npx; NOT a Python dep)
-npx --yes @redocly/cli@latest build-docs openapi.json -o site/reference/http/redoc/index.html
-```
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Redis backend | `redis` 5.3.1 (existing) | Already in `dispatch` optional extra; `SETEX` provides TTL natively |
+| Filesystem backend | `pathlib` + `asyncio.to_thread()` (stdlib) | Local dev/test; no network dependency |
+| Artifact reference model | `pydantic` (existing) | `ArtifactRef` model with `store`, `key`, `ttl`, `content_hash` |
+| Content hashing | `hashlib` (stdlib) | SHA-256 for integrity verification; zero-dependency |
 
-Add to `pyproject.toml`:
+**Integration points:**
+- `ArtifactStore` protocol with `store(key, data, ttl) -> ArtifactRef` and `retrieve(ref) -> bytes`
+- `RedisArtifactStore` uses existing `RedisConfig` / `RedisSettings` -- shared connection pool
+- `FilesystemArtifactStore` for local dev (writes to `$ZEROTH_DATA_DIR/artifacts/`)
+- Edge mapping system extended: when payload exceeds threshold, auto-externalize and replace with `ArtifactRef`
+- Audit trail records artifact references (not the large payload itself)
+- New `ArtifactSettings` in `ZerothSettings` for thresholds and backend selection
+
+**Note on `aiofiles`:** Not needed. Python's `pathlib.Path.write_bytes()` is sync but non-blocking for typical artifact sizes (< 100MB). Use `asyncio.to_thread()` for the write path to avoid blocking the event loop.
+
+### Feature 4: Agent Context Window Management
+
+**New dependencies: NONE**
+
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Token counting | `litellm.token_counter()` / `litellm.acount_tokens()` | Already pinned; supports OpenAI, Anthropic, Llama, Cohere tokenizers; falls back to tiktoken for unknown models |
+| Model context limits | `litellm.model_cost` / `litellm.get_max_tokens()` | litellm maintains a model cost/limits database; no need to hardcode limits |
+| Summarization strategy | `AgentRunner` + LLM call | Use the same `ProviderAdapter` infrastructure to call a summarizer model |
+| Token budget tracking | Custom `ContextWindowManager` class | Lightweight class that wraps `token_counter()` and enforces per-node or per-thread budgets |
+
+**Integration points:**
+- `PromptAssembler.assemble()` gains a `max_context_tokens` parameter; truncates or summarizes thread state / memory when budget exceeded
+- `AgentConfig` gets `context_window_strategy: Literal["truncate", "summarize", "error"]` field
+- `AgentConfig` gets `max_context_tokens: int | None` field (defaults to model's max minus output reservation)
+- Token count is recorded in `AgentRunResult.audit_record` for observability
+- Summarization uses a dedicated summarizer agent config (lightweight model, e.g. `openai/gpt-4o-mini`)
+
+**Why NOT tiktoken directly:** `litellm.token_counter()` already uses tiktoken internally but adds model-specific tokenizer selection. Calling tiktoken directly would duplicate logic and miss provider-specific tokenizers (Anthropic, Cohere). Since litellm is already pinned, use its higher-level API.
+
+### Feature 5: Resilient External HTTP Client
+
+**New dependencies: NONE**
+
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Async HTTP | `httpx.AsyncClient` 0.28.1 (existing) | Already a core dependency; async, connection pooling, timeouts built-in |
+| Retry with backoff | `tenacity` 9.1.4 (existing) | Already pinned; `@retry` decorator with exponential backoff, jitter, custom predicates |
+| Response caching | `cachetools.TTLCache` 7.0.5 (existing) | Already pinned; simple in-memory TTL cache for GET responses |
+| Circuit breaking | Custom implementation (~60 LOC) | All async circuit breaker libraries are unmaintained (aiobreaker last release >12 months ago); pattern is simple enough to implement in-house with `asyncio.Lock` |
+| Connection pooling | `httpx.Limits` (existing) | Built into httpx; `max_connections`, `max_keepalive_connections`, `keepalive_expiry` |
+
+**Integration points:**
+- New `ResilientHTTPClient` class wrapping `httpx.AsyncClient` with retry, circuit breaker, and caching layers
+- Configuration via new `HTTPClientSettings` in `ZerothSettings`: `max_retries`, `backoff_base`, `backoff_max`, `circuit_breaker_threshold`, `circuit_breaker_reset_timeout`, `cache_ttl`, pool limits
+- Capability-gated: tool calls and executable units that make external HTTP requests go through this client
+- Audit integration: every HTTP request/response is logged to `AuditRepository` (URL, status, latency, retry count)
+- Governor policy can restrict allowed domains via capability bindings
+
+**Why NOT add a circuit breaker library:**
+- `aiobreaker` 1.2.0: Last release >12 months ago, no recent GitHub activity, project appears abandoned
+- `pybreaker` 1.2.1: Synchronous-first, Tornado-based async support -- wrong model for native asyncio
+- `circuitbreaker` 2.0.0: Decorator-based, doesn't fit the class-based client wrapper pattern
+- Circuit breaker is ~60 lines of code: failure counter, threshold check, half-open probe, reset timer. Adding a dependency for this creates more risk (unmaintained transitive) than value.
+
+**httpx retry transport vs tenacity:** httpx's `AsyncHTTPTransport(retries=N)` only retries on `ConnectError` and `ConnectTimeout`. It does NOT retry on HTTP 429/500/502/503/504 responses. `tenacity` retries on arbitrary predicates (status codes, exception types), making it the right tool for resilient HTTP.
+
+### Feature 6: Prompt Template Management
+
+**New dependencies: NONE** (Jinja2 promoted to explicit dep, but already installed)
+
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Template rendering | `Jinja2` 3.1.6 (transitive via litellm) | Industry standard; already installed; sandboxed rendering mode prevents code injection |
+| Template storage | `SQLAlchemy` + existing DB (existing) | Versioned template records alongside existing graph/run tables |
+| Variable validation | `pydantic` (existing) | Template variable schema as Pydantic model |
+| Audit redaction | Existing `AgentAuditSerializer._redact_value()` | Already handles secret redaction in prompts |
+
+**Integration points:**
+- New `PromptTemplate` Pydantic model: `template_id`, `version`, `content` (Jinja2 string), `variable_schema` (JSON Schema), `metadata`
+- `PromptTemplateRegistry` for CRUD + version lookup (similar pattern to `GraphRepository`)
+- `PromptAssembler.assemble()` extended: when `AgentNodeData` references a template instead of inline instruction, resolve and render it
+- `AgentNodeData.instruction` becomes `instruction: str | None` and gains `template_ref: str | None` -- exactly one must be set
+- Jinja2 `SandboxedEnvironment` used for rendering (prevents `{{ config.__class__.__init__ }}` attacks)
+- Rendered templates are redacted before audit logging using existing `_redact_value()`
+
+**Why Jinja2 and not Mustache/Mako/string.Template:**
+- Jinja2 is already installed (transitive dep); adding it to `dependencies` makes it explicit but changes nothing at install time
+- `SandboxedEnvironment` is purpose-built for untrusted template input -- critical for user-authored prompts
+- Supports conditionals, loops, filters -- needed for complex prompt templates (e.g., "include tool descriptions only if tools are attached")
+- Industry standard in Python ecosystem; lowest learning curve
+
+### Feature 7: Computed Data Mappings
+
+**New dependencies: NONE**
+
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Expression evaluation | Existing `_SafeEvaluator` in `conditions/evaluator.py` | Already handles arithmetic, string ops, comparisons, subscript, dict/list construction -- exactly what computed mappings need |
+| Mapping operation | New `TransformMappingOperation` model | Extends existing `MappingOperation` discriminated union |
+| Execution | Extend `MappingExecutor._apply_operation()` | Add `TransformMappingOperation` case to the existing match statement |
+
+**Integration points:**
+- New `TransformMappingOperation(MappingOperationBase)` with `operation: Literal["transform"]`, `expression: str`, `source_paths: list[str]`
+- `MappingExecutor._apply_operation()` gains one new `case TransformMappingOperation():` branch
+- Expression namespace populated from source paths resolved against the input payload
+- `MappingOperation` discriminated union extended: adds `TransformMappingOperation` to existing 4-variant union
+- Validation: `MappingValidator` checks that `expression` parses as valid AST and `source_paths` exist in the input contract
+
+**Why reuse `_SafeEvaluator`:** It already supports the exact operations needed for data transformation: arithmetic (`+`, `-`, `*`, `/`, `%`), string concatenation via `+`, dict/list/tuple/set construction, subscript access, attribute access, comparisons, boolean logic, and ternary expressions. It blocks function calls, imports, and attribute mutation -- exactly the safety boundary needed for edge mappings.
+
+## What NOT to Add
+
+| Avoid | Why | What to Use Instead |
+|-------|-----|---------------------|
+| `aiobreaker` / `pybreaker` / `circuitbreaker` | All unmaintained or wrong async model; simple pattern doesn't justify a dependency | Custom ~60 LOC circuit breaker using `asyncio.Lock` + failure counter |
+| `tiktoken` as direct dependency | Already a transitive dep via litellm; `litellm.token_counter()` wraps it with model-specific routing | `litellm.token_counter()` / `litellm.acount_tokens()` |
+| `aiofiles` | Overkill for artifact store file writes; `asyncio.to_thread(pathlib.write_bytes)` is sufficient | `pathlib` + `asyncio.to_thread()` |
+| `celery` / `dramatiq` for parallel execution | Massive dependency; ARQ already handles distributed dispatch; parallel branches are in-process concurrent tasks, not distributed jobs | `asyncio.TaskGroup` for in-process parallelism; existing ARQ for distributed dispatch |
+| `networkx` for subgraph composition | Graph validation is already implemented in `Graph._validate_references()`; subgraph resolution is a simple recursive call | Existing graph models + `RuntimeOrchestrator.run_graph()` |
+| `jsonpath-ng` / `jmespath` for computed mappings | Existing `_SafeEvaluator` + `_path_lookup()` already handles dot-path resolution and expression evaluation | Existing condition engine |
+| `Mako` / `Mustache` / `string.Template` | Jinja2 already installed, has `SandboxedEnvironment`, and is the Python ecosystem standard | `Jinja2` with `SandboxedEnvironment` |
+
+## Dependency Changes to pyproject.toml
+
+### Explicit Dependencies to Add
+
+None of these introduce new packages to install -- they promote transitive dependencies to explicit ones for stability:
 
 ```toml
-[dependency-groups]
-docs = [
-    "mkdocs-material>=9.7.6",
-    "mkdocstrings[python]>=0.27",
-    "mike>=2.1",
-    "mkdocs-gen-files>=0.5",
-    "mkdocs-literate-nav>=0.6",
-    "mkdocs-section-index>=0.3",
-    "pymdown-extensions>=10",
-    "neoteroi-mkdocs>=1.1",
-]
+# In [project] dependencies, ADD:
+"Jinja2>=3.1.2,<4.0",    # Prompt template rendering; already transitive via litellm
 ```
 
----
-
-## Namespace Package Mechanics (the load-bearing section)
-
-The project renames `src/zeroth/*` → `src/zeroth/core/*` with **no** top-level `src/zeroth/__init__.py`. This is a PEP 420 implicit namespace package. Hatchling supports this, but the current `packages = ["src/zeroth"]` line is **wrong** for this layout because it treats `zeroth` as a regular package and expects `__init__.py`.
-
-### Correct hatchling config
-
-```toml
-[build-system]
-requires = ["hatchling>=1.27"]
-build-backend = "hatchling.build"
-
-[project]
-name = "zeroth-core"
-version = "3.0.0"
-# ... (other fields)
-
-[tool.hatch.build.targets.wheel]
-# DO NOT use packages = ["src/zeroth"] — that requires zeroth/__init__.py
-sources = ["src"]
-only-include = ["src/zeroth/core"]
-
-[tool.hatch.build.targets.sdist]
-only-include = ["src/zeroth/core", "README.md", "LICENSE", "pyproject.toml"]
-
-[tool.hatch.metadata]
-allow-direct-references = true  # keep ONLY during dev; must be removed before first publish
-```
-
-**Why this exact incantation:**
-
-- `sources = ["src"]` tells hatchling to strip `src/` from wheel layout so the wheel contains `zeroth/core/...`, not `src/zeroth/core/...`.
-- `only-include = ["src/zeroth/core"]` means the wheel contains EXACTLY `zeroth/core/*` and nothing else — no accidental `zeroth/__init__.py`, no leakage of `tests/`, `.planning/`, etc.
-- Omitting any `packages = [...]` key avoids hatchling's implicit package detection (which looks for `__init__.py` and would fail).
-- The resulting wheel ships directories as namespace portions. A future `zeroth-studio-py` or `zeroth-sdk` wheel can coexist in the same `zeroth/` namespace without collision.
-
-### Editable install gotcha
-
-`uv sync` / `pip install -e .` with hatchling uses `.pth`-based editable installs that work with PEP 420. No `__editable__` shims needed. However:
-
-- **If a dev accidentally creates `src/zeroth/__init__.py`** (empty or otherwise), Python shadows the namespace package globally and breaks any sibling `zeroth.*` package.
-- **Mitigation:** add a unit test that asserts `importlib.util.find_spec('zeroth').submodule_search_locations is not None and not hasattr(__import__('zeroth'), '__file__')`. Namespace packages have no `__file__`. Flag in PITFALLS.md.
-- `ruff` and `pytest` work fine with `src/` as the source root. Add `pythonpath = ["src"]` under `[tool.pytest.ini_options]` only if test imports fail (shouldn't be needed with uv's editable install).
-
-### Distribution name vs import name
-
-- Distribution (PyPI) name: **`zeroth-core`** (hyphen, reserved per split design)
-- Import name: **`zeroth.core`** (dot)
-- `pip install zeroth-core` → `from zeroth.core import ...`
-
-Normal (cf. `google-cloud-storage` → `google.cloud.storage`). Document loudly in README.
-
----
-
-## PyPI Publishing Flow (Trusted Publishing / OIDC)
-
-### One-time setup on (Test)PyPI
-
-1. On **TestPyPI** (https://test.pypi.org/manage/account/publishing/) add a "pending publisher":
-   - PyPI Project Name: `zeroth-core`
-   - Owner: `rrrozhd`
-   - Repository: `zeroth-core` (post-split) or current repo if publishing before split
-   - Workflow filename: `publish.yml`
-   - Environment name: `testpypi`
-2. On **PyPI** (https://pypi.org/manage/account/publishing/) repeat with environment `pypi`.
-3. In the GitHub repo, create two protected environments under Settings → Environments: `testpypi` (auto-deploy) and `pypi` (require manual approval).
-
-No API tokens stored anywhere. OIDC mints short-lived tokens per workflow run.
-
-### `.github/workflows/publish.yml`
-
-```yaml
-name: publish
-on:
-  push:
-    tags: ["v*"]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv python install 3.12
-      - run: uv build             # produces dist/*.whl and dist/*.tar.gz
-      - run: uvx twine check dist/*
-      - uses: actions/upload-artifact@v4
-        with: { name: dist, path: dist/ }
-
-  testpypi:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: testpypi
-    permissions:
-      id-token: write            # OIDC — the magic permission
-    steps:
-      - uses: actions/download-artifact@v4
-        with: { name: dist, path: dist/ }
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-
-  pypi:
-    needs: testpypi
-    runs-on: ubuntu-latest
-    environment: pypi            # requires manual approval
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with: { name: dist, path: dist/ }
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        # default repository-url = pypi.org; no username/password = OIDC
-```
-
-### Gotchas (CRITICAL)
-
-- **`allow-direct-references = true`** lets `governai @ git+https://...` stay in `dependencies` LOCALLY. **PyPI REJECTS direct-reference URLs** (`git+`, `file:`) in uploaded distribution metadata. Before first publish, EITHER:
-  - Publish governai upstream to PyPI (out of scope), OR
-  - Move `governai` to `[project.optional-dependencies].governai` and document a manual install step, OR
-  - Remove from `dependencies` entirely and require users to pip-install it themselves from git.
-
-  **This is the single biggest publishing blocker for `zeroth-core`. Must be resolved in an early phase.**
-
-- **`econ-instrumentation-sdk @ file:///...`** — same problem. Solution is this milestone's other deliverable: publish `econ-instrumentation-sdk` to PyPI first (TestPyPI → PyPI), then switch to a version spec `econ-instrumentation-sdk>=X.Y`. The Regulus SDK uses setuptools; its own publish workflow is nearly identical (different `build-backend` but same OIDC flow).
-
-- **Duplicate deps in current `pyproject.toml`:**
-  - `litellm>=1.83,<2.0` (line 12) vs `litellm>=1.83.0` (line 29) → **keep the bounded one (`>=1.83,<2.0`)**, delete the duplicate.
-  - `psycopg[binary]>=3.3` (line 16) vs `psycopg[binary]>=3.1` (line 30) → **keep `>=3.3`**, delete the duplicate.
-  - `uv` currently resolves these (bounded wins), but strict resolvers and `twine check` may warn. Clean up unconditionally as part of Phase 1.
-
-- **Version bumping:** `version = "0.1.0"` today → `"3.0.0"` at release. Use a single source of truth: either keep it in `pyproject.toml` and bump manually, or use `hatch-vcs` to derive from git tags (optional; adds a plugin dep).
-
----
-
-## Documentation Site Architecture
-
-```
-docs/
-├── index.md                          # landing
-├── getting-started/
-│   ├── install.md
-│   ├── first-graph.md
-│   └── running-in-process.md
-├── concepts/
-│   ├── graphs.md
-│   ├── contracts.md
-│   ├── orchestration.md
-│   ├── governance.md
-│   └── economics.md
-├── guides/
-│   ├── graph-authoring.md
-│   ├── memory-backends.md
-│   ├── approvals.md
-│   ├── secrets.md
-│   ├── dispatch.md
-│   └── ...                           # one per subsystem
-├── integrations/
-│   ├── litellm-providers.md
-│   ├── governai.md
-│   └── regulus.md
-├── deployment/
-│   ├── docker.md
-│   ├── postgres.md
-│   └── redis-arq.md
-├── migration/
-│   └── from-pre-v3.md                # the zeroth → zeroth.core rename guide
-├── reference/
-│   ├── python/                       # GENERATED by mkdocs-gen-files
-│   │   └── ...                       # one page per zeroth.core.* module
-│   └── http/
-│       ├── index.md                  # neoteroi-rendered endpoints
-│       └── redoc.md                  # link to /reference/http/redoc/
-└── gen_ref_pages.py                  # mkdocs-gen-files script
-```
-
-### `mkdocs.yml` skeleton
-
-```yaml
-site_name: Zeroth Core
-site_url: https://rrrozhd.github.io/zeroth-core/
-repo_url: https://github.com/rrrozhd/zeroth-core
-theme:
-  name: material
-  features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.indexes
-    - content.code.copy
-    - content.code.annotate
-    - search.highlight
-    - search.share
-    - toc.follow
-  palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      toggle: { icon: material/brightness-7, name: Dark mode }
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      toggle: { icon: material/brightness-4, name: Light mode }
-
-plugins:
-  - search
-  - gen-files:
-      scripts: [docs/gen_ref_pages.py]
-  - literate-nav:
-      nav_file: SUMMARY.md
-  - section-index
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          paths: [src]
-          options:
-            docstring_style: google
-            show_source: true
-            show_root_heading: true
-            show_signature_annotations: true
-            separate_signature: true
-            merge_init_into_class: true
-            docstring_section_style: table
-  - neoteroi.mkdocsoad:
-      use_pymdownx: true
-  - mike:
-      alias_type: symlink
-      canonical_version: latest
-
-markdown_extensions:
-  - admonition
-  - pymdownx.details
-  - pymdownx.superfences
-  - pymdownx.tabbed: { alternate_style: true }
-  - pymdownx.highlight: { anchor_linenums: true }
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - attr_list
-  - md_in_html
-  - toc: { permalink: true }
-
-extra:
-  version:
-    provider: mike
-    default: latest
-```
-
-### Docstring style decision: **Google**
-
-- Default for mkdocstrings-python; renders most richly of the three supported styles.
-- Easier to read in source than NumPy's underlined sections.
-- Griffe extracts type annotations from function signatures separately, so docstrings don't duplicate types.
-- Enforce with `ruff`'s `D` (pydocstyle) rules: `[tool.ruff.lint.pydocstyle] convention = "google"` — but roll out gradually per module to avoid a 280-test, 22K-LOC docstring storm.
-
-### Per-module API reference auto-gen
-
-`docs/gen_ref_pages.py` walks `src/zeroth/core/` and emits one `reference/python/<module>.md` per public module containing just:
-
-```
-::: zeroth.core.graph.models
-```
-
-mkdocstrings + Griffe do the rest. This is the canonical mkdocstrings recipe — see https://mkdocstrings.github.io/recipes/.
-
-### OpenAPI integration: two-track strategy
-
-FastAPI already exposes `/openapi.json` at runtime. We bake it into the docs pipeline:
-
-1. **CI step:** during docs build, a short Python script imports the FastAPI app (with a dev config — SQLite backend, no Redis) and writes `docs/_generated/openapi.json`. This IS an `import fastapi` but that's fine — only the docs build needs it, not mkdocstrings' Python handler (which stays static).
-2. **neoteroi-mkdocs** renders that JSON into `docs/reference/http/index.md` as Material-styled endpoint docs (searchable, themeable, deep-linkable).
-3. **ReDoc** is built as a separate static HTML page via `npx @redocly/cli build-docs` and dropped at `site/reference/http/redoc/index.html` as an "all endpoints on one page" reference.
-
-**Why both:** neoteroi output integrates with site search & theme; ReDoc is denser and better for quick endpoint lookup. One extra CI step — cheap.
-
-**Why not Swagger UI?** Interactive "try it" is useless for a library reference site (no live backend), adds a heavy JS bundle, and its output is not searchable by lunr.
-
----
-
-## Docs Hosting Decision: **GitHub Pages**
-
-| Criterion | GitHub Pages | Read the Docs | Netlify/Vercel/Cloudflare Pages |
-|---|---|---|---|
-| Cost | Free | Free (Community) / $50+/mo (Business) | Free tier; build minutes capped |
-| Custom domain + HTTPS | ✅ (CNAME + LE auto) | ✅ | ✅ |
-| Versioning | ✅ via `mike` | ✅ native | Manual only |
-| Build environment control | Full (GitHub Actions) | Constrained (RTD-managed) | Full |
-| Search | lunr (client) | Algolia-backed (better) | lunr (client) |
-| Works with `mike` | ✅ (designed for it) | ⚠️ awkward | ✅ but duplicates host's versioning |
-| PR preview deploys | GH Pages preview environments (basic) | ✅ | ✅ (best feature) |
-| Analytics | Via plugin | Built-in | Built-in |
-
-**Choice: GitHub Pages.** `mike` is purpose-built for gh-pages, GitHub Actions gives full build control (can run Python scripts to export OpenAPI), custom domain is trivial, free forever for public repos. RTD's superior search is the only meaningful tradeoff and Material's built-in search is already very good.
-
-**If** we later hit lunr's limits (>5K pages) → migrate search to **Algolia DocSearch** (free for OSS) without changing host.
-**If** PR preview deploys become important → migrate to **Cloudflare Pages** (free preview per PR), keep `mike` for versioning.
-
-### Deployment workflow (`.github/workflows/docs.yml`)
-
-```yaml
-name: docs
-on:
-  push:
-    branches: [main]
-    tags: ["v*"]
-permissions:
-  contents: write       # mike pushes to gh-pages
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }            # mike needs history
-      - uses: astral-sh/setup-uv@v5
-      - run: uv python install 3.12
-      - run: uv sync --group docs
-      - name: Export OpenAPI
-        run: uv run python scripts/export_openapi.py > docs/_generated/openapi.json
-      - name: Build ReDoc bundle
-        run: |
-          mkdir -p site-extras/reference/http/redoc
-          npx --yes @redocly/cli@latest build-docs \
-            docs/_generated/openapi.json \
-            -o site-extras/reference/http/redoc/index.html
-      - name: Deploy dev docs
-        if: github.ref == 'refs/heads/main'
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          uv run mike deploy --push --update-aliases dev
-      - name: Deploy tagged version
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          VERSION=${GITHUB_REF_NAME#v}
-          uv run mike deploy --push --update-aliases "$VERSION" latest
-          uv run mike set-default --push latest
-```
-
----
-
-## Cross-Repo Dependency: `zeroth-studio` → `zeroth-core`
-
-Studio is a Vue 3 frontend; its only dep on core is the HTTP API surface. **Do NOT** try to publish an npm SDK of core — the duplication is not worth it.
-
-### Recommended pattern: release-pinned OpenAPI schema
-
-1. On every tagged `zeroth-core` release, the `publish.yml` workflow uploads `openapi.json` as a **GitHub Release asset** alongside the wheel.
-2. `zeroth-studio` has `openapi.json` checked in at `src/generated/openapi.json` plus a version pin in `package.json`:
-   ```json
-   "zerothCoreVersion": "3.0.0"
-   ```
-3. A scheduled GitHub Action in Studio opens a "refresh openapi" PR when a new core release is detected:
-   ```bash
-   gh release download "v${ZEROTH_CORE_VERSION}" \
-     -R rrrozhd/zeroth-core -p openapi.json -O src/generated/openapi.json
-   npx openapi-typescript src/generated/openapi.json -o src/generated/api-types.ts
-   npx @hey-api/openapi-ts -i src/generated/openapi.json -o src/generated/client
-   ```
-4. Studio's TypeScript build fails deterministically if core removes/renames an endpoint — caught in PR, not at runtime.
-
-**Why not "fetch at runtime from a live core":** CI becomes non-reproducible, offline dev breaks, rollback coupling.
-
-**Why not "generate from source via code-gen":** requires running Python in the Studio Node CI image. Release-asset pattern is simpler and versioned.
-
-**Library choices:**
-
-- `openapi-typescript` (types only, zero runtime) — **primary choice**
-- `@hey-api/openapi-ts` — modern full client generator, TS-first
-- `orval` — alternative if Studio commits to TanStack Query (more opinionated)
-- `openapi-generator-cli` — **avoid** (Java dep, bloated output, slow)
-
----
-
-## Alternatives Considered
-
-| Recommended | Alternative | When to Use Alternative |
-|---|---|---|
-| MkDocs Material + mkdocstrings | **Sphinx + autodoc + Furo** | You need reStructuredText, LaTeX/PDF output, or academic cross-referencing (numpydoc, napoleon). Sphinx is still king for scientific Python (NumPy, SciPy, Astropy). For an application library with narrative guides, MkDocs Material is lighter and more readable. Critically, Sphinx autodoc **imports** code to extract docs → docs CI would need Postgres, Redis, etc. Griffe's static parsing is a major win. |
-| MkDocs Material | **Docusaurus** | You want React/MDX components in docs, or you're a JavaScript shop. For a Python library, Docusaurus means Node tooling on top of Python tooling and no native Python API extraction. Skip. |
-| MkDocs Material | **pdoc** | You want the absolute minimum: one command → HTML API ref, no guides. pdoc is great for tiny libraries but has no guides, search, versioning, or theming. We need all four. |
-| hatchling | **uv_build** (astral-sh/uv native backend) | Once uv_build fully supports PEP 420 implicit namespace packages (tracked in astral-sh/uv#14451) AND is battle-tested, migrate for a single-tool story. Today it's premature. |
-| hatchling | **setuptools** | You're publishing a project that predates pyproject.toml with complex `MANIFEST.in`. Not our case. Setuptools' namespace package story is also more awkward. |
-| pypa/gh-action-pypi-publish (OIDC) | **API token in secrets + twine upload** | You're publishing from a CI that doesn't support OIDC to PyPI (GitLab, self-hosted Jenkins). On GitHub Actions, OIDC is strictly better. |
-| GitHub Pages + mike | **Read the Docs** | You need RTD's Algolia search, their analytics, or your docs team already knows the RTD workflow. Costs $50+/mo for Business; build env is constrained. |
-| GitHub Pages + mike | **Cloudflare Pages / Netlify / Vercel** | You need deploy previews per PR. Cloudflare is most "free forever" of the three. Revisit if we hit GH Pages bandwidth limits. |
-| neoteroi-mkdocs | **mkdocs-render-swagger-plugin** | You specifically want interactive Swagger UI embedded. Swagger UI is a giant iframe that breaks Material search and theme — neoteroi produces native MkDocs pages. |
-| Release-asset OpenAPI pinning | **Fetch from `/openapi.json` of a deployed staging core** | Studio needs real-time schema updates during rapid cross-repo dev. Exception, not norm. |
-| openapi-typescript | **openapi-generator-cli (Java)** | Only if you need a generator targeting a non-JS language. |
-
----
-
-## What NOT to Use
-
-| Avoid | Why | Use Instead |
-|---|---|---|
-| **Long-lived PyPI API tokens in GitHub Secrets** | Token theft is the #1 PyPI supply-chain attack vector. If leaked, attackers publish malicious versions under your name. | **Trusted Publishing (OIDC).** Short-lived, scoped per workflow run, auto-revoked. |
-| **`__init__.py` in `src/zeroth/`** | Breaks PEP 420 namespace semantics; future `zeroth.studio` / `zeroth.sdk` packages cannot coexist. | Leave `src/zeroth/` as a bare directory. Add a test that asserts the namespace nature of `zeroth`. |
-| **`packages = ["src/zeroth"]` in hatchling** (current config) | Hatchling looks for `zeroth/__init__.py` and breaks when it's absent, OR ships unwanted files. | `sources = ["src"]` + `only-include = ["src/zeroth/core"]`. |
-| **Direct references (`git+`, `file:`) in published `[project].dependencies`** | PyPI rejects them on upload. | Move to `[project.optional-dependencies]`, OR publish upstream to PyPI, OR require manual user install. |
-| **Sphinx `autodoc`** (for this project) | Imports target modules during build. Our modules pull FastAPI, SQLAlchemy, psycopg, Redis — docs CI becomes a full runtime env. | **mkdocstrings + Griffe** — static AST parsing, no imports, no runtime deps needed during docs build. |
-| **Swagger UI embedded via iframe** | Heavy JS bundle, breaks lunr search indexing, doesn't match site theme, slow on mobile. | **neoteroi-mkdocs** (searchable native pages) + **ReDoc** static HTML. |
-| **Publishing `zeroth-studio` as an npm consumer of a hand-written `@zeroth/sdk` package** | Duplicates HTTP contracts in two languages; drift is guaranteed; maintenance burden. | **OpenAPI pinning** via release asset + type generation. Single source of truth. |
-| **`openapi-generator-cli`** (Java OpenAPI generator) | Java dep in Node/TS CI, heavy output, slow, awkward TS idioms. | `openapi-typescript` (types) + `@hey-api/openapi-ts` (client). |
-| **Duplicate dependency entries in `pyproject.toml`** (`litellm` ×2, `psycopg` ×2) | Confusing; trips strict resolvers and `twine check`. | Dedupe. Keep tighter bounds: `litellm>=1.83,<2.0`, `psycopg[binary]>=3.3`. |
-| **`allow-direct-references = true`** AT PUBLISH TIME | PyPI will reject the upload. | Remove from `pyproject.toml` before first publish by eliminating all direct-reference deps. |
-
----
-
-## Stack Patterns by Variant
-
-**If `governai` cannot be published to PyPI in time for v3.0.0:**
-- Move `governai @ git+...` from `[project].dependencies` to `[project.optional-dependencies].governai`.
-- Document in install guide: `pip install zeroth-core && pip install 'git+https://github.com/rrrozhd/governai.git@...'`.
-- Acceptable for v3.0.0; flag as tech debt.
-
-**If docs need per-PR preview deploys:**
-- Switch from GitHub Pages to **Cloudflare Pages** (free, preview URL per PR).
-- Keep `mike` for semver versioning — CF Pages handles branch previews, `mike` handles releases, they compose.
-
-**If lunr search becomes too slow:**
-- Add **Algolia DocSearch** (free for OSS) as a Material search backend. No migration otherwise.
-
-**If we ever need PDF or man-page output:**
-- Add `mkdocs-with-pdf` plugin, or accept the migration cost to Sphinx. Defer indefinitely.
-
-**If we want OpenAPI types in Python (core or another Python consumer):**
-- Add `datamodel-code-generator` (Pydantic-v2 compatible) for `openapi.json` → pydantic models in a sibling repo.
-
----
-
-## Version Compatibility
-
-| Package A | Compatible With | Notes |
-|---|---|---|
-| `mkdocs-material>=9.7` | `mkdocs>=1.6,<2.0` | MkDocs 2.0 is in alpha (Feb 2026); Material will track it but pin to 1.6.x for now. |
-| `mkdocstrings[python]>=0.27` | `mkdocs>=1.6`, `griffe>=1.0` | Griffe 1.x is the stable line. |
-| `mike>=2.1` | `mkdocs>=1.4` | Works with `extra.version.provider: mike`. |
-| `neoteroi-mkdocs>=1.1` | `mkdocs-material>=9.0`, `pymdown-extensions>=10` | Depends on Material's admonition & tabbed blocks. |
-| `hatchling>=1.27` | `uv>=0.5`, Python `>=3.8` | `only-include` / PEP 420 support stable since ~1.17. |
-| `pypa/gh-action-pypi-publish@release/v1` | PyPI Trusted Publishers | Pin with `release/v1` OR a SHA for supply-chain hardening. |
-| `openapi-typescript@7` | TypeScript `>=5`, Node `>=18` | Handles OpenAPI 3.0 and 3.1 (FastAPI emits 3.1 since 0.110). |
-
----
-
-## Confidence & Risk Register
-
-| Area | Confidence | Risk / Unknown |
-|---|---|---|
-| PyPI OIDC trusted publishing | HIGH | Battle-tested. Main risk: `governai` / `econ-instrumentation-sdk` direct-reference blocker (known, flagged). |
-| MkDocs Material + mkdocstrings | HIGH | Industry standard for Python library docs. |
-| Hatchling `only-include` for PEP 420 | HIGH | Confirmed in hatch docs. Pitfall: existing `packages = ["src/zeroth"]` line must be replaced. |
-| neoteroi-mkdocs for OpenAPI rendering | MEDIUM | Less popular than Swagger UI; if it breaks on FastAPI's OpenAPI 3.1 output, fallbacks are `mkdocs-render-swagger-plugin` (with search tradeoff) or a pure ReDoc-only strategy. Verify early in the docs phase. |
-| OpenAPI pinning pattern for Studio | HIGH | Standard pattern; risk is forgetting to bump the pinned version, mitigated by scheduled GH Action. |
-| GitHub Pages hosting | HIGH | No concerns. |
-| Regulus SDK publishing (setuptools → PyPI) | MEDIUM | SDK is currently setuptools-based at `/Users/dondoe/coding/regulus/sdk/python/`; publish flow mirrors zeroth-core but uses setuptools build. Needs its own OIDC publisher config. |
-
----
-
-## Open Questions for Roadmap / Later Phases
-
-1. **Who owns the `zeroth-core` PyPI project registration?** Reserved per design doc but not yet claimed — must be claimed before configuring trusted publisher.
-2. **Version scheme:** SemVer? CalVer? Recommend SemVer (`3.0.0`, `3.0.1`, ...) matching the milestone number.
-3. **`governai` resolution timeline:** is upstream likely to publish v0.3.0 to PyPI before v3.0.0 ships, or do we accept the optional-dependency workaround?
-4. **Docs domain:** `docs.zeroth.dev`? `zeroth-core.readthedocs.io`? `rrrozhd.github.io/zeroth-core`? Decide before CNAME config.
-5. **Docstring backfill strategy:** 22K LOC exists without Google-style docstrings. Phase it: (a) enforce style on new code via ruff; (b) backfill public API modules first; (c) leave internals for later. Don't block v3.0.0 on 100% docstring coverage.
-
----
+**Rationale:** Jinja2 is currently only a transitive dependency (via litellm). If litellm ever drops it, our prompt template feature would break silently. Pinning it explicitly in `dependencies` costs nothing (it's already installed) and ensures the dependency survives upstream changes.
+
+**Everything else stays as-is:** `httpx`, `tenacity`, `cachetools`, `litellm`, `redis`, `pydantic`, `pydantic-settings` are all already explicit dependencies at appropriate version ranges.
+
+### No Changes Needed
+
+The following are already correctly pinned:
+- `httpx>=0.27` -- covers 0.28.1 with `Limits`, `AsyncHTTPTransport`
+- `tenacity>=8.2` -- covers 9.1.4 with `AsyncRetrying`
+- `cachetools>=5.5` -- covers 7.0.5 with `TTLCache`
+- `litellm>=1.83,<2.0` -- covers `token_counter()`, `acount_tokens()`, `get_max_tokens()`
+- `redis>=5.0.0` (in `dispatch` extra) -- covers `SETEX` for artifact TTL
+
+## Existing Components to Extend (Not Replace)
+
+| Component | File | Extension Needed |
+|-----------|------|-----------------|
+| `Graph` model | `graph/models.py` | Add `ParallelNode`, `SubgraphNode` to `Node` union |
+| `Edge` model | `graph/models.py` | No change; edges already connect to any node type |
+| `EdgeMapping` | `mappings/models.py` | Add `TransformMappingOperation` to `MappingOperation` union |
+| `MappingExecutor` | `mappings/executor.py` | Add `case TransformMappingOperation()` branch |
+| `_SafeEvaluator` | `conditions/evaluator.py` | No change; already supports all needed operations |
+| `RuntimeOrchestrator` | `orchestrator/runtime.py` | Add `ParallelNode` and `SubgraphNode` handlers in `_dispatch_node()` and `_drive()` |
+| `Run` model | `runs/models.py` | Add parallel branch tracking fields |
+| `AgentConfig` | `agent_runtime/models.py` | Add `context_window_strategy`, `max_context_tokens`, `template_ref` fields |
+| `AgentNodeData` | `graph/models.py` | Add `template_ref: str | None` field |
+| `PromptAssembler` | `agent_runtime/prompt.py` | Add template resolution and context window truncation |
+| `ZerothSettings` | `config/settings.py` | Add `ArtifactSettings`, `HTTPClientSettings`, `ContextWindowSettings` |
+| `RedisConfig` | `storage/redis.py` | Shared for artifact store Redis backend (no changes needed) |
+
+## New Modules to Create
+
+| Module | Purpose | Dependencies |
+|--------|---------|-------------|
+| `zeroth.core.parallel` | `ParallelNode`, `ParallelBranchSet`, fan-out/fan-in orchestration | `asyncio`, existing orchestrator |
+| `zeroth.core.subgraph` | `SubgraphNode`, governance inheritance, recursive invocation | Existing orchestrator, graph repo |
+| `zeroth.core.artifacts` | `ArtifactStore` protocol, `RedisArtifactStore`, `FilesystemArtifactStore`, `ArtifactRef` | `redis`, `pathlib`, `hashlib` |
+| `zeroth.core.context` | `ContextWindowManager`, summarization strategies, token budget tracking | `litellm` |
+| `zeroth.core.http_client` | `ResilientHTTPClient`, circuit breaker, retry wrapper, cache layer | `httpx`, `tenacity`, `cachetools` |
+| `zeroth.core.templates` | `PromptTemplate`, `PromptTemplateRegistry`, Jinja2 rendering | `jinja2`, `sqlalchemy` |
+
+## Version Compatibility Matrix
+
+| Package | Pinned Range | Installed | Required Feature | Compatible |
+|---------|-------------|-----------|-----------------|------------|
+| Python | >=3.12 | 3.12+ | `asyncio.TaskGroup` (3.11+) | YES |
+| httpx | >=0.27 | 0.28.1 | `Limits`, `AsyncHTTPTransport`, `AsyncClient` | YES |
+| tenacity | >=8.2 | 9.1.4 | `AsyncRetrying`, `retry_if_exception_type` | YES |
+| cachetools | >=5.5 | 7.0.5 | `TTLCache` | YES |
+| litellm | >=1.83,<2.0 | 1.83.0 | `token_counter()`, `acount_tokens()`, `get_max_tokens()` | YES |
+| tiktoken | (transitive) | 0.12.0 | Used internally by litellm | YES |
+| Jinja2 | (transitive) | 3.1.6 | `SandboxedEnvironment`, `Template` | YES |
+| redis | >=5.0.0 | 5.3.1 | `SETEX`, async support | YES |
+| pydantic | >=2.10 | 2.12.5 | Discriminated unions, `model_copy` | YES |
 
 ## Sources
 
-- [pypa/gh-action-pypi-publish (GitHub)](https://github.com/pypa/gh-action-pypi-publish) — OIDC trusted publishing + Sigstore attestations
-- [PyPI Trusted Publishers — Using a Publisher](https://docs.pypi.org/trusted-publishers/using-a-publisher/) — official setup flow
-- [GitHub Docs — Configuring OpenID Connect in PyPI](https://docs.github.com/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-pypi) — `id-token: write` permission requirement
-- [Hatch build configuration](https://hatch.pypa.io/1.13/config/build/) — `sources`, `only-include`, `force-include` semantics
-- [pypa/hatch discussion #819 — namespace packages](https://github.com/pypa/hatch/discussions/819) — confirmed PEP 420 recipe
-- [PEP 420 — Implicit Namespace Packages](https://peps.python.org/pep-0420/)
-- [Python Packaging User Guide — namespace packages](https://packaging.python.org/en/latest/guides/packaging-namespace-packages/)
-- [astral-sh/uv#14451 — uv_build PEP 420 limitation](https://github.com/astral-sh/uv/issues/14451) — rationale to stay on hatchling
-- [mkdocs-material PyPI](https://pypi.org/project/mkdocs-material/) — 9.7.6 (Mar 2026) confirmed
-- [mkdocstrings-python PyPI](https://pypi.org/project/mkdocstrings-python/) — 2.0.3 confirmed
-- [mkdocstrings Python handler usage](https://mkdocstrings.github.io/python/usage/) — Google/NumPy/Sphinx docstring support, Griffe-backed static parsing
-- [Material for MkDocs — Setting up versioning](https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/) — mike integration
-- [jimporter/mike (GitHub)](https://github.com/jimporter/mike) — versioning mechanics
-- [Neoteroi MkDocs OpenAPI Docs plugin](https://www.neoteroi.dev/mkdocs-plugins/web/oad/) — FastAPI OpenAPI → Material pages
-- [bharel/mkdocs-render-swagger-plugin (GitHub)](https://github.com/bharel/mkdocs-render-swagger-plugin) — fallback option
-- [FastAPI Metadata and Docs URLs](https://fastapi.tiangolo.com/tutorial/metadata/) — OpenAPI export semantics
-- [Redocly CLI — build-docs](https://redocly.com/docs/cli/commands/build-docs/) — static ReDoc bundle
-- [openapi-typescript (GitHub)](https://github.com/drwpow/openapi-typescript) — TS type generation
-- [@hey-api/openapi-ts](https://heyapi.dev/) — modern TS client generator
+- [LiteLLM Token Counting docs](https://docs.litellm.ai/docs/count_tokens) -- verified `token_counter()` and `acount_tokens()` APIs, model support (HIGH confidence)
+- [httpx Resource Limits docs](https://www.python-httpx.org/advanced/resource-limits/) -- verified `Limits` class, connection pooling (HIGH confidence)
+- [httpx Transports docs](https://www.python-httpx.org/advanced/transports/) -- verified `AsyncHTTPTransport` retry limitation (connection-level only) (HIGH confidence)
+- [Jinja2 PyPI](https://pypi.org/project/Jinja2/) -- verified v3.1.6 latest stable (HIGH confidence)
+- [tiktoken GitHub](https://github.com/openai/tiktoken) -- verified v0.12.0 (HIGH confidence)
+- [tenacity PyPI](https://pypi.org/project/tenacity/) -- verified v9.1.4 latest (HIGH confidence)
+- [aiobreaker Snyk analysis](https://snyk.io/advisor/python/aiobreaker) -- verified unmaintained status (MEDIUM confidence)
+- [Python asyncio.TaskGroup docs](https://docs.python.org/3/library/asyncio-task.html) -- verified structured concurrency API (HIGH confidence)
+- Local environment verification via `uv run python` -- all versions confirmed installed (HIGH confidence)
 
 ---
-
-*Stack research for: v3.0 Core Library Extraction, Studio Split & Documentation*
-*Researched: 2026-04-10*
-*Supersedes: v2.0 Studio stack research (2026-04-09)*
+*Stack research for: zeroth-core v4.0 platform extensions*
+*Researched: 2026-04-12*
