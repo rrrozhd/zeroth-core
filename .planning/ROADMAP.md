@@ -223,8 +223,8 @@ Plans:
   4. Every external HTTP call is gated by NETWORK_READ / NETWORK_WRITE / EXTERNAL_API_CALL capabilities, logged in audit records (URL, method, status code, latency), and subject to rate limiting
 **Plans**: 2 plans
 Plans:
-- [ ] 35-01-PLAN.md — Core http package: models, errors, circuit breaker, rate limiter, ResilientHttpClient
-- [ ] 35-02-PLAN.md — Bootstrap wiring, orchestrator integration, governance integration tests
+- [x] 35-01-PLAN.md — Core http package: models, errors, circuit breaker, rate limiter, ResilientHttpClient
+- [x] 35-02-PLAN.md — Bootstrap wiring, orchestrator integration, governance integration tests
 
 ### Phase 36: Prompt Template Management
 **Goal**: Graph authors can define versioned prompt templates and reference them from agent nodes, with Jinja2 sandboxed rendering at runtime and automatic audit redaction of secret variables
@@ -338,7 +338,7 @@ Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable)
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete | 2026-04-11 |
 | 33. Computed Data Mappings | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 34. Artifact Store | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 35. Resilient HTTP Client | v4.0 | 0/2 | Planned | - |
+| 35. Resilient HTTP Client | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 36. Prompt Template Management | v4.0 | 0/0 | Not started | - |
 | 37. Context Window Management | v4.0 | 0/0 | Not started | - |
 | 38. Parallel Fan-Out / Fan-In | v4.0 | 0/0 | Not started | - |
