@@ -194,8 +194,8 @@
   4. Existing passthrough, rename, constant, and default mapping operations continue to work unchanged (backward compatibility)
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [x] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [x] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 34: Artifact Store
 **Goal**: Nodes can externalize large payloads into a pluggable artifact store instead of embedding them in run state, preventing payload bloat while preserving audit traceability and contract compatibility
@@ -209,8 +209,8 @@ Plans:
   5. Contracts support an ArtifactReference type that validates the reference structure without requiring the full payload at validation time
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
+- [x] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [x] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 35: Resilient HTTP Client
 **Goal**: Agent tools and executable units have access to a platform-provided async HTTP client with managed retry, circuit breaking, connection pooling, governance gating, and audit logging
@@ -223,7 +223,7 @@ Plans:
   4. Every external HTTP call is gated by NETWORK_READ / NETWORK_WRITE / EXTERNAL_API_CALL capabilities, logged in audit records (URL, method, status code, latency), and subject to rate limiting
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
+- [x] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
 - [ ] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
 
 ### Phase 36: Prompt Template Management
@@ -336,7 +336,7 @@ Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable)
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete | 2026-04-11 |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete | 2026-04-11 |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete | 2026-04-11 |
-| 33. Computed Data Mappings | v4.0 | 0/2 | Planning complete | - |
+| 33. Computed Data Mappings | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 34. Artifact Store | v4.0 | 0/0 | Not started | - |
 | 35. Resilient HTTP Client | v4.0 | 0/0 | Not started | - |
 | 36. Prompt Template Management | v4.0 | 0/0 | Not started | - |
