@@ -240,11 +240,11 @@ Plans:
   1. Full test suite (1199+ tests) passes with zero new failures, captured in a formal artifact
   2. In-repo documentation (README, docs pages) references v4.0 API capabilities: artifact GET endpoint, template CRUD endpoints, SubgraphNode-in-parallel limitation
   3. Phase 40 VERIFICATION.md exists with evidence linking D-01 through D-05 to passing tests and implementation
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 41-01-PLAN.md — Test regression gate, lint verification, VERIFICATION.md creation (D-01, D-02, D-03, D-04, D-05, D-06)
-- [ ] 41-02-PLAN.md — v4.0 concept page updates, OpenAPI sync, README v4.0 section (D-07)
+- [x] 41-01-PLAN.md — Test regression gate, lint verification, VERIFICATION.md creation (D-01, D-02, D-03, D-04, D-05, D-06)
+- [x] 41-02-PLAN.md — v4.0 concept page updates, OpenAPI sync, README v4.0 section (D-07)
 
 ### Phase 42: v4.0 Milestone Hygiene & Design Debt
 **Goal**: Close all milestone-level documentation gaps and resolve design debt identified by the v4.0 audit
@@ -298,5 +298,5 @@ Phases execute in numeric order. v3.0 runs 27 -> 28 -> 29/30 (parallelizable aft
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete   | 2026-04-11 |
 | 39. Subgraph Composition | v4.0 | 3/3 | Complete    | 2026-04-13 |
 | 40. Integration & Service Wiring | v4.0 | 2/3 | Complete    | 2026-04-13 |
-| 41. Phase 40 Completion & Verification | v4.0 | 0/2 | Pending | — |
+| 41. Phase 40 Completion & Verification | v4.0 | 2/2 | Complete    | 2026-04-13 |
 | 42. v4.0 Milestone Hygiene & Design Debt | v4.0 | 0/0 | Pending | — |
