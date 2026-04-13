@@ -5,7 +5,7 @@
 - v1.0 Runtime Foundation — Phases 1-9 (shipped 2026-03-27)
 - v1.1 Production Readiness — Phases 11-21 (shipped 2026-04-09)
 - v2.0 Zeroth Studio — Phases 22-26 (partially shipped: 22-23 done; 24-26 moved to `zeroth-studio` repo under v3.0)
-- v3.0 Core Library Extraction, Studio Split & Documentation — Phases 27-32 (in progress)
+- v3.0 Core Library Extraction, Studio Split & Documentation — Phases 27-32 (shipped 2026-04-11)
 - v4.0 Platform Extensions for Production Agentic Workflows — Phases 35-42 (in progress)
 
 ## Phases
@@ -256,10 +256,10 @@ Plans:
   2. All 36 v4.0 requirements (HTTP-*, TMPL-*, CTXW-*, PARA-*, SUBG-*, D-*) are in the REQUIREMENTS.md traceability table
   3. STATE.md reflects milestone v4.0
   4. ROADMAP milestone header for v4.0 accurately reflects existing phases (no phantom 33-34 references)
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 42-01-PLAN.md — TemplateRegistry.delete() design debt, REQUIREMENTS/STATE/ROADMAP v4.0 updates (D-04)
+- [x] 42-01-PLAN.md — TemplateRegistry.delete() design debt, REQUIREMENTS/STATE/ROADMAP v4.0 updates (D-04)
 
 ## Progress
 
@@ -302,4 +302,4 @@ Phases execute in numeric order. v3.0 runs 27 -> 28 -> 29/30 (parallelizable aft
 | 39. Subgraph Composition | v4.0 | 3/3 | Complete    | 2026-04-13 |
 | 40. Integration & Service Wiring | v4.0 | 2/3 | Complete    | 2026-04-13 |
 | 41. Phase 40 Completion & Verification | v4.0 | 2/2 | Complete    | 2026-04-13 |
-| 42. v4.0 Milestone Hygiene & Design Debt | v4.0 | 0/1 | In Progress | — |
+| 42. v4.0 Milestone Hygiene & Design Debt | v4.0 | 1/1 | Complete | 2026-04-13 |

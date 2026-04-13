@@ -1,6 +1,6 @@
 # Requirements: Zeroth
 
-**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-13 (v4.0 gap closure phases)
+**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-13 (v4.0 milestone complete)
 **Core Value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
 
 ## v3.0 Requirements — Core Library Extraction, Studio Split & Documentation
@@ -198,6 +198,8 @@ Which phases cover which requirements. Updated after roadmap creation.
 | ARCHIVE-02 | Phase 27 | Pending |
 | ARCHIVE-03 | Phase 27 | Pending |
 
+| Requirement | Phase | Status |
+|-------------|-------|--------|
 | HTTP-01 | Phase 35 | Complete |
 | HTTP-02 | Phase 35 | Complete |
 | HTTP-03 | Phase 35 | Complete |
@@ -227,19 +229,19 @@ Which phases cover which requirements. Updated after roadmap creation.
 | SUBG-06 | Phase 39 | Complete |
 | SUBG-07 | Phase 39 | Complete |
 | SUBG-08 | Phase 39 | Complete |
-| D-01 | Phase 41 | Pending |
-| D-02 | Phase 41 | Pending |
-| D-03 | Phase 41 | Pending |
-| D-04 | Phase 42 | Pending |
-| D-05 | Phase 41 | Pending |
-| D-06 | Phase 41 | Pending |
-| D-07 | Phase 41 | Pending |
+| D-01 | Phase 41 | Complete |
+| D-02 | Phase 41 | Complete |
+| D-03 | Phase 41 | Complete |
+| D-04 | Phase 42 | Complete |
+| D-05 | Phase 41 | Complete |
+| D-06 | Phase 41 | Complete |
+| D-07 | Phase 41 | Complete |
 
 **Coverage:**
 - v3.0 requirements: 34 total
 - Mapped to phases: 34
 - Unmapped: 0
-- v4.0 requirements: 36 total
+- v4.0 requirements: 36 total (all Complete)
 - Mapped to phases: 36
 - Unmapped: 0
 
@@ -275,4 +277,4 @@ Phases 22–23 shipped in v2.0. Phases 24–26 deferred to the new `zeroth-studi
 
 ---
 
-*Requirements last updated: 2026-04-10 after v3.0 milestone kickoff.*
+*Requirements last updated: 2026-04-13 (v4.0 milestone complete).*

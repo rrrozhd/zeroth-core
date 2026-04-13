@@ -1,7 +1,7 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Core Library Extraction, Studio Split & Documentation
+milestone: v4.0
+milestone_name: Platform Extensions for Production Agentic Workflows
 status: executing
 stopped_at: Completed 32-06-finalize-nav-ci-gates-PLAN.md
 last_updated: "2026-04-13T11:38:54.496Z"
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 40 — Integration & Service Wiring
+**Current focus:** Phase 42 — v4.0 Milestone Hygiene & Design Debt
 
 ## Current Position
 
-Phase: 41
-Plan: Not started
-Status: Executing Phase 40
+Phase: 42 (v4.0 Milestone Hygiene & Design Debt) — EXECUTING
+Plan: 1 of 1
+Status: Executing Phase 42
 Last activity: 2026-04-13
 
-Progress: [████░░░░░░] 38% (phases 22, 23, and 27 complete in the current split roadmap)
+Progress: [█████████░] 88% (v4.0 phases 35-41 complete, phase 42 in progress)
 
 ## Performance Metrics
 
