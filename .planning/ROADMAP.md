@@ -6,7 +6,7 @@
 - v1.1 Production Readiness — Phases 11-21 (shipped 2026-04-09)
 - v2.0 Zeroth Studio — Phases 22-26 (partially shipped: 22-23 done; 24-26 moved to `zeroth-studio` repo under v3.0)
 - v3.0 Core Library Extraction, Studio Split & Documentation — Phases 27-32 (in progress)
-- v4.0 Platform Extensions for Production Agentic Workflows — Phases 33-40 (in progress)
+- v4.0 Platform Extensions for Production Agentic Workflows — Phases 35-42 (in progress)
 
 ## Phases
 
@@ -231,6 +231,29 @@ Plans:
 - [x] 40-02-PLAN.md — Artifact and template REST API routes, OpenAPI spec regeneration (D-03, D-04)
 - [ ] 40-03-PLAN.md — Full test suite regression, docs updates (D-06, D-07)
 
+### Phase 41: Phase 40 Completion & Verification
+**Goal**: Formally verify all Phase 40 deliverables — run the test regression gate, update in-repo docs for v4.0 API capabilities, and create Phase 40 VERIFICATION.md with evidence for D-01 through D-05
+**Depends on**: Phase 40
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07
+**Gap Closure:** Closes gaps from v4.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. Full test suite (1199+ tests) passes with zero new failures, captured in a formal artifact
+  2. In-repo documentation (README, docs pages) references v4.0 API capabilities: artifact GET endpoint, template CRUD endpoints, SubgraphNode-in-parallel limitation
+  3. Phase 40 VERIFICATION.md exists with evidence linking D-01 through D-05 to passing tests and implementation
+**Plans:** 0/0 plans (not yet planned)
+
+### Phase 42: v4.0 Milestone Hygiene & Design Debt
+**Goal**: Close all milestone-level documentation gaps and resolve design debt identified by the v4.0 audit
+**Depends on**: Phase 41
+**Requirements**: D-04 (design debt)
+**Gap Closure:** Closes gaps from v4.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. TemplateRegistry has a `delete()` method and the DELETE endpoint uses it instead of accessing `_templates` directly
+  2. All 36 v4.0 requirements (HTTP-*, TMPL-*, CTXW-*, PARA-*, SUBG-*, D-*) are in the REQUIREMENTS.md traceability table
+  3. STATE.md reflects milestone v4.0
+  4. ROADMAP milestone header for v4.0 accurately reflects existing phases (no phantom 33-34 references)
+**Plans:** 0/0 plans (not yet planned)
+
 ## Progress
 
 **Execution Order:**
@@ -271,3 +294,5 @@ Phases execute in numeric order. v3.0 runs 27 -> 28 -> 29/30 (parallelizable aft
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete   | 2026-04-11 |
 | 39. Subgraph Composition | v4.0 | 3/3 | Complete    | 2026-04-13 |
 | 40. Integration & Service Wiring | v4.0 | 2/3 | Complete    | 2026-04-13 |
+| 41. Phase 40 Completion & Verification | v4.0 | 0/0 | Pending | — |
+| 42. v4.0 Milestone Hygiene & Design Debt | v4.0 | 0/0 | Pending | — |
