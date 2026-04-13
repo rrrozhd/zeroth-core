@@ -224,11 +224,11 @@ Plans:
   3. Artifact retrieval (GET) and template CRUD (GET/POST/DELETE) REST endpoints exist under /v1/ and appear in the OpenAPI spec
   4. The full test suite (1175+ tests) passes with zero new failures
   5. In-repo documentation references new v4.0 API capabilities and notes the SubgraphNode-in-parallel limitation
-**Plans:** 3 plans
+**Plans:** 2/3 plans complete
 
 Plans:
-- [ ] 40-01-PLAN.md — Bootstrap validation, SubgraphNode-in-parallel guard, cross-feature integration tests (D-01, D-02, D-05)
-- [ ] 40-02-PLAN.md — Artifact and template REST API routes, OpenAPI spec regeneration (D-03, D-04)
+- [x] 40-01-PLAN.md — Bootstrap validation, SubgraphNode-in-parallel guard, cross-feature integration tests (D-01, D-02, D-05)
+- [x] 40-02-PLAN.md — Artifact and template REST API routes, OpenAPI spec regeneration (D-03, D-04)
 - [ ] 40-03-PLAN.md — Full test suite regression, docs updates (D-06, D-07)
 
 ## Progress
@@ -270,4 +270,4 @@ Phases execute in numeric order. v3.0 runs 27 -> 28 -> 29/30 (parallelizable aft
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete   | 2026-04-11 |
 | 39. Subgraph Composition | v4.0 | 3/3 | Complete    | 2026-04-13 |
-| 40. Integration & Service Wiring | v4.0 | 0/3 | Planning  | — |
+| 40. Integration & Service Wiring | v4.0 | 2/3 | Complete    | 2026-04-13 |
