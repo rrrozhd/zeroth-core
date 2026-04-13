@@ -252,8 +252,8 @@ Plans:
   5. Per-agent-node settings are configurable: max_context_tokens, summary_trigger_ratio, compaction_strategy, and preserve_recent_messages_count
 **Plans**: 2 plans
 Plans:
-- [ ] 37-01-PLAN.md — Token tracker, compaction strategies, models
-- [ ] 37-02-PLAN.md — Agent node integration, thread persistence, bootstrap wiring
+- [x] 37-01-PLAN.md — Token tracker, compaction strategies, models
+- [x] 37-02-PLAN.md — Agent node integration, thread persistence, bootstrap wiring
 
 ### Phase 38: Parallel Fan-Out / Fan-In
 **Goal**: A node can spawn N parallel execution branches that run concurrently with per-branch isolation, and a synchronization barrier collects all branch outputs into a deterministically ordered aggregated payload
@@ -340,7 +340,7 @@ Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable)
 | 34. Artifact Store | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 35. Resilient HTTP Client | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 36. Prompt Template Management | v4.0 | 2/2 | Complete    | 2026-04-13 |
-| 37. Context Window Management | v4.0 | 0/0 | Not started | - |
+| 37. Context Window Management | v4.0 | 2/2 | Complete    | 2026-04-13 |
 | 38. Parallel Fan-Out / Fan-In | v4.0 | 0/0 | Not started | - |
 | 39. Subgraph Composition | v4.0 | 0/0 | Not started | - |
 | 40. Integration & Service Wiring | v4.0 | 0/0 | Not started | - |
