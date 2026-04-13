@@ -237,8 +237,8 @@ Plans:
   4. The rendered prompt (post-interpolation) is available in audit records; template variables containing secrets are automatically redacted in audit output
 **Plans**: 2 plans
 Plans:
-- [ ] 36-01-PLAN.md — Template registry, Jinja2 renderer, models, errors
-- [ ] 36-02-PLAN.md — Agent node integration, audit redaction, bootstrap wiring
+- [x] 36-01-PLAN.md — Template registry, Jinja2 renderer, models, errors
+- [x] 36-02-PLAN.md — Agent node integration, audit redaction, bootstrap wiring
 
 ### Phase 37: Context Window Management
 **Goal**: Agent threads track accumulated token usage and automatically apply configurable compaction strategies before context overflow, preserving conversation continuity across runs
@@ -339,7 +339,7 @@ Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable)
 | 33. Computed Data Mappings | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 34. Artifact Store | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 35. Resilient HTTP Client | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 36. Prompt Template Management | v4.0 | 0/0 | Not started | - |
+| 36. Prompt Template Management | v4.0 | 2/2 | Complete    | 2026-04-13 |
 | 37. Context Window Management | v4.0 | 0/0 | Not started | - |
 | 38. Parallel Fan-Out / Fan-In | v4.0 | 0/0 | Not started | - |
 | 39. Subgraph Composition | v4.0 | 0/0 | Not started | - |
