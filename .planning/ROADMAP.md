@@ -214,6 +214,23 @@ Plans:
 - [x] 39-02-PLAN.md — SubgraphExecutor with child Run creation, recursive _drive(), bootstrap wiring
 - [x] 39-03-PLAN.md — Approval propagation (pause/resume chain) and comprehensive integration tests
 
+### Phase 40: Integration & Service Wiring
+**Goal**: All v4.0 subsystems are validated to work together, cross-feature interactions are tested, artifact and template REST APIs are exposed, and the full test suite confirms backward compatibility
+**Depends on**: Phase 39 (all v4.0 feature phases must be complete)
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07
+**Success Criteria** (what must be TRUE):
+  1. All v4.0 subsystems (artifact store, HTTP client, template registry, context window, subgraph executor) are present and non-None on ServiceBootstrap after bootstrap_service()
+  2. Cross-feature interactions work: parallel + artifacts, parallel + context window, parallel + templates, subgraph + templates; SubgraphNode inside parallel branches is rejected with a clear validation error
+  3. Artifact retrieval (GET) and template CRUD (GET/POST/DELETE) REST endpoints exist under /v1/ and appear in the OpenAPI spec
+  4. The full test suite (1175+ tests) passes with zero new failures
+  5. In-repo documentation references new v4.0 API capabilities and notes the SubgraphNode-in-parallel limitation
+**Plans:** 3 plans
+
+Plans:
+- [ ] 40-01-PLAN.md — Bootstrap validation, SubgraphNode-in-parallel guard, cross-feature integration tests (D-01, D-02, D-05)
+- [ ] 40-02-PLAN.md — Artifact and template REST API routes, OpenAPI spec regeneration (D-03, D-04)
+- [ ] 40-03-PLAN.md — Full test suite regression, docs updates (D-06, D-07)
+
 ## Progress
 
 **Execution Order:**
@@ -253,3 +270,4 @@ Phases execute in numeric order. v3.0 runs 27 -> 28 -> 29/30 (parallelizable aft
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete   | 2026-04-11 |
 | 39. Subgraph Composition | v4.0 | 3/3 | Complete    | 2026-04-13 |
+| 40. Integration & Service Wiring | v4.0 | 0/3 | Planning  | — |
