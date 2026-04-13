@@ -6,6 +6,7 @@
 - v1.1 Production Readiness — Phases 11-21 (shipped 2026-04-09)
 - v2.0 Zeroth Studio — Phases 22-26 (partially shipped: 22-23 done; 24-26 moved to `zeroth-studio` repo under v3.0)
 - v3.0 Core Library Extraction, Studio Split & Documentation — Phases 27-32 (in progress)
+- v4.0 Platform Extensions for Production Agentic Workflows — Phases 33-40 (in progress)
 
 ## Phases
 
@@ -173,7 +174,7 @@ Plans:
 - [x] 31-01-subsystems-batch-a-graph-execution-PLAN.md — Concept + Usage Guide for graph, orchestrator, agents, execution_units, conditions (10 pages)
 - [x] 31-02-subsystems-batch-b-data-state-PLAN.md — Concept + Usage Guide for mappings, memory, storage, contracts, runs (10 pages)
 - [x] 31-03-subsystems-batch-c-governance-PLAN.md — Concept + Usage Guide for policy, approvals, audit, guardrails, identity (10 pages)
-- [x] 31-04-subsystems-batch-d-platform-PLAN.md — Concept + Usage Guide for secrets, dispatch, econ, service, webhooks (10 pages; threads→webhooks substitution)
+- [x] 31-04-subsystems-batch-d-platform-PLAN.md — Concept + Usage Guide for secrets, dispatch, econ, service, webhooks (10 pages; threads->webhooks substitution)
 - [x] 31-05-cookbook-examples-and-nav-finalize-PLAN.md — 10 cookbook recipes, 10 runnable examples, CI matrix extension, nav finalize, mkdocs strict build gate
 **UI hint**: yes (docs content)
 
@@ -193,13 +194,30 @@ Plans:
 - [x] 32-02-http-api-reference-swagger-PLAN.md — Swagger UI embed + dump_openapi.py --check drift flag (DOCS-08)
 - [x] 32-03-configuration-reference-dump-config-PLAN.md — scripts/dump_config.py introspects pydantic-settings + generated tables (DOCS-09)
 - [x] 32-04-deployment-guide-PLAN.md — 5 mode pages (local-dev, docker-compose, standalone-service, embedded-library, with-regulus) + index (DOCS-10)
-- [x] 32-05-migration-guide-PLAN.md — single comprehensive monolith→zeroth.core migration page (DOCS-11)
+- [x] 32-05-migration-guide-PLAN.md — single comprehensive monolith->zeroth.core migration page (DOCS-11)
 - [x] 32-06-finalize-nav-ci-gates-PLAN.md — mkdocs.yml nav wiring + docs.yml drift gates + strict build verification
+
+### Phase 39: Subgraph Composition
+**Goal**: A graph can reference another published graph as a nested subgraph node, with the orchestrator entering the subgraph as a scoped execution that inherits governance, shares thread memory, and propagates approvals back to the parent
+**Depends on**: Phase 38 (parallel execution -- co-designed, shares _drive() loop changes)
+**Requirements**: SUBG-01, SUBG-02, SUBG-03, SUBG-04, SUBG-05, SUBG-06, SUBG-07, SUBG-08
+**Success Criteria** (what must be TRUE):
+  1. A graph author can add a subgraph node that references another published graph by name; the subgraph's entry contract must be compatible with the referencing edge's mapping output, and the subgraph's final output maps back to the parent graph's expected input
+  2. The orchestrator enters the subgraph as a nested scope sharing the parent's thread_id (configurable); agents inside subgraphs participate in the same thread memory; the parent's policies apply as a baseline that the subgraph can further restrict but not relax
+  3. If a HumanApprovalNode inside a subgraph pauses execution, the parent run transitions to WAITING_APPROVAL; resolution resumes the subgraph and eventually the parent run
+  4. The same subgraph can be referenced by multiple parent graphs and at multiple points within a single parent; subgraph references can pin to a specific deployment version or float to the latest active deployment; nested subgraphs (subgraph within a subgraph) are supported with a configurable depth limit
+  5. Audit records from subgraph execution link to the parent run via parent_run_id, and node IDs are namespaced to prevent collisions across nesting levels
+**Plans:** 3 plans
+
+Plans:
+- [ ] 39-01-PLAN.md — Subgraph package foundation: models, errors, resolver, node ID namespacing, Run parent_run_id, Node union extension
+- [ ] 39-02-PLAN.md — SubgraphExecutor with child Run creation, recursive _drive(), bootstrap wiring
+- [ ] 39-03-PLAN.md — Approval propagation (pause/resume chain) and comprehensive integration tests
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable after 28) → 31 → 32.
+Phases execute in numeric order. v3.0 runs 27 -> 28 -> 29/30 (parallelizable after 28) -> 31 -> 32.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -234,3 +252,4 @@ Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable a
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete   | 2026-04-11 |
+| 39. Subgraph Composition | v4.0 | 0/3 | Planning   | — |
