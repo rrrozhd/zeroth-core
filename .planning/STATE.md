@@ -1,36 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: Platform Extensions for Production Agentic Workflows
-status: complete
-stopped_at: v4.0 milestone complete
-last_updated: "2026-04-13T13:58:32.126Z"
+milestone: v4.1
+milestone_name: Platform Hardening & Missing Implementations
+status: active
+stopped_at: ""
+last_updated: "2026-04-13"
 last_activity: 2026-04-13
 progress:
-  total_phases: 11
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 7
-  percent: 88
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-10)
+See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Phase 42 — v4.0 Milestone Hygiene & Design Debt
+**Current focus:** Defining requirements for v4.1
 
 ## Current Position
 
-Phase: 42
-Plan: Not started
-Status: Executing Phase 42
-Last activity: 2026-04-13
-
-Progress: [█████████░] 88% (v4.0 phases 35-41 complete, phase 42 in progress)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-13 — Milestone v4.1 started
 
 ## Performance Metrics
 

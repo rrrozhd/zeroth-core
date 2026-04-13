@@ -8,18 +8,22 @@ Zeroth is a governed medium-code platform for building, running, and deploying p
 
 Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
 
-## Current Milestone: v3.0 Core Library Extraction, Studio Split & Documentation
+## Current Milestone: v4.1 Platform Hardening & Missing Implementations
 
-**Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth usage documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
+**Goal:** Close the gap between declared capabilities and actual implementations — parallel subgraph fan-out, reduce merge strategy, cloud artifact storage, persistent template registry, and durable circuit breaker state.
 
 **Target features:**
-- `zeroth-core` PyPI distribution containing the full Python codebase under `zeroth.core.*` namespace (full rename, zero deletions, all functionality preserved)
-- `econ-instrumentation-sdk` published to PyPI to replace the local file-path dependency
-- `zeroth-studio` separate public repo containing the Vue 3 + Vue Flow frontend, depending on `zeroth-core` via HTTP API only — v2.0 phases 24-26 continue there
-- Complete, in-depth documentation for every `zeroth-core` subsystem: getting started, core concepts, per-module guides (graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service), HTTP & Python API references, integration recipes, deployment guide, migration guide
-- Full multi-layer archive of the existing monolithic repo (tarball + bare mirror + GitHub archive)
+- Fan-out + subgraph composition: enable parallel subgraph invocations (currently mutually exclusive)
+- Reduce merge strategy: implement full merge strategies beyond `collect`
+- Artifact storage: add S3/GCS backends alongside existing Redis + filesystem
+- Template registry: add persistence backend to replace in-memory-only registry
+- HTTP circuit breaker: persist state across restarts
 
-**Pivot context:** v2.0 Zeroth Studio phases 22-23 are shipped; phases 24-26 (Execution & AI Authoring, Governance Visualization, Versioning & Collaboration) are **not cancelled** — they move to the new `zeroth-studio` repo with their own roadmap. This milestone is a packaging and structural change, not a scope reduction. Most of Phase 0 (preservation) and significant progress on Phase 1 (core library extraction) have been completed ad-hoc prior to formalizing this milestone.
+## Prior Milestone: v3.0 Core Library Extraction, Studio Split & Documentation
+
+**Status:** Part of v4.0 scope (2026-04-13). Core library extracted, docs and Studio split delivered.
+
+**Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth usage documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
 
 ## Prior Milestone: v2.0 Zeroth Studio (partially shipped)
 
@@ -55,13 +59,13 @@ The platform is production-viable: real LLM providers, economic controls, extern
 - ✓ API versioning (/v1/), OpenAPI spec, TLS/HTTPS support — v1.1
 - ✓ Native LLM API parity: tool schemas, structured output, model params, MCP servers — v1.1
 
-### Active (v3.0)
+### Active (v4.1)
 
-- [ ] Extract all Python code into `zeroth-core` PyPI-installable library under `zeroth.core.*` namespace
-- [ ] Publish `econ-instrumentation-sdk` (Regulus SDK) to PyPI
-- [ ] Move Vue Studio frontend to separate public `zeroth-studio` repo with independent CI
-- [ ] Write in-depth documentation for every `zeroth-core` subsystem (getting started, core concepts, subsystem guides, API references, integration recipes, deployment, migration)
-- [ ] Multi-layer archive of monolithic repo (tarball, bare mirror, GitHub `rrrozhd/zeroth-archive`)
+- [ ] Enable fan-out + subgraph composition to work together (parallel subgraph invocations)
+- [ ] Implement full reduce merge strategies beyond `collect`
+- [ ] Add S3/GCS artifact storage backends alongside Redis + filesystem
+- [ ] Add persistence backend for template registry (replace in-memory-only)
+- [ ] Persist HTTP circuit breaker state across restarts
 
 ### Deferred to `zeroth-studio` repo (v2.0 phases 24-26)
 
@@ -129,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-10 — Milestone v3.0 initialized; pivoting to core library extraction and Studio repo split.*
+*Last updated: 2026-04-13 — Milestone v4.1 initialized; platform hardening and missing implementations.*
