@@ -5,8 +5,7 @@
 - v1.0 Runtime Foundation — Phases 1-9 (shipped 2026-03-27)
 - v1.1 Production Readiness — Phases 11-21 (shipped 2026-04-09)
 - v2.0 Zeroth Studio — Phases 22-26 (partially shipped: 22-23 done; 24-26 moved to `zeroth-studio` repo under v3.0)
-- v3.0 Core Library Extraction, Studio Split & Documentation — Phases 27-32 (shipped 2026-04-11)
-- v4.0 Platform Extensions for Production Agentic Workflows — Phases 33-40 (in progress)
+- v3.0 Core Library Extraction, Studio Split & Documentation — Phases 27-32 (in progress)
 
 ## Phases
 
@@ -47,41 +46,24 @@
 
 - [x] Phase 22: Canvas Foundation & Dev Infrastructure (6/6 plans) — completed 2026-04-09
 - [x] Phase 23: Canvas Editing UX (4/4 plans) — completed 2026-04-09
-- [->] Phase 24: Execution & AI Authoring — **moved to `zeroth-studio` repo** (part of v3.0 split)
-- [->] Phase 25: Governance Visualization — **moved to `zeroth-studio` repo** (part of v3.0 split)
-- [->] Phase 26: Versioning & Collaboration — **moved to `zeroth-studio` repo** (part of v3.0 split)
+- [→] Phase 24: Execution & AI Authoring — **moved to `zeroth-studio` repo** (part of v3.0 split)
+- [→] Phase 25: Governance Visualization — **moved to `zeroth-studio` repo** (part of v3.0 split)
+- [→] Phase 26: Versioning & Collaboration — **moved to `zeroth-studio` repo** (part of v3.0 split)
 
 </details>
 
-<details>
-<summary>v3.0 Core Library Extraction, Studio Split & Documentation (Phases 27-32) — SHIPPED 2026-04-11</summary>
+### v3.0 Core Library Extraction, Studio Split & Documentation (In Progress)
 
-- [x] Phase 27: Monolith Archive & Namespace Rename (4/4 plans) — completed 2026-04-10
-- [x] Phase 28: PyPI Publishing (econ-sdk + zeroth-core) (3/3 plans) — completed 2026-04-11
-- [x] Phase 29: Studio Repo Split (4/4 plans) — completed 2026-04-11
-- [x] Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough (5/5 plans) — completed 2026-04-11
-- [x] Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples (5/5 plans) — completed 2026-04-11
-- [x] Phase 32: Reference Docs, Deployment & Migration Guide (6/6 plans) — completed 2026-04-11
+**Milestone Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
 
-</details>
-
-### v4.0 Platform Extensions for Production Agentic Workflows (In Progress)
-
-**Milestone Goal:** Close 7 architectural gaps identified during production adoption audit, enabling zeroth-core to support parallel execution, composable subgraphs, large payloads, context window management, resilient HTTP, prompt templates, and computed data mappings.
-
-- [ ] **Phase 33: Computed Data Mappings** - Transform mapping operation using the existing expression engine for side-effect-free data transformation
-- [ ] **Phase 34: Artifact Store** - Pluggable large payload externalization with Redis and filesystem backends, TTL, and audit compatibility
-- [ ] **Phase 35: Resilient HTTP Client** - Managed async HTTP with retry/backoff, circuit breaking, connection pooling, capability-gated and audited
-- [ ] **Phase 36: Prompt Template Management** - Versioned template registry with Jinja2 sandboxed rendering, agent node integration, and audit redaction
-- [ ] **Phase 37: Context Window Management** - Token tracking with configurable compaction strategies to prevent agent context overflow
-- [ ] **Phase 38: Parallel Fan-Out / Fan-In** - Spawn N parallel branches with per-branch isolation, governance, budget awareness, and deterministic fan-in
-- [ ] **Phase 39: Subgraph Composition** - Reference published graphs as nested nodes with governance inheritance, thread continuity, and approval propagation
-- [ ] **Phase 40: Integration & Service Wiring** - Wire all v4.0 features into service bootstrap, update OpenAPI spec, cross-feature interaction testing
+- [x] **Phase 27: Monolith Archive & Namespace Rename** — Preserve the monolithic repo in a multi-layer archive, then relocate all Python source from `zeroth.*` to `zeroth.core.*` (pure rename, zero deletions). Much of this is already done ad-hoc in `/tmp/zeroth-split/zeroth-core-build/` — this phase formalizes and verifies it. (4/4 plans complete, completed 2026-04-10)
+- [x] **Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)** — Publish both packages to PyPI via trusted publisher, with optional-dependency extras declared and verified installable end-to-end. (completed 2026-04-11)
+- [x] **Phase 29: Studio Repo Split** — Create `rrrozhd/zeroth-studio` as a public repo with preserved git history, independent CI, HTTP-only consumption of `zeroth-core`, and cross-repo compatibility matrix. (completed 2026-04-11)
+- [x] **Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough** — Stand up mkdocs-material with Diátaxis IA, deploy on every main commit, and ship the "first working path" pages: landing, Getting Started, governance walkthrough tutorial. (completed 2026-04-11)
+- [x] **Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples** — Write Concept + Usage Guide pages for all ~20 subsystems, author 10+ cookbook recipes, and ship the CI-tested `examples/` directory. (completed 2026-04-11)
+- [x] **Phase 32: Reference Docs, Deployment & Migration Guide** — Auto-generate Python API reference via mkdocstrings, render HTTP API reference from OpenAPI, auto-generate configuration reference from pydantic-settings, and write the deployment and migration guides. (completed 2026-04-11)
 
 ## Phase Details
-
-<details>
-<summary>v1.0-v3.0 Phase Details (shipped)</summary>
 
 ### Phase 22: Canvas Foundation & Dev Infrastructure
 **Goal**: Users can create workflow graphs by placing nodes and drawing edges on an interactive canvas, save and load them via the API, and work within a responsive three-panel Studio layout served from Docker
@@ -118,8 +100,9 @@
   2. All 36 pre-existing worktree branches, both stashes, and the detached-HEAD worktree are preserved in the archive and can be checked out from the bare mirror
   3. All Python source lives under `zeroth.core.*` with no top-level `zeroth/__init__.py` (PEP 420 namespace package), no deletions, no functional changes
   4. The full existing test suite (280+ tests) passes against the renamed package with zero skips and zero regressions
-  5. Docstring coverage on the `zeroth.core.*` public surface reaches >=90% (measured by `interrogate`) using a single consistent style (Google-style)
+  5. Docstring coverage on the `zeroth.core.*` public surface reaches ≥90% (measured by `interrogate`) using a single consistent style (Google-style)
 **Plans**: 4/4 plans complete
+**Notes**: Completed 2026-04-10. The final verification pass added the CI/docstring gate, captured post-rename interrogate/pytest artifacts, fixed the remaining codemod regressions in `live_scenarios/`, and proved the rename introduced no new `FAILED`/`ERROR`/`SKIPPED` entries versus baseline.
 
 ### Phase 28: PyPI Publishing (`econ-instrumentation-sdk` + `zeroth-core`)
 **Goal**: Both `econ-instrumentation-sdk` and `zeroth-core` are published to PyPI via GitHub Actions trusted publisher, a clean-venv install of `zeroth-core[all]` succeeds, and every declared optional extra is verified installable
@@ -133,6 +116,11 @@
   5. In a fresh virtualenv, `pip install zeroth-core` followed by running the Getting Started hello example produces working output end-to-end
 **Plans:** 3/3 plans complete
 
+Plans:
+- [x] 28-01-pyproject-metadata-and-extras-PLAN.md — pyproject.toml rewrite: bump to 0.1.1, carve six extras, Apache-2.0 SPDX, py.typed, keep wheel target (resolved Q3)
+- [x] 28-02-repo-metadata-and-hello-example-PLAN.md — LICENSE/CHANGELOG/CONTRIBUTING, examples/hello.py, STATE.md blocker reconciliation
+- [x] 28-03-release-workflow-and-extras-verification-PLAN.md — trusted-publisher release workflow + verify-extras CI matrix + README install section (USER ACTION: register pypi + testpypi publishers)
+
 ### Phase 29: Studio Repo Split
 **Goal**: `rrrozhd/zeroth-studio` exists as a public repo with preserved git history, passing independent CI, HTTP-only consumption of `zeroth-core`, and a documented cross-repo compatibility matrix
 **Depends on**: Phase 28
@@ -141,21 +129,34 @@
   1. `rrrozhd/zeroth-studio` is a public GitHub repository containing the Vue 3 + Vue Flow frontend with full git history preserved (via subtree or git-filter-repo)
   2. `zeroth-studio` has its own CI pipeline (lint, typecheck, build, test) that passes on its default branch without touching or importing from `zeroth-core`
   3. `zeroth-studio`'s only contract with `zeroth-core` is HTTP/OpenAPI — its frontend types are generated from the `zeroth-core` OpenAPI spec via `openapi-typescript`
-  4. Both repos' READMEs cross-link, and a `zeroth-studio x zeroth-core` compatibility matrix is documented and maintained
+  4. Both repos' READMEs cross-link, and a `zeroth-studio × zeroth-core` compatibility matrix is documented and maintained
   5. A developer can clone `zeroth-studio`, run `npm install && npm run dev`, and develop against a running `zeroth-core` service without any cross-repo source dependencies
 **Plans:** 4/4 plans complete
+Plans:
+- [x] 29-01-preflight-in-zeroth-core-PLAN.md — add scripts/dump_openapi.py + commit snapshot; wire VITE_API_BASE_URL through apps/studio; add ESLint flat config + split typecheck/build + bundle standalone nginx.conf (in-place, so filter-repo carries it)
+- [x] 29-02-filter-repo-extract-and-create-remote-PLAN.md — fresh --no-local clone to /tmp/zeroth-studio-split, run git filter-repo for the three paths, gh repo create rrrozhd/zeroth-studio, two-step push to main
+- [x] 29-03-bootstrap-new-repo-ci-and-types-PLAN.md — copy openapi snapshot + generate types.gen.ts, add LICENSE/CHANGELOG/CONTRIBUTING/README with compat matrix, add GitHub Actions CI (lint/typecheck/build/test/drift-check), push and verify green
+- [x] 29-04-cleanup-zeroth-core-PLAN.md — safety-gate on zeroth-studio CI green, delete apps/studio, apps/studio-mockups, tests/studio from zeroth-core (preserving tests/test_studio_api.py), add Studio section to zeroth-core README
+**UI hint**: yes (frontend repo, but no new UI features in this phase — move only)
 
 ### Phase 30: Docs Site Foundation, Getting Started & Governance Walkthrough
-**Goal**: The `zeroth-core` documentation site is live on a public URL, built with mkdocs-material using explicit Diataxis IA, and contains the complete "first working path" — landing page, 3-section Getting Started tutorial, and a Governance Walkthrough showcasing Zeroth's differentiator
+**Goal**: The `zeroth-core` documentation site is live on a public URL, built with mkdocs-material using explicit Diátaxis IA, and contains the complete "first working path" — landing page, 3-section Getting Started tutorial, and a Governance Walkthrough showcasing Zeroth's differentiator
 **Depends on**: Phase 28
 **Requirements**: SITE-01, SITE-02, SITE-03, SITE-04, DOCS-01, DOCS-02, DOCS-05
 **Success Criteria** (what must be TRUE):
-  1. The docs site is built by mkdocs-material with four top-level Diataxis sections (Tutorials / How-to Guides / Concepts / Reference), has built-in search, and auto-generates a site map
+  1. The docs site is built by mkdocs-material with four top-level Diátaxis sections (Tutorials / How-to Guides / Concepts / Reference), has built-in search, and auto-generates a site map
   2. A GitHub Actions workflow builds and deploys the docs to a public URL on every commit to `main`, and pull requests get preview deploys
   3. The landing page shows a 10-line hello-world, install snippet, and a "Choose your path" split between embedding as a library and running as a service
-  4. Getting Started is a single linear 3-section tutorial (install -> first graph with one agent/tool/LLM -> run in service mode with an approval gate) that produces first working output in under 5 minutes and completes in under 30
+  4. Getting Started is a single linear 3-section tutorial (install → first graph with one agent/tool/LLM → run in service mode with an approval gate) that produces first working output in under 5 minutes and completes in under 30
   5. A Governance Walkthrough tutorial runs end-to-end with an approval gate stopping execution, an auditor reviewing the trail, and a policy blocking a tool call
 **Plans:** 5/5 plans complete
+Plans:
+- [x] 30-01-quickstart-helper-module-PLAN.md — ship zeroth.core.examples.quickstart tutorial helper + Wave 0 test scaffold (DOCS-02)
+- [x] 30-02-docs-site-scaffold-PLAN.md — mkdocs.yml, [docs] extra, Diátaxis doc tree, landing page with Choose Your Path (SITE-01, SITE-04, DOCS-01)
+- [x] 30-03-getting-started-tutorial-PLAN.md — examples/first_graph.py + examples/approval_demo.py, Getting Started pages, examples.yml CI (DOCS-01, DOCS-02)
+- [x] 30-04-governance-walkthrough-tutorial-PLAN.md — examples/governance_walkthrough.py covering approval+auditor+policy block + tutorial page (DOCS-05)
+- [x] 30-05-docs-deploy-workflow-PLAN.md — docs.yml GHA (build-on-PR + deploy-on-main), README link, phase-gate validation, SITE-03 deferral recorded, GH Pages enablement checkpoint (SITE-02; SITE-03 deferred)
+**UI hint**: yes (docs site is the UI)
 
 ### Phase 31: Subsystem Concepts, Usage Guides, Cookbook & Examples
 **Goal**: Every major `zeroth.core.*` subsystem has a paired Concept page and Usage Guide on the docs site, the Cookbook contains at least 10 cross-subsystem recipes, and an `examples/` directory with CI-tested runnable `.py` files covers the main subsystems
@@ -163,11 +164,18 @@
 **Requirements**: DOCS-03, DOCS-04, DOCS-06, DOCS-12
 **Success Criteria** (what must be TRUE):
   1. Every major subsystem (graph, orchestrator, agents, execution units, memory, contracts, runs, conditions, mappings, policy, approvals, audit, secrets, identity, guardrails, dispatch, economics, storage, service, threads) has a Concept page explaining what it is, why it exists, and where it fits
-  2. Every major subsystem has a Usage Guide (Overview -> Minimal example -> Common patterns -> Pitfalls -> Reference cross-link) paired with its Concept page
+  2. Every major subsystem has a Usage Guide (Overview → Minimal example → Common patterns → Pitfalls → Reference cross-link) paired with its Concept page
   3. The Cookbook section contains at least 10 cross-subsystem recipes covering the most common Zeroth tasks (approval steps, memory attachment, budget capping, sandboxing, webhook retry, etc.)
   4. The repo root contains an `examples/` directory with runnable `.py` files (no notebooks) exercising the main subsystems
   5. A CI job smoke-tests every file in `examples/` on every commit to `main`, and the job is green
 **Plans:** 5/5 plans complete
+Plans:
+- [x] 31-01-subsystems-batch-a-graph-execution-PLAN.md — Concept + Usage Guide for graph, orchestrator, agents, execution_units, conditions (10 pages)
+- [x] 31-02-subsystems-batch-b-data-state-PLAN.md — Concept + Usage Guide for mappings, memory, storage, contracts, runs (10 pages)
+- [x] 31-03-subsystems-batch-c-governance-PLAN.md — Concept + Usage Guide for policy, approvals, audit, guardrails, identity (10 pages)
+- [x] 31-04-subsystems-batch-d-platform-PLAN.md — Concept + Usage Guide for secrets, dispatch, econ, service, webhooks (10 pages; threads→webhooks substitution)
+- [x] 31-05-cookbook-examples-and-nav-finalize-PLAN.md — 10 cookbook recipes, 10 runnable examples, CI matrix extension, nav finalize, mkdocs strict build gate
+**UI hint**: yes (docs content)
 
 ### Phase 32: Reference Docs, Deployment & Migration Guide
 **Goal**: The docs site has a complete Reference quadrant (Python API auto-generated from docstrings, HTTP API rendered from OpenAPI, Configuration reference auto-generated from pydantic-settings), plus a Deployment Guide covering every supported mode and a Migration Guide from the monolith layout
@@ -180,128 +188,18 @@
   4. Deployment Guide covers local development, docker-compose, standalone service mode, embedded-in-host-app mode, and deployments with and without the Regulus companion service
   5. Migration Guide walks an existing monolith user through the switch to `zeroth.core.*` — import rename pattern, econ SDK path swap, env var changes, and Docker image retag
 **Plans:** 6/6 plans complete
-
-</details>
-
-### Phase 33: Computed Data Mappings
-**Goal**: Edge mappings can compute derived values from source payloads using the existing expression engine, enabling side-effect-free data transformation between nodes
-**Depends on**: Phase 32 (v3.0 shipped)
-**Requirements**: XFRM-01, XFRM-02, XFRM-03, XFRM-04
-**Success Criteria** (what must be TRUE):
-  1. A graph author can define a transform mapping on an edge that evaluates an expression (e.g., `payload.items | length`, `payload.score * 100`) and writes the result to a target path on the next node's input
-  2. Transform expressions can reference `payload.*`, `state.*`, and `variables.*` using the same syntax as condition expressions, and the evaluated result is validated against the target node's input contract
-  3. Transform expressions are guaranteed side-effect-free: no network access, no filesystem access, no imports, no dunder attribute traversal -- enforced by the hardened expression evaluator with namespace restrictions
-  4. Existing passthrough, rename, constant, and default mapping operations continue to work unchanged (backward compatibility)
-**Plans**: 2 plans
 Plans:
-- [x] 33-01-PLAN.md — Core transform operation: model, error, validator, executor
-- [x] 33-02-PLAN.md — Safe builtins, orchestrator wiring, integration tests
-
-### Phase 34: Artifact Store
-**Goal**: Nodes can externalize large payloads into a pluggable artifact store instead of embedding them in run state, preventing payload bloat while preserving audit traceability and contract compatibility
-**Depends on**: Phase 33
-**Requirements**: ARTF-01, ARTF-02, ARTF-03, ARTF-04, ARTF-05
-**Success Criteria** (what must be TRUE):
-  1. A pluggable ArtifactStore interface exists with working implementations for Redis (with SETEX TTL) and local filesystem, configurable via settings
-  2. A node can emit an ArtifactReference (store, key, content_type, size) as part of its output; the reference is persisted in run history while the actual payload lives in the artifact store
-  3. Artifacts support configurable TTL; artifacts tied to a run are cleanable when the run is archived; TTLs are refreshed when a run is checkpointed or paused for approval (preventing dangling references)
-  4. Audit records log artifact references (not full payloads); audit evidence export can optionally resolve references to retrieve full payloads
-  5. Contracts support an ArtifactReference type that validates the reference structure without requiring the full payload at validation time
-**Plans**: 2 plans
-Plans:
-- [x] 34-01-PLAN.md — Core artifacts package: models, errors, protocol, Redis and filesystem stores
-- [x] 34-02-PLAN.md — Orchestrator TTL refresh, audit evidence, contract validation, bootstrap wiring
-
-### Phase 35: Resilient HTTP Client
-**Goal**: Agent tools and executable units have access to a platform-provided async HTTP client with managed retry, circuit breaking, connection pooling, governance gating, and audit logging
-**Depends on**: Phase 32 (v3.0 shipped)
-**Requirements**: HTTP-01, HTTP-02, HTTP-03, HTTP-04, HTTP-05, HTTP-06
-**Success Criteria** (what must be TRUE):
-  1. A platform-provided async HTTP client (wrapping httpx) is available to agent tools and executable units, configurable per-node or per-tool with sensible defaults
-  2. The client retries failed requests with exponential backoff and jitter for configurable status codes (default: 408, 429, 5xx), and a per-endpoint circuit breaker opens after configurable failure thresholds and resets after a timeout
-  3. Connection pools are shared or per-tenant with configurable limits, and the client resolves auth headers/tokens from the SecretResolver automatically based on endpoint configuration
-  4. Every external HTTP call is gated by NETWORK_READ / NETWORK_WRITE / EXTERNAL_API_CALL capabilities, logged in audit records (URL, method, status code, latency), and subject to rate limiting
-**Plans**: 2 plans
-Plans:
-- [x] 35-01-PLAN.md — Core http package: models, errors, circuit breaker, rate limiter, ResilientHttpClient
-- [x] 35-02-PLAN.md — Bootstrap wiring, orchestrator integration, governance integration tests
-
-### Phase 36: Prompt Template Management
-**Goal**: Graph authors can define versioned prompt templates and reference them from agent nodes, with Jinja2 sandboxed rendering at runtime and automatic audit redaction of secret variables
-**Depends on**: Phase 32 (v3.0 shipped)
-**Requirements**: TMPL-01, TMPL-02, TMPL-03, TMPL-04
-**Success Criteria** (what must be TRUE):
-  1. A template registry stores and versions prompt templates by name, analogous to the contract registry, and templates can be created, retrieved, and listed via the registry API
-  2. Templates support variable interpolation from node input, run state, or memory using Jinja2 SandboxedEnvironment, preventing template injection attacks
-  3. An agent node can reference a template by name and version instead of providing a raw instruction string; the template is resolved and rendered at runtime before the LLM invocation
-  4. The rendered prompt (post-interpolation) is available in audit records; template variables containing secrets are automatically redacted in audit output
-**Plans**: 2 plans
-Plans:
-- [x] 36-01-PLAN.md — Template registry, Jinja2 renderer, models, errors
-- [x] 36-02-PLAN.md — Agent node integration, audit redaction, bootstrap wiring
-
-### Phase 37: Context Window Management
-**Goal**: Agent threads track accumulated token usage and automatically apply configurable compaction strategies before context overflow, preserving conversation continuity across runs
-**Depends on**: Phase 32 (v3.0 shipped)
-**Requirements**: CTXW-01, CTXW-02, CTXW-03, CTXW-04, CTXW-05
-**Success Criteria** (what must be TRUE):
-  1. Approximate token count of accumulated agent messages per thread is tracked using the LLM provider's tokenizer (via litellm.token_counter), updated after each LLM invocation
-  2. When token count exceeds a configurable threshold, a compaction strategy is applied before the next LLM invocation (default: observation masking of older messages)
-  3. Compaction strategy is pluggable per agent node with three built-in strategies: truncation (drop oldest), observation masking (replace tool outputs with placeholders), and LLM-based summarization (condense older messages)
-  4. Compaction results are stored in thread memory so they persist across runs; original messages can optionally be archived for audit retrieval
-  5. Per-agent-node settings are configurable: max_context_tokens, summary_trigger_ratio, compaction_strategy, and preserve_recent_messages_count
-**Plans**: 2 plans
-Plans:
-- [x] 37-01-PLAN.md — Token tracker, compaction strategies, models
-- [x] 37-02-PLAN.md — Agent node integration, thread persistence, bootstrap wiring
-
-### Phase 38: Parallel Fan-Out / Fan-In
-**Goal**: A node can spawn N parallel execution branches that run concurrently with per-branch isolation, and a synchronization barrier collects all branch outputs into a deterministically ordered aggregated payload
-**Depends on**: Phase 33 (computed mappings for fan-in aggregation), Phase 34 (artifact store for large parallel payloads)
-**Requirements**: PARA-01, PARA-02, PARA-03, PARA-04, PARA-05, PARA-06
-**Success Criteria** (what must be TRUE):
-  1. A graph author can configure a node to spawn N parallel branches from its output (e.g., one branch per list item), and a synchronization barrier collects all branch outputs into an aggregated payload with deterministic ordering by branch index
-  2. Each parallel branch has its own isolated execution context (visit counts, audit trail, failure tracking); a failure in one branch does not automatically fail others when configured for best-effort mode (fail-fast is also supported)
-  3. Policy enforcement, audit recording, and contract validation apply independently per branch, each producing its own audit records linked to the parent run
-  4. Cost attribution tracks per-branch spend; BudgetEnforcer is consulted before spawning with a pre-reservation of total estimated cost; ExecutionSettings guardrails (max_total_steps, max_visits_per_node) account for parallel branches as sum across all branches
-**Plans**: 2 plans
-Plans:
-- [ ] 38-01-PLAN.md — Parallel branch model, fan-out splitter, fan-in barrier
-- [ ] 38-02-PLAN.md — Drive loop integration, governance isolation, budget enforcement
-
-### Phase 39: Subgraph Composition
-**Goal**: A graph can reference another published graph as a nested subgraph node, with the orchestrator entering the subgraph as a scoped execution that inherits governance, shares thread memory, and propagates approvals back to the parent
-**Depends on**: Phase 38 (parallel execution -- co-designed, shares _drive() loop changes)
-**Requirements**: SUBG-01, SUBG-02, SUBG-03, SUBG-04, SUBG-05, SUBG-06, SUBG-07, SUBG-08
-**Success Criteria** (what must be TRUE):
-  1. A graph author can add a subgraph node that references another published graph by name; the subgraph's entry contract must be compatible with the referencing edge's mapping output, and the subgraph's final output maps back to the parent graph's expected input
-  2. The orchestrator enters the subgraph as a nested scope sharing the parent's thread_id (configurable); agents inside subgraphs participate in the same thread memory; the parent's policies apply as a baseline that the subgraph can further restrict but not relax
-  3. If a HumanApprovalNode inside a subgraph pauses execution, the parent run transitions to WAITING_APPROVAL; resolution resumes the subgraph and eventually the parent run
-  4. The same subgraph can be referenced by multiple parent graphs and at multiple points within a single parent; subgraph references can pin to a specific deployment version or float to the latest active deployment; nested subgraphs (subgraph within a subgraph) are supported with a configurable depth limit
-  5. Audit records from subgraph execution link to the parent run via parent_run_id, and node IDs are namespaced to prevent collisions across nesting levels
-**Plans**: 2 plans
-Plans:
-- [ ] 39-01-PLAN.md — Subgraph node model, reference resolution, governance inheritance
-- [ ] 39-02-PLAN.md — Drive loop nesting, approval propagation, audit namespacing
-
-### Phase 40: Integration & Service Wiring
-**Goal**: All v4.0 features are wired into the service bootstrap, the OpenAPI spec reflects the new capabilities, cross-feature interactions are tested, and documentation is updated
-**Depends on**: Phase 38, Phase 39 (all feature phases complete)
-**Requirements**: All v4.0 requirements (integration validation)
-**Success Criteria** (what must be TRUE):
-  1. Service bootstrap initializes all new subsystems (artifact store, HTTP client, template registry, context window manager) and makes them available to the orchestrator and agent runtime without manual configuration beyond settings
-  2. The OpenAPI spec includes endpoints for new v4.0 capabilities (artifact retrieval, template CRUD, parallel run status) and the docs site reflects the updated API surface
-  3. Cross-feature interactions work correctly: parallel branches can use artifact store for large outputs, agent nodes inside parallel branches respect context window limits, subgraph nodes inside parallel branches execute with proper governance isolation
-  4. All existing tests continue to pass (backward compatibility), and new integration tests cover the cross-feature scenarios listed above
-**Plans**: 2 plans
-Plans:
-- [ ] 40-01-PLAN.md — Service bootstrap wiring, OpenAPI updates
-- [ ] 40-02-PLAN.md — Cross-feature integration tests, backward compatibility
+- [x] 32-01-python-api-reference-mkdocstrings-PLAN.md — mkdocstrings+Griffe, 20 subsystem pages, Usage Guide cross-link rewrites (DOCS-07)
+- [x] 32-02-http-api-reference-swagger-PLAN.md — Swagger UI embed + dump_openapi.py --check drift flag (DOCS-08)
+- [x] 32-03-configuration-reference-dump-config-PLAN.md — scripts/dump_config.py introspects pydantic-settings + generated tables (DOCS-09)
+- [x] 32-04-deployment-guide-PLAN.md — 5 mode pages (local-dev, docker-compose, standalone-service, embedded-library, with-regulus) + index (DOCS-10)
+- [x] 32-05-migration-guide-PLAN.md — single comprehensive monolith→zeroth.core migration page (DOCS-11)
+- [x] 32-06-finalize-nav-ci-gates-PLAN.md — mkdocs.yml nav wiring + docs.yml drift gates + strict build verification
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable) -> 38 -> 39 -> 40.
+Phases execute in numeric order. v3.0 runs 27 → 28 → 29/30 (parallelizable after 28) → 31 → 32.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -331,16 +229,8 @@ Phases execute in numeric order. v4.0 runs 33 -> 34 -> 35/36/37 (parallelizable)
 | 25. Governance Visualization | v2.0 | — | Moved to `zeroth-studio` | — |
 | 26. Versioning & Collaboration | v2.0 | — | Moved to `zeroth-studio` | — |
 | 27. Monolith Archive & Namespace Rename | v3.0 | 4/4 | Complete | 2026-04-10 |
-| 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 3/3 | Complete | 2026-04-11 |
-| 29. Studio Repo Split | v3.0 | 4/4 | Complete | 2026-04-11 |
-| 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete | 2026-04-11 |
-| 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete | 2026-04-11 |
-| 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete | 2026-04-11 |
-| 33. Computed Data Mappings | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 34. Artifact Store | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 35. Resilient HTTP Client | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 36. Prompt Template Management | v4.0 | 2/2 | Complete    | 2026-04-13 |
-| 37. Context Window Management | v4.0 | 2/2 | Complete    | 2026-04-13 |
-| 38. Parallel Fan-Out / Fan-In | v4.0 | 0/0 | Not started | - |
-| 39. Subgraph Composition | v4.0 | 0/0 | Not started | - |
-| 40. Integration & Service Wiring | v4.0 | 0/0 | Not started | - |
+| 28. PyPI Publishing (econ-sdk + zeroth-core) | v3.0 | 3/3 | Complete   | 2026-04-11 |
+| 29. Studio Repo Split | v3.0 | 4/4 | Complete   | 2026-04-11 |
+| 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete   | 2026-04-11 |
+| 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete   | 2026-04-11 |
+| 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete   | 2026-04-11 |
