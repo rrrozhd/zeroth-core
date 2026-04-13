@@ -661,29 +661,29 @@ Example: For a subgraph named "data-processor" at depth 1, a node "transform" be
 | A5 | The same RuntimeOrchestrator instance can safely call _drive() recursively because it is stateless between calls | Anti-Patterns | If the orchestrator accumulates state between _drive() calls (e.g., via mutable instance fields), recursive calls could interfere |
 | A6 | Industry convergence on subgraph-as-separate-scope (Prefect, Temporal, Airflow) | State of the Art | Based on training data; specific version dates may be inaccurate |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **SUBG requirement definitions**
+1. **SUBG requirement definitions** RESOLVED: Planner maps D-01..D-12 to SUBG-01..SUBG-08 per Phase Requirements table above.
    - What we know: The phase description references SUBG-01 through SUBG-08, and the CONTEXT.md has 12 detailed decisions
    - What's unclear: SUBG-01 through SUBG-08 are not defined in any REQUIREMENTS.md file yet
    - Recommendation: The planner should map CONTEXT.md decisions D-01 through D-12 to the 8 SUBG requirements. The mapping in the Phase Requirements section above is my best interpretation.
 
-2. **SubgraphNode + parallel_config interaction**
+2. **SubgraphNode + parallel_config interaction** RESOLVED: Reject for Phase 39 — parallel subgraph invocation is a future enhancement.
    - What we know: Phase 38 rejects HumanApprovalNode with parallel_config
    - What's unclear: Should SubgraphNode with parallel_config be rejected, or should it fan out by running the subgraph N times (once per branch item)?
    - Recommendation: Reject for Phase 39 (A2 above). Parallel subgraph invocation is a future enhancement that requires careful design of child Run multiplexing.
 
-3. **Contract compatibility validation at SubgraphNode edges**
+3. **Contract compatibility validation at SubgraphNode edges** RESOLVED: Runtime validation only for Phase 39.
    - What we know: CONTEXT.md lists this as Claude's discretion
    - What's unclear: Whether the parent edge's output contract should be validated against the subgraph's entry node's input contract at graph authoring time or at runtime
    - Recommendation: Runtime validation only for Phase 39. The SubgraphExecutor validates that the input_payload structure matches what the subgraph's entry node expects. Compile-time validation requires resolving subgraph references during graph publishing, which adds complexity. Runtime validation with clear error messages is sufficient.
 
-4. **Approval API awareness of parent runs**
+4. **Approval API awareness of parent runs** RESOLVED: Parent-resume-child pattern works transparently, no API changes needed.
    - What we know: The current approval resolution API resumes only the direct run_id on the approval record
    - What's unclear: Whether the approval API needs to know about parent_run_id chains, or if the parent-resume-child pattern handles this transparently
    - Recommendation: The parent-resume-child pattern should work transparently. When `resume_graph(parent_run_id)` is called, the parent's _drive() loop encounters the SubgraphNode with pending_subgraph metadata, resumes the child, and continues. No approval API changes needed. Test this flow end-to-end.
 
-5. **Subgraph executor injection: None-optional vs default-constructed**
+5. **Subgraph executor injection: None-optional vs default-constructed** RESOLVED: None-optional with clear error on SubgraphNode encounter.
    - What we know: ParallelExecutor is default-constructed (no dependencies). SubgraphExecutor needs DeploymentService.
    - What's unclear: Whether SubgraphExecutor should be None (requires explicit bootstrap wiring) or have a no-op default
    - Recommendation: None with clear error on SubgraphNode encounter. This matches the pattern used by `audit_repository`, `policy_guard`, `approval_service`, etc. The bootstrap wiring creates the executor when DeploymentService is available.
