@@ -1,5 +1,20 @@
 # Milestones
 
+## v4.0 Platform Extensions for Production Agentic Workflows (Shipped: 2026-04-13)
+
+**Phases completed:** 3 phases, 8 plans, 14 tasks
+
+**Key accomplishments:**
+
+- 1. [Rule 3 - Blocking] Circular import in subgraph/__init__.py
+- 1. [Rule 3 - Blocking] Circular import via __init__.py
+- 1. [Rule 1 - Bug] Missing explicit WAITING_APPROVAL on nested resume
+- RED phase:
+- 1. [Rule 1 - Bug] Fixed E501 line-too-long in executor.py
+- Six v4.0 concept pages fleshed out from 3-line stubs to 38-44 line substantive docs, OpenAPI spec synced with v4.0 endpoints, README updated with v4.0 section and architecture diagram
+
+---
+
 ## v1.1 Production Readiness (Shipped: 2026-04-09)
 
 **Phases:** 11 (Phases 11-21) | **Plans:** 30 | **Timeline:** 4 days
