@@ -207,12 +207,12 @@ Plans:
   3. If a HumanApprovalNode inside a subgraph pauses execution, the parent run transitions to WAITING_APPROVAL; resolution resumes the subgraph and eventually the parent run
   4. The same subgraph can be referenced by multiple parent graphs and at multiple points within a single parent; subgraph references can pin to a specific deployment version or float to the latest active deployment; nested subgraphs (subgraph within a subgraph) are supported with a configurable depth limit
   5. Audit records from subgraph execution link to the parent run via parent_run_id, and node IDs are namespaced to prevent collisions across nesting levels
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 39-01-PLAN.md — Subgraph package foundation: models, errors, resolver, node ID namespacing, Run parent_run_id, Node union extension
-- [ ] 39-02-PLAN.md — SubgraphExecutor with child Run creation, recursive _drive(), bootstrap wiring
-- [ ] 39-03-PLAN.md — Approval propagation (pause/resume chain) and comprehensive integration tests
+- [x] 39-01-PLAN.md — Subgraph package foundation: models, errors, resolver, node ID namespacing, Run parent_run_id, Node union extension
+- [x] 39-02-PLAN.md — SubgraphExecutor with child Run creation, recursive _drive(), bootstrap wiring
+- [x] 39-03-PLAN.md — Approval propagation (pause/resume chain) and comprehensive integration tests
 
 ## Progress
 
@@ -252,4 +252,4 @@ Phases execute in numeric order. v3.0 runs 27 -> 28 -> 29/30 (parallelizable aft
 | 30. Docs Site Foundation, Getting Started & Governance Walkthrough | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 31. Subsystem Concepts, Usage Guides, Cookbook & Examples | v3.0 | 5/5 | Complete   | 2026-04-11 |
 | 32. Reference Docs, Deployment & Migration Guide | v3.0 | 6/6 | Complete   | 2026-04-11 |
-| 39. Subgraph Composition | v4.0 | 0/3 | Planning   | — |
+| 39. Subgraph Composition | v4.0 | 3/3 | Complete    | 2026-04-13 |
