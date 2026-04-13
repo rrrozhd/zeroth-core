@@ -1,7 +1,57 @@
 # Requirements: Zeroth
 
-**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-13 (v4.0 milestone complete)
+**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-13 (v4.1 milestone started)
 **Core Value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
+
+## v4.1 Requirements — Platform Hardening & Missing Implementations
+
+v4.1 closes gaps between declared capabilities and actual implementations across orchestration, storage, templates, and resilience.
+
+### Orchestration Composition (ORCH)
+
+- [ ] **ORCH-01**: Fan-out node can invoke subgraphs concurrently (parallel subgraph invocations)
+- [ ] **ORCH-02**: Subgraphs can contain fan-out nodes (nested fan-out composition)
+- [ ] **ORCH-03**: All declared reduce merge strategies are implemented (reduce, merge, custom — not just collect)
+- [ ] **ORCH-04**: Merge strategy selection is validated at graph registration time
+
+### Artifact Storage Backends (ARTS)
+
+- [ ] **ARTS-01**: Artifacts can be stored to and retrieved from AWS S3
+- [ ] **ARTS-02**: Artifacts can be stored to and retrieved from Google Cloud Storage
+- [ ] **ARTS-03**: Storage backend is selectable via configuration (Redis, filesystem, S3, GCS)
+- [ ] **ARTS-04**: Existing Redis and filesystem backends continue working unchanged
+
+### Template Registry Persistence (TREG)
+
+- [ ] **TREG-01**: Templates persist across restarts via SQLAlchemy storage backend
+- [ ] **TREG-02**: Template CRUD operations work against database backend
+- [ ] **TREG-03**: In-memory registry remains available as a fast-path option
+
+### Circuit Breaker Durability (CBRK)
+
+- [ ] **CBRK-01**: HTTP circuit breaker state persists in Redis across restarts
+- [ ] **CBRK-02**: Circuit breaker state is shared across horizontal workers
+- [ ] **CBRK-03**: Circuit breaker degrades gracefully to in-memory if Redis unavailable
+
+### v4.1 Future Requirements
+
+Deferred to future release. Tracked but not in current roadmap.
+
+- **ARTS-05**: Azure Blob Storage backend for artifacts
+- **ARTS-06**: Artifact lifecycle policies (auto-expiry, archival tiers)
+- **TREG-04**: Template versioning with rollback support
+- **TREG-05**: Template import/export for cross-environment migration
+
+### v4.1 Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Azure Blob artifact storage | S3 + GCS cover primary clouds; Azure can use S3 compatibility |
+| Template marketplace / sharing | Registry is internal; sharing is a separate product concern |
+| Circuit breaker UI dashboard | Operational tooling — not core platform hardening |
+| Distributed circuit breaker consensus | Redis shared state is sufficient; no need for Raft/Paxos |
+
+---
 
 ## v3.0 Requirements — Core Library Extraction, Studio Split & Documentation
 
@@ -237,6 +287,30 @@ Which phases cover which requirements. Updated after roadmap creation.
 | D-06 | Phase 41 | Complete |
 | D-07 | Phase 41 | Complete |
 
+### v4.1 Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| ORCH-01 | — | Pending |
+| ORCH-02 | — | Pending |
+| ORCH-03 | — | Pending |
+| ORCH-04 | — | Pending |
+| ARTS-01 | — | Pending |
+| ARTS-02 | — | Pending |
+| ARTS-03 | — | Pending |
+| ARTS-04 | — | Pending |
+| TREG-01 | — | Pending |
+| TREG-02 | — | Pending |
+| TREG-03 | — | Pending |
+| CBRK-01 | — | Pending |
+| CBRK-02 | — | Pending |
+| CBRK-03 | — | Pending |
+
+**v4.1 Coverage:**
+- v4.1 requirements: 14 total
+- Mapped to phases: 0
+- Unmapped: 14 ⚠️
+
 **Coverage:**
 - v3.0 requirements: 34 total
 - Mapped to phases: 34
@@ -277,4 +351,4 @@ Phases 22–23 shipped in v2.0. Phases 24–26 deferred to the new `zeroth-studi
 
 ---
 
-*Requirements last updated: 2026-04-13 (v4.0 milestone complete).*
+*Requirements last updated: 2026-04-13 (v4.1 milestone started).*
