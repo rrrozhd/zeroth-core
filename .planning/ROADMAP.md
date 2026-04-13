@@ -302,4 +302,4 @@ Phases execute in numeric order. v3.0 runs 27 -> 28 -> 29/30 (parallelizable aft
 | 39. Subgraph Composition | v4.0 | 3/3 | Complete    | 2026-04-13 |
 | 40. Integration & Service Wiring | v4.0 | 2/3 | Complete    | 2026-04-13 |
 | 41. Phase 40 Completion & Verification | v4.0 | 2/2 | Complete    | 2026-04-13 |
-| 42. v4.0 Milestone Hygiene & Design Debt | v4.0 | 1/1 | Complete | 2026-04-13 |
+| 42. v4.0 Milestone Hygiene & Design Debt | v4.0 | 1/1 | Complete    | 2026-04-13 |
