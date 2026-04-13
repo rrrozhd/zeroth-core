@@ -1,6 +1,6 @@
 # Requirements: Zeroth
 
-**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-10 (v3.0 milestone)
+**Defined:** 2026-04-09 (v2.0) · **Updated:** 2026-04-13 (v4.0 gap closure phases)
 **Core Value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
 
 ## v3.0 Requirements — Core Library Extraction, Studio Split & Documentation
@@ -59,6 +59,64 @@ v3.0 is a packaging and documentation milestone. No new runtime features. Delive
 - [ ] **ARCHIVE-01**: A multi-layer archive of the pre-split monolithic repo exists and is documented: local tarball, local bare mirror, and GitHub repository `rrrozhd/zeroth-archive`
 - [ ] **ARCHIVE-02**: All 36 worktree branches, both stashes, and the detached-HEAD worktree from the ad-hoc split work are preserved in the archive and recoverable
 - [ ] **ARCHIVE-03**: The archive repository carries a visible "this repo is archived — see rrrozhd/zeroth-core and rrrozhd/zeroth-studio" notice in its README and repo description
+
+## v4.0 Requirements — Platform Extensions for Production Agentic Workflows
+
+v4.0 adds five runtime subsystems (resilient HTTP, prompt templates, context window management, parallel fan-out/fan-in, subgraph composition) and a capstone integration phase.
+
+### Resilient HTTP Client (HTTP)
+
+- [x] **HTTP-01**: Platform-provided async HTTP client available to agent tools and executable units, configurable per-node or per-tool
+- [x] **HTTP-02**: Configurable retry with exponential backoff and jitter; retryable status codes configurable
+- [x] **HTTP-03**: Per-endpoint circuit breaker with configurable failure threshold and reset timeout
+- [x] **HTTP-04**: Shared or per-tenant connection pools with configurable limits
+- [x] **HTTP-05**: External HTTP calls gated by capabilities, logged in audit records, subject to rate limiting
+- [x] **HTTP-06**: HTTP client resolves auth headers/tokens from SecretResolver automatically
+
+### Prompt Template Management (TMPL)
+
+- [x] **TMPL-01**: Template registry stores and versions prompt templates by name with create/retrieve/list API
+- [x] **TMPL-02**: Templates support variable interpolation using Jinja2 SandboxedEnvironment preventing injection
+- [x] **TMPL-03**: Agent node references template by name+version; resolved and rendered at runtime before LLM invocation
+- [x] **TMPL-04**: Rendered prompt in audit records; secret variables automatically redacted
+
+### Context Window Management (CTXW)
+
+- [x] **CTXW-01**: Token count tracked via litellm.token_counter, updated after each LLM invocation
+- [x] **CTXW-02**: Configurable threshold triggers compaction, default observation masking
+- [x] **CTXW-03**: Three pluggable strategies: truncation, observation masking, LLM summarization
+- [x] **CTXW-04**: Compaction results persist in thread memory; optional archive of originals
+- [x] **CTXW-05**: Per-agent-node configurable settings on AgentNodeData
+
+### Parallel Fan-Out/Fan-In (PARA)
+
+- [x] **PARA-01**: Node spawns N parallel branches from output, synchronization barrier collects with deterministic ordering by branch index
+- [x] **PARA-02**: Per-branch isolated execution context; best-effort and fail-fast modes
+- [x] **PARA-03**: Policy, audit, and contract validation apply independently per branch
+- [x] **PARA-04**: Cost attribution per branch, BudgetEnforcer pre-reservation, ExecutionSettings guardrails as sum across branches
+- [x] **PARA-05**: Complete branch isolation: separate visit counts, audit trail, failure tracking
+- [x] **PARA-06**: Fan-out integrates without breaking sequential execution
+
+### Subgraph Composition (SUBG)
+
+- [x] **SUBG-01**: SubgraphNode with graph_ref, version, thread_participation, max_depth
+- [x] **SUBG-02**: Orchestrator resolves subgraph at runtime, executes via recursive _drive()
+- [x] **SUBG-03**: Child Run linked to parent via parent_run_id
+- [x] **SUBG-04**: Parent governance acts as ceiling — subgraph can restrict not relax
+- [x] **SUBG-05**: Thread participation configurable: inherit shares thread_id, isolated creates new
+- [x] **SUBG-06**: Approval pauses propagate to parent, resolution cascades back
+- [x] **SUBG-07**: Depth tracking with SubgraphDepthLimitError
+- [x] **SUBG-08**: Node IDs namespaced with subgraph:{ref}:{depth}: prefix
+
+### Integration & Service Wiring (D)
+
+- [ ] **D-01**: All v4.0 subsystems on ServiceBootstrap after bootstrap_service()
+- [ ] **D-02**: Cross-feature interactions tested (parallel+artifacts, parallel+context, parallel+templates, subgraph+templates; SubgraphNode-in-parallel rejected)
+- [ ] **D-03**: Artifact retrieval REST endpoint (GET /v1/artifacts/{id})
+- [ ] **D-04**: Template CRUD REST endpoints (GET/POST/DELETE /v1/templates)
+- [ ] **D-05**: SubgraphNode-in-parallel rejected with clear validation error
+- [ ] **D-06**: Full test suite passes with zero new failures (backward compatibility)
+- [ ] **D-07**: In-repo documentation references new v4.0 API capabilities
 
 ## Deferred to v0.2.x of `zeroth-core`
 
@@ -140,9 +198,49 @@ Which phases cover which requirements. Updated after roadmap creation.
 | ARCHIVE-02 | Phase 27 | Pending |
 | ARCHIVE-03 | Phase 27 | Pending |
 
+| HTTP-01 | Phase 35 | Complete |
+| HTTP-02 | Phase 35 | Complete |
+| HTTP-03 | Phase 35 | Complete |
+| HTTP-04 | Phase 35 | Complete |
+| HTTP-05 | Phase 35 | Complete |
+| HTTP-06 | Phase 35 | Complete |
+| TMPL-01 | Phase 36 | Complete |
+| TMPL-02 | Phase 36 | Complete |
+| TMPL-03 | Phase 36 | Complete |
+| TMPL-04 | Phase 36 | Complete |
+| CTXW-01 | Phase 37 | Complete |
+| CTXW-02 | Phase 37 | Complete |
+| CTXW-03 | Phase 37 | Complete |
+| CTXW-04 | Phase 37 | Complete |
+| CTXW-05 | Phase 37 | Complete |
+| PARA-01 | Phase 38 | Complete |
+| PARA-02 | Phase 38 | Complete |
+| PARA-03 | Phase 38 | Complete |
+| PARA-04 | Phase 38 | Complete |
+| PARA-05 | Phase 38 | Complete |
+| PARA-06 | Phase 38 | Complete |
+| SUBG-01 | Phase 39 | Complete |
+| SUBG-02 | Phase 39 | Complete |
+| SUBG-03 | Phase 39 | Complete |
+| SUBG-04 | Phase 39 | Complete |
+| SUBG-05 | Phase 39 | Complete |
+| SUBG-06 | Phase 39 | Complete |
+| SUBG-07 | Phase 39 | Complete |
+| SUBG-08 | Phase 39 | Complete |
+| D-01 | Phase 41 | Pending |
+| D-02 | Phase 41 | Pending |
+| D-03 | Phase 41 | Pending |
+| D-04 | Phase 42 | Pending |
+| D-05 | Phase 41 | Pending |
+| D-06 | Phase 41 | Pending |
+| D-07 | Phase 41 | Pending |
+
 **Coverage:**
 - v3.0 requirements: 34 total
 - Mapped to phases: 34
+- Unmapped: 0
+- v4.0 requirements: 36 total
+- Mapped to phases: 36
 - Unmapped: 0
 
 ---
