@@ -1,5 +1,0 @@
-worktrees=36
-detached_worktrees=2
-branches=84
-stashes=2
-python_subpackages=27
