@@ -4,14 +4,14 @@ milestone: v3.0
 milestone_name: Core Library Extraction, Studio Split & Documentation
 status: verifying
 stopped_at: Completed 32-06-finalize-nav-ci-gates-PLAN.md
-last_updated: "2026-04-11T21:42:17.810Z"
-last_activity: 2026-04-11
+last_updated: "2026-04-13T01:45:40.037Z"
+last_activity: 2026-04-13
 progress:
   total_phases: 8
-  completed_phases: 8
-  total_plans: 37
-  completed_plans: 37
-  percent: 100
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 38
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 ## Current Position
 
-Phase: 30 (docs-site-foundation-getting-started-governance-walkthrough) — EXECUTING
-Plan: 5 of 5 (next: 30-03-getting-started-tutorial)
+Phase: 38
+Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-04-11
+Last activity: 2026-04-13
 
 Progress: [████░░░░░░] 38% (phases 22, 23, and 27 complete in the current split roadmap)
 
@@ -36,7 +36,7 @@ Progress: [████░░░░░░] 38% (phases 22, 23, and 27 complete i
 
 **Velocity (v1.1):**
 
-- Total plans completed: 30
+- Total plans completed: 32
 - Phases: 11 (Phases 11-21)
 - Timeline: 4 days (2026-04-06 to 2026-04-09)
 - Commits: 168
