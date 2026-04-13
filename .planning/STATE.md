@@ -1,7 +1,7 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Core Library Extraction, Studio Split & Documentation
+milestone: v4.0
+milestone_name: Platform Extensions for Production Agentic Workflows
 status: executing
 stopped_at: Completed 32-06-finalize-nav-ci-gates-PLAN.md
 last_updated: "2026-04-13T11:57:35.930Z"
