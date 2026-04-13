@@ -53,7 +53,7 @@
 
 </details>
 
-### v3.0 Core Library Extraction, Studio Split & Documentation (In Progress)
+### v3.0 Core Library Extraction, Studio Split & Documentation (SHIPPED 2026-04-11)
 
 **Milestone Goal:** Ship Zeroth as a pip-installable Python library (`zeroth-core`) with in-depth documentation covering every major subsystem, while moving the Vue Studio UI into a separate repo so the two evolve independently.
 
@@ -196,6 +196,10 @@ Plans:
 - [x] 32-04-deployment-guide-PLAN.md — 5 mode pages (local-dev, docker-compose, standalone-service, embedded-library, with-regulus) + index (DOCS-10)
 - [x] 32-05-migration-guide-PLAN.md — single comprehensive monolith->zeroth.core migration page (DOCS-11)
 - [x] 32-06-finalize-nav-ci-gates-PLAN.md — mkdocs.yml nav wiring + docs.yml drift gates + strict build verification
+
+### v4.0 Platform Extensions for Production Agentic Workflows (In Progress)
+
+**Milestone Goal:** Extend Zeroth with production-grade agentic workflow capabilities — subgraph composition, parallel execution, HTTP client, template registry, artifact store, and context window management — all wired into the service layer with full test coverage and documentation.
 
 ### Phase 39: Subgraph Composition
 **Goal**: A graph can reference another published graph as a nested subgraph node, with the orchestrator entering the subgraph as a scoped execution that inherits governance, shares thread memory, and propagates approvals back to the parent
