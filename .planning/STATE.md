@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Platform Hardening & Missing Implementations
-status: active
-stopped_at: ""
-last_updated: "2026-04-13"
-last_activity: 2026-04-13
+status: Roadmap created; ready for phase discussion
+stopped_at: Phase 43 context gathered
+last_updated: "2026-04-14T18:05:25.539Z"
+last_activity: 2026-04-13 — Milestone v4.1 roadmap created
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 0
 ---
 
 # Project State
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Teams can author and operate governed multi-agent workflows without sacrificing production controls, auditability, or deployment rigor.
-**Current focus:** Defining requirements for v4.1
+**Current focus:** Roadmap is defined for v4.1; Phase 43 is ready for discussion and planning.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 43 — Parallel Subgraph Fan-Out & Merge Strategies
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-13 — Milestone v4.1 started
+Status: Roadmap created; ready for phase discussion
+Last activity: 2026-04-13 — Milestone v4.1 roadmap created
 
 ## Performance Metrics
 
@@ -46,6 +45,7 @@ Last activity: 2026-04-13 — Milestone v4.1 started
 
 - Phase 27 added: Ship Zeroth as pip-installable library (zeroth-core)
 - Phase 27 completed: archive, namespace rename, CI/docstring gate, and post-rename verification all recorded in checked-in artifacts
+- Phases 43-46 added for v4.1: orchestration composition, cloud artifacts, template persistence, and circuit-breaker durability
 
 ### Decisions
 
@@ -81,8 +81,8 @@ v2.0 (retained for reference):
 
 ### Pending Todos
 
-- Plan and execute Phase 28 publication work (`econ-instrumentation-sdk` + `zeroth-core`)
-- Complete the manual PyPI trusted-publisher setup for zeroth-core on pypi.org AND test.pypi.org (two separate registrations)
+- Discuss and plan Phase 43: Parallel Subgraph Fan-Out & Merge Strategies
+- Sequence implementation for Phases 44-46 after Phase 43 scope is locked
 
 ### Blockers/Concerns
 
@@ -92,6 +92,6 @@ v2.0 (retained for reference):
 
 ## Session Continuity
 
-Last session: 2026-04-11T21:42:12.462Z
-Stopped at: Completed 32-06-finalize-nav-ci-gates-PLAN.md
-Resume: Discuss/plan Phase 28, then prepare the publication prerequisites (PyPI trusted publishers + Regulus remote)
+Last session: 2026-04-14T18:05:25.536Z
+Stopped at: Phase 43 context gathered
+Resume: Discuss Phase 43, then plan it into executable work
