@@ -33,6 +33,15 @@ v4.1 closes gaps between declared capabilities and actual implementations across
 - [ ] **CBRK-02**: Circuit breaker state is shared across horizontal workers
 - [ ] **CBRK-03**: Circuit breaker degrades gracefully to in-memory if Redis unavailable
 
+### Template Memory Binding (TMB)
+
+- [x] **TMB-01**: Agent nodes can declare memory connector bindings that are resolved at dispatch time
+- [x] **TMB-02**: `get` mode reads a single key from a connector into a named template variable
+- [x] **TMB-03**: `scan` mode reads all entries with a given prefix into a dict-typed template variable
+- [x] **TMB-04**: Binding keys support `{input.field}`, `{state.field}`, `{run.run_id}` placeholder substitution
+- [x] **TMB-05**: `max_items` truncates scan results; `default` is returned when a key is absent
+- [x] **TMB-06**: Unknown connector references raise `MemoryBindingResolutionError` at dispatch time
+
 ### v4.1 Future Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -291,25 +300,31 @@ Which phases cover which requirements. Updated after roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ORCH-01 | — | Pending |
-| ORCH-02 | — | Pending |
-| ORCH-03 | — | Pending |
-| ORCH-04 | — | Pending |
-| ARTS-01 | — | Pending |
-| ARTS-02 | — | Pending |
-| ARTS-03 | — | Pending |
-| ARTS-04 | — | Pending |
-| TREG-01 | — | Pending |
-| TREG-02 | — | Pending |
-| TREG-03 | — | Pending |
-| CBRK-01 | — | Pending |
-| CBRK-02 | — | Pending |
-| CBRK-03 | — | Pending |
+| ORCH-01 | Phase 43 | Pending |
+| ORCH-02 | Phase 43 | Pending |
+| ORCH-03 | Phase 43 | Pending |
+| ORCH-04 | Phase 43 | Pending |
+| TMB-01 | Phase 44 | Complete |
+| TMB-02 | Phase 44 | Complete |
+| TMB-03 | Phase 44 | Complete |
+| TMB-04 | Phase 44 | Complete |
+| TMB-05 | Phase 44 | Complete |
+| TMB-06 | Phase 44 | Complete |
+| ARTS-01 | Phase 45 | Pending |
+| ARTS-02 | Phase 45 | Pending |
+| ARTS-03 | Phase 45 | Pending |
+| ARTS-04 | Phase 45 | Pending |
+| TREG-01 | Phase 46 | Pending |
+| TREG-02 | Phase 46 | Pending |
+| TREG-03 | Phase 46 | Pending |
+| CBRK-01 | Phase 47 | Pending |
+| CBRK-02 | Phase 46 | Pending |
+| CBRK-03 | Phase 46 | Pending |
 
 **v4.1 Coverage:**
 - v4.1 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14 ⚠️
+- Mapped to phases: 14
+- Unmapped: 0
 
 **Coverage:**
 - v3.0 requirements: 34 total
