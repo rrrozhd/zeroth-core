@@ -33,6 +33,27 @@ async def test_checkpoint_and_thread_update_roll_back_together(dual_database, mo
     assert thread.checkpoint_refs == [original_id]
 
 
+async def test_warm_run_update_locks_thread_without_reseeding(sqlite_db, monkeypatch):
+    from zeroth.platform.storage.scoped_table import BoundStructuredTable
+
+    repo = RunRepository.for_default_compatibility(sqlite_db)
+    run = await repo.create(Run(graph_version_ref='checkpoint:v1', deployment_ref='checkpoint'))
+    run.checkpoint_id = None
+    original = BoundStructuredTable.insert_if_absent
+    thread_seed_writes = 0
+
+    async def observe(self, values, *args, **kwargs):
+        nonlocal thread_seed_writes
+        if {'thread_id', 'graph_version_ref', 'run_ids'} <= values.keys():
+            thread_seed_writes += 1
+        return await original(self, values, *args, **kwargs)
+
+    monkeypatch.setattr(BoundStructuredTable, 'insert_if_absent', observe)
+    await repo.put(run)
+
+    assert thread_seed_writes == 0
+
+
 @requires_docker
 async def test_concurrent_checkpoint_writers_keep_references_and_order(dual_database, monkeypatch):
     repo = RunRepository.for_default_compatibility(dual_database)

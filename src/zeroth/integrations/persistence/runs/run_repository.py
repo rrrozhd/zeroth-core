@@ -848,9 +848,9 @@ class _RunThreadStore:
         thread-level reader (``_checkpoint_ids``, ``get_latest_checkpoint``,
         ``_next_checkpoint_order``) stops seeing it, and a restore resumes from
         a stale checkpoint. The locking below is ``create_run``'s, statement for
-        statement — a write-locked transaction, the thread row seeded before it
-        is read so ``for_update`` has a row to lock, and the read taken with
-        that lock held.
+        statement — a write-locked transaction and a ``for_update`` read. The
+        usual warm path locks the existing row directly; only a missing thread
+        takes the seed-and-relock path used for recovery-compatible writes.
         """
         self.validate_owner(run.tenant_id, run.workspace_id)
         checkpoint_id = run.checkpoint_id or _new_checkpoint_id()
@@ -867,14 +867,19 @@ class _RunThreadStore:
                 workspace_id=run.workspace_id,
                 status=ThreadStatus.ACTIVE,
             )
-            await threads.insert_if_absent(
-                _thread_values(seed),
-                conflict_columns=("tenant_id", "workspace_scope", "thread_id"),
-            )
             row = await threads.select_one(
                 where={"thread_id": run.thread_id},
                 for_update=True,
             )
+            if row is None:
+                await threads.insert_if_absent(
+                    _thread_values(seed),
+                    conflict_columns=("tenant_id", "workspace_scope", "thread_id"),
+                )
+                row = await threads.select_one(
+                    where={"thread_id": run.thread_id},
+                    for_update=True,
+                )
             if row is None:  # pragma: no cover - insert/read transaction contract
                 raise RuntimeError("thread row unavailable after scoped insert")
             thread = row_to_thread(row)
