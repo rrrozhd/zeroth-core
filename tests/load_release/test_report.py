@@ -246,6 +246,38 @@ def test_every_profile_must_cover_the_full_matrix_and_scheduled_request_count() 
     assert any("scheduled request count" in error for error in errors)
 
 
+def test_worker_coverage_is_global_while_profile_fairness_counts_missing_workers() -> None:
+    from release.load.report import evidence_errors, load_profiles, recompute
+
+    profiles = load_profiles(PROFILES)
+    rows = _rows()
+    burst = [row for row in rows if row["profile"] == "burst" and row["fault"] is None]
+    original = recompute(rows, profiles["profiles"], profiles["matrix"])["burst"]
+    for row in burst:
+        if row["deployment_ref"] == "deployment-a" and row["worker"] == "worker-2":
+            row["worker"] = "worker-0"
+
+    errors = evidence_errors(rows, profiles)
+    measured = recompute(rows, profiles["profiles"], profiles["matrix"])["burst"]
+
+    assert not any("profile burst" in error and "worker matrix" in error for error in errors)
+    assert measured["worker_fairness"] < original["worker_fairness"]
+
+
+def test_workload_still_requires_every_configured_worker() -> None:
+    from release.load.report import evidence_errors, load_profiles
+
+    profiles = load_profiles(PROFILES)
+    rows = _rows()
+    for row in rows:
+        if row["worker"] == "worker-2":
+            row["worker"] = "worker-0"
+
+    errors = evidence_errors(rows, profiles)
+
+    assert any("workload" in error and "worker matrix" in error for error in errors)
+
+
 def test_raw_timestamps_must_prove_the_schedule_window_and_in_flight_bound() -> None:
     from release.load.report import evidence_errors, load_profiles
 

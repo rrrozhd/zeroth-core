@@ -660,13 +660,38 @@ jobs:
             --observations release/evidence/load-recovery-raw.json \
             --output release/evidence/load-recovery-benchmark.json
           REPORT=$?
+          THRESHOLDS=1
+          INTEGRITY=1
+          if [ -f release/evidence/load-recovery-benchmark.json ]; then
+            uv run python - <<'PY'
+          import json
+
+          report = json.load(open("release/evidence/load-recovery-benchmark.json"))
+          evaluation = report.get("evaluation")
+          raise SystemExit(0 if isinstance(evaluation, dict) and evaluation and all(evaluation.values()) else 1)
+          PY
+            THRESHOLDS=$?
+            uv run python - <<'PY'
+          import json
+
+          report = json.load(open("release/evidence/load-recovery-benchmark.json"))
+          measurements = report.get("measurements")
+          intact = isinstance(measurements, dict) and bool(measurements) and all(
+              values.get("lost_accepted_runs") == 0
+              and values.get("duplicate_accepted_runs") == 0
+              for values in measurements.values()
+          )
+          raise SystemExit(0 if intact else 1)
+          PY
+            INTEGRITY=$?
+          fi
           status() { if [ "$1" -eq 0 ]; then echo passed; else echo failed; fi; }
           python release/gates/cli.py record --gate load-recovery \
             --identity release/evidence/candidate-identity.json \
             --result "profiles=$(status ${PRODUCT})" \
-            --result "thresholds=$(status ${REPORT})" \
+            --result "thresholds=$(status ${THRESHOLDS})" \
             --result "recovery=$(status ${PRODUCT})" \
-            --result "accepted-run-integrity=$(status ${REPORT})" \
+            --result "accepted-run-integrity=$(status ${INTEGRITY})" \
             --result "source-receipt=$(status ${RECEIPT})" \
             --kind benchmark=release/evidence/load-recovery-benchmark.json \
             --kind junit=release/evidence/load-recovery-junit.xml \
