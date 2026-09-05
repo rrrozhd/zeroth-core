@@ -150,11 +150,6 @@ class RunWorker:
 
     async def _claim_pending(self) -> str | None:
         """Claim once and attribute saturation from that same atomic result."""
-        if not await self.lease_manager.has_pending(
-            self.deployment_ref,
-            **self._lease_scope(),
-        ):
-            return None
         limit = await self._effective_max_concurrency()
         result = await self.lease_manager.claim_pending_result(
             self.deployment_ref,

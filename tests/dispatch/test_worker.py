@@ -113,7 +113,6 @@ async def test_worker_refreshes_shared_concurrency_and_keeps_static_local_ceilin
         ),
     )
     shared_lease_manager = SimpleNamespace(
-        has_pending=AsyncMock(return_value=True),
         claim_pending_result=AsyncMock(
             side_effect=[
                 SimpleNamespace(run_id=None, concurrency_saturated=False),
@@ -141,7 +140,6 @@ async def test_worker_refreshes_shared_concurrency_and_keeps_static_local_ceilin
     assert worker._semaphore._value == 8
 
     static_lease_manager = SimpleNamespace(
-        has_pending=AsyncMock(return_value=True),
         claim_pending_result=AsyncMock(
             return_value=SimpleNamespace(run_id=None, concurrency_saturated=False)
         ),
@@ -157,31 +155,6 @@ async def test_worker_refreshes_shared_concurrency_and_keeps_static_local_ceilin
     await static_worker._claim_pending()
     assert static_lease_manager.claim_pending_result.call_args.kwargs["max_concurrency"] is None
     assert static_worker._semaphore._value == 3
-
-
-async def test_worker_skips_policy_and_capacity_lock_when_no_run_is_claimable() -> None:
-    policy_repository = SimpleNamespace(effective=AsyncMock())
-    lease_manager = SimpleNamespace(
-        has_pending=AsyncMock(return_value=False),
-        claim_pending_result=AsyncMock(),
-    )
-    worker = RunWorker(
-        deployment_ref=DEPLOYMENT,
-        run_repository=None,  # type: ignore[arg-type]
-        orchestrator=None,
-        graph=_FakeGraph(),
-        lease_manager=lease_manager,  # type: ignore[arg-type]
-    )
-    worker.guardrail_policy_repository = policy_repository
-
-    assert await worker._claim_pending() is None
-
-    lease_manager.has_pending.assert_awaited_once_with(
-        DEPLOYMENT,
-        **worker._lease_scope(),
-    )
-    policy_repository.effective.assert_not_awaited()
-    lease_manager.claim_pending_result.assert_not_awaited()
 
 
 async def test_interleaved_poll_and_wakeup_keep_saturation_per_claim() -> None:
@@ -218,10 +191,6 @@ async def test_interleaved_poll_and_wakeup_keep_saturation_per_claim() -> None:
         async def claim_pending(self, *args, **kwargs):
             del args, kwargs
             return (await self._result()).run_id
-
-        async def has_pending(self, *args, **kwargs):
-            del args, kwargs
-            return True
 
         async def claim_pending_result(self, *args, **kwargs):
             del args, kwargs

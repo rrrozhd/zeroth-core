@@ -196,33 +196,6 @@ class LeaseManager:
     # Claim operations
     # ---------------------------------------------------------------------------
 
-    async def has_pending(
-        self,
-        deployment_ref: str,
-        *,
-        tenant_id: str | None = None,
-        workspace_id: str | None | object = _UNSCOPED_WORKSPACE,
-    ) -> bool:
-        """Return whether one pending run warrants the atomic claim path.
-
-        This advisory read lets idle workers avoid policy resolution and the
-        shared-capacity lock. A positive result is always rechecked by the
-        existing atomic claim, so it cannot grant capacity or ownership.
-        """
-        scope_sql, scope_params = _scope_sql(tenant_id, workspace_id)
-        async with self.database.transaction() as conn:
-            row = await conn.fetch_one(
-                f"""
-                SELECT 1 AS claimable FROM runs
-                WHERE deployment_ref = ?
-                  {scope_sql}
-                  AND status = ?
-                LIMIT 1
-                """,
-                (deployment_ref, *scope_params, _STATUS_PENDING),
-            )
-        return row is not None
-
     async def claim_pending(
         self,
         deployment_ref: str,
