@@ -54,6 +54,8 @@ def test_release_workflow_bounds_docker_startup_and_each_python_test():
 
     root = Path(__file__).resolve().parents[2]
     workflow = yaml.safe_load((root/'.github/workflows/release-gates.yml').read_text())
+    assert workflow['jobs']['source']['timeout-minutes'] == 60
+    assert workflow['jobs']['package']['timeout-minutes'] == 60
     source_steps = workflow['jobs']['source']['steps']
     readiness = next(step for step in source_steps if step['name'] == 'Wait for Docker')
     source_script = next(

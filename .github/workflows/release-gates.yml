@@ -100,6 +100,7 @@ jobs:
     name: Gate — source
     needs: [candidate]
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
       ZEROTH_REQUIRE_DOCKER: "1"
     steps:
@@ -191,6 +192,7 @@ jobs:
     name: Gate — package
     needs: [candidate]
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
