@@ -70,7 +70,7 @@ def test_idle_worker_polling_cannot_eclipse_the_scheduled_workload() -> None:
 
     workload_probe.install_runner(service, "slow-script")
 
-    assert service.worker.poll_interval == 0.04
+    assert service.worker.poll_interval == 0.5
 
 
 @pytest.mark.parametrize("status_code", (202, 429))

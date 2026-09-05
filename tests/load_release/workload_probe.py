@@ -23,7 +23,7 @@ from zeroth.service.bootstrap.factory import bootstrap_scoped_service
 
 _CLAIMED_BY: dict[str, str] = {}
 _SETTLEMENT_POLL_SECONDS = 0.5
-_WORKER_POLL_SECONDS = 0.04
+_WORKER_POLL_SECONDS = 0.5
 _OWNERSHIP_POLL_SECONDS = 0.05
 
 
@@ -115,9 +115,8 @@ def install_runner(service: Any, surface: str) -> None:
             delay=0.1,
             fails=surface == "failing-script",
         )
-    # Eighteen load workers share one database. A 5 ms idle poll manufactured
-    # thousands of admission-lock queries per second and overwhelmed the
-    # 30-request/s profile the gate was intended to measure.
+    # Eighteen load workers share one database. Use the production default so
+    # idle claim cycles do not eclipse the 30-request/s profile under test.
     service.worker.poll_interval = _WORKER_POLL_SECONDS
     execute = service.worker._execute_leased_run
 
