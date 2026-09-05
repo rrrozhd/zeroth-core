@@ -40,6 +40,47 @@ async def test_failure_records_await_chain_without_locals_or_exception_text(tmp_
     assert "secret-canary" not in text
 
 
+async def test_failure_records_bounded_run_and_lease_inventory(tmp_path, monkeypatch):
+    from tests.load_release.approval_diagnostics import Diagnostics
+
+    sink = Diagnostics(tmp_path / "trace.jsonl")
+
+    async def database(_dsn):
+        return []
+
+    async def inventory(_dsn):
+        return {
+            "grouped": [
+                {
+                    "tenant_id": "tenant-2",
+                    "deployment_ref": "tenant-2-deployment-2",
+                    "status": "pending",
+                    "runs": 7,
+                    "leased": 0,
+                }
+            ],
+            "approval_runs": [
+                {
+                    "run_id": "opaque-run-id",
+                    "status": "pending",
+                    "lease_worker_id": None,
+                    "lease_generation": 2,
+                    "approval_resolved_id": "opaque-approval-id",
+                    "started_at": "2026-09-05T00:00:00+00:00",
+                    "updated_at": "2026-09-05T00:00:01+00:00",
+                }
+            ],
+        }
+
+    monkeypatch.setattr(sink, "database_waits", database)
+    monkeypatch.setattr(sink, "run_inventory", inventory)
+
+    await sink.capture_failure(AssertionError(), "burst", 18, "dsn")
+
+    row = json.loads(sink.path.read_text())
+    assert row["run_inventory"] == await inventory("dsn")
+
+
 async def test_stage_wrapper_preserves_failure_identity_and_records_only_type(tmp_path, monkeypatch):
     from tests.load_release.approval_diagnostics import Diagnostics
 

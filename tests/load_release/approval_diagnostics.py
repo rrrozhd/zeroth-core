@@ -224,6 +224,32 @@ class Diagnostics:
                 )
                 return await cursor.fetchall()
 
+    async def run_inventory(self, dsn):
+        """Read bounded run/lease state for the load probe's approval deployment."""
+        import psycopg
+        from psycopg.rows import dict_row
+
+        async with asyncio.timeout(3):
+            async with await psycopg.AsyncConnection.connect(dsn, row_factory=dict_row) as connection:
+                grouped = await (
+                    await connection.execute(
+                        "SELECT tenant_id, deployment_ref, status, "
+                        "COUNT(*) AS runs, COUNT(lease_worker_id) AS leased "
+                        "FROM runs GROUP BY tenant_id, deployment_ref, status "
+                        "ORDER BY tenant_id, deployment_ref, status LIMIT 128"
+                    )
+                ).fetchall()
+                approval_runs = await (
+                    await connection.execute(
+                        "SELECT run_id, status, lease_worker_id, lease_generation, "
+                        "metadata::jsonb ->> 'approval_resolved_id' AS approval_resolved_id, "
+                        "started_at::text AS started_at, updated_at::text AS updated_at "
+                        "FROM runs WHERE deployment_ref = 'tenant-2-deployment-2' "
+                        "ORDER BY started_at LIMIT 64"
+                    )
+                ).fetchall()
+                return {"grouped": grouped, "approval_runs": approval_runs}
+
     async def capture_failure(self, error, profile, sequence, dsn, *, settlement=None):
         if settlement is not None:
             self.failure_timeline_count += 1
@@ -253,6 +279,10 @@ class Diagnostics:
             row["database_waits"] = await self.database_waits(dsn)
         except Exception as diagnostic_error:
             row["database_diagnostic_error"] = type(diagnostic_error).__name__
+        try:
+            row["run_inventory"] = await self.run_inventory(dsn)
+        except Exception as diagnostic_error:
+            row["run_inventory_error"] = type(diagnostic_error).__name__
         finally:
             self.record(row)
 
