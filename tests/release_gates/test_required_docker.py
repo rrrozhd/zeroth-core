@@ -46,3 +46,29 @@ def test_source_workflow_requires_docker():
     root = Path(__file__).resolve().parents[2]
     workflow = yaml.safe_load((root/'.github/workflows/release-gates.yml').read_text())
     assert workflow['jobs']['source']['env']['ZEROTH_REQUIRE_DOCKER'] == '1'
+
+
+def test_release_workflow_bounds_docker_startup_and_each_python_test():
+    from pathlib import Path
+    import yaml
+
+    root = Path(__file__).resolve().parents[2]
+    workflow = yaml.safe_load((root/'.github/workflows/release-gates.yml').read_text())
+    source_steps = workflow['jobs']['source']['steps']
+    readiness = next(step for step in source_steps if step['name'] == 'Wait for Docker')
+    source_script = next(
+        step['run'] for step in source_steps
+        if step['name'].startswith('Run the source checks')
+    )
+    package_script = next(
+        step['run'] for step in workflow['jobs']['package']['steps']
+        if step['name'].startswith('Install the built wheel')
+    )
+
+    assert readiness['timeout-minutes'] == 2
+    assert 'docker info' in readiness['run']
+    assert 'pytest-timeout' in package_script
+    for script in (source_script, package_script):
+        assert '--timeout=120' in script
+        assert '--timeout-method=thread' in script
+        assert '--full-trace' in script

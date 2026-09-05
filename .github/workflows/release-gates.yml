@@ -129,6 +129,19 @@ jobs:
           name: candidate-identity
           path: release/evidence
 
+      - name: Wait for Docker
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..30}; do
+            if docker info >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker info
+
       - name: Run the source checks and record the outcome
         shell: bash
         run: |
@@ -141,7 +154,8 @@ jobs:
           mkdir -p release/evidence
           uv sync --all-groups --all-extras
           uv run ruff check src tests; RUFF=$?
-          uv run pytest -q --junitxml=release/evidence/source-junit.xml; PYTEST=$?
+          uv run pytest -q --timeout=120 --timeout-method=thread --full-trace \
+            --junitxml=release/evidence/source-junit.xml; PYTEST=$?
           uv run interrogate src/zeroth; INTERROGATE=$?
           (cd frontend && npm ci --no-fund --no-audit) ; NPM_CI=$?
           (cd frontend && npx vitest run --reporter=junit \
@@ -226,7 +240,7 @@ jobs:
           test -f "${WHEEL}"; BUILD=$?
           # Tape identity/normalization property tests import Hypothesis during
           # collection; it is test tooling, not a wheel runtime dependency.
-          pip install "${WHEEL}[all,langgraph]" pytest pytest-asyncio hypothesis \
+          pip install "${WHEEL}[all,langgraph]" pytest pytest-asyncio pytest-timeout hypothesis \
             "testcontainers[postgres]"; INSTALL=$?
           python -c "import zeroth.runtime; print(zeroth.runtime.__path__)"; SMOKE=$?
           if [ "${INSTALL}" -ne 0 ]; then SMOKE=1; fi
@@ -242,6 +256,7 @@ jobs:
           # and asserts it admits nothing the project default excludes.
           pytest tests/ -q \
             -m "not live and not langgraph_conformance and not deployed_acceptance and not dev_toolchain" \
+            --timeout=120 --timeout-method=thread --full-trace \
             --junitxml=release/evidence/package-junit.xml; TESTS=$?
           deactivate
           set -e
