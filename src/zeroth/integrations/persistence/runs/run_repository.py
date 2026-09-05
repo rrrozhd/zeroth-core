@@ -292,12 +292,15 @@ class GuardrailAdmissionCoordinator:
         admission: BoundStructuredTable,
         deployment_ref: str,
     ) -> None:
+        where = {"deployment_ref": deployment_ref}
+        if await admission.select_one(where=where, for_update=True) is not None:
+            return
         now = utc_now().isoformat()
         await admission.insert_if_absent(
             {"deployment_ref": deployment_ref, "created_at": now},
             conflict_columns=("tenant_id", "workspace_scope", "deployment_ref"),
         )
-        await admission.select_one(where={"deployment_ref": deployment_ref}, for_update=True)
+        await admission.select_one(where=where, for_update=True)
 
 
 @dataclass(slots=True)

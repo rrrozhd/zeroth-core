@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from tests.conftest import requires_docker
+from zeroth.integrations.persistence.runs.run_repository import GuardrailAdmissionCoordinator
 from zeroth.platform.dispatch.lease import LeaseManager
 
 
@@ -32,6 +33,28 @@ async def test_existing_admission_row_is_locked_without_a_seed_write(dual_databa
     assert statements[0].lstrip().startswith("SELECT")
     if manager._is_postgres():
         assert "FOR UPDATE" in statements[0]
+
+
+async def test_guarded_run_admission_does_not_reseed_a_warm_lock() -> None:
+    statements = []
+
+    async def insert_if_absent(*_args, **_kwargs):
+        statements.append("insert")
+
+    async def select_one(*_args, **kwargs):
+        statements.append(("select", kwargs))
+        return {"deployment_ref": "warm-admission"}
+
+    admission = SimpleNamespace(
+        insert_if_absent=insert_if_absent,
+        select_one=select_one,
+    )
+    coordinator = object.__new__(GuardrailAdmissionCoordinator)
+
+    await coordinator._coordinate_bound(admission, "warm-admission")
+
+    assert statements == [("select", {"where": {"deployment_ref": "warm-admission"},
+                                       "for_update": True})]
 
 
 @requires_docker

@@ -77,6 +77,18 @@ async def test_claim_pending_returns_none_when_empty(sqlite_db: AsyncSQLiteDatab
     assert result is None
 
 
+async def test_pending_precheck_includes_live_leases_for_saturation_observation(
+    sqlite_db: AsyncSQLiteDatabase,
+) -> None:
+    manager = LeaseManager(sqlite_db, lease_duration_seconds=60)
+    run_repo = RunRepository.for_default_compatibility(sqlite_db)
+    run_id = await _create_pending_run(run_repo)
+
+    assert await manager.has_pending(DEPLOYMENT)
+    assert await manager.claim_pending(DEPLOYMENT, WORKER_A) == run_id
+    assert await manager.has_pending(DEPLOYMENT)
+
+
 @pytest.mark.asyncio
 async def test_claim_pending_claims_oldest_run(sqlite_db: AsyncSQLiteDatabase) -> None:
     manager = LeaseManager(sqlite_db)
