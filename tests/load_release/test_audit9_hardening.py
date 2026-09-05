@@ -50,7 +50,7 @@ async def test_terminal_observation_is_rate_bounded(
     )
 
     assert terminal[0]["state"] == "completed"
-    assert sleeps == [0.05]
+    assert sleeps == [0.5]
 
 
 def test_idle_worker_polling_cannot_eclipse_the_scheduled_workload() -> None:

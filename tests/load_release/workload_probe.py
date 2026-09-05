@@ -22,7 +22,7 @@ from zeroth.service.bootstrap.factory import bootstrap_scoped_service
 
 
 _CLAIMED_BY: dict[str, str] = {}
-_SETTLEMENT_POLL_SECONDS = 0.05
+_SETTLEMENT_POLL_SECONDS = 0.5
 _WORKER_POLL_SECONDS = 0.04
 _OWNERSHIP_POLL_SECONDS = 0.05
 
@@ -243,8 +243,8 @@ async def _settle_run(
                 }
             ]
         # These reads observe accepted work; they are not part of the scheduled
-        # request profile. Keep them bounded so the probe cannot manufacture
-        # database pressure that eclipses the workload it is measuring.
+        # request profile. Keep their cadence below the measured request rate so
+        # accepted backlog cannot amplify observation traffic into pool starvation.
         await asyncio.sleep(_SETTLEMENT_POLL_SECONDS)
     raise AssertionError(f"load run {run_id} did not reach a terminal status")
 
