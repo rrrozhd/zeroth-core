@@ -81,7 +81,7 @@ async def test_failure_records_bounded_run_and_lease_inventory(tmp_path, monkeyp
     assert row["run_inventory"] == await inventory("dsn")
 
 
-async def test_stage_wrapper_preserves_failure_identity_and_records_only_type(tmp_path, monkeypatch):
+async def test_stage_wrapper_preserves_failure_identity_without_hot_path_io(tmp_path, monkeypatch):
     from tests.load_release.approval_diagnostics import Diagnostics
 
     original = ValueError("secret-canary")
@@ -95,11 +95,35 @@ async def test_stage_wrapper_preserves_failure_identity_and_records_only_type(tm
     with pytest.raises(ValueError) as captured:
         await owner.stage()
     assert captured.value is original
-    row = json.loads(sink.path.read_text())
+    assert not sink.path.exists()
+    row, = sink.recent_operations
     assert row["operation"] == "stage"
     assert row["outcome"] == "ValueError"
     assert row["elapsed_ms"] >= 0
-    assert "secret-canary" not in sink.path.read_text()
+    assert "secret-canary" not in json.dumps(row)
+
+
+async def test_failure_flushes_bounded_recent_operation_metadata(tmp_path, monkeypatch):
+    from tests.load_release.approval_diagnostics import Diagnostics
+
+    sink = Diagnostics(tmp_path / "trace.jsonl")
+    sink.recent_operations.append(
+        {"operation": "resolve", "elapsed_ms": 1.25, "outcome": "returned"}
+    )
+
+    async def database(_dsn):
+        return []
+
+    async def inventory(_dsn):
+        return {"grouped": [], "approval_runs": []}
+
+    monkeypatch.setattr(sink, "database_waits", database)
+    monkeypatch.setattr(sink, "run_inventory", inventory)
+
+    await sink.capture_failure(AssertionError(), "overload", 18, "dsn")
+
+    row = json.loads(sink.path.read_text())
+    assert row["recent_operations"] == list(sink.recent_operations)
 
 
 @pytest.mark.parametrize("outcome", ["returned", "error", "cancelled"])

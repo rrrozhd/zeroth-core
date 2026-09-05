@@ -9,7 +9,6 @@ from contextlib import asynccontextmanager
 from dataclasses import replace
 from pathlib import Path
 
-from tests.load_release.cpu_sampling import CPUSampler
 from zeroth.service.api.run_api import RunPublicStatus
 
 _PUBLIC_STATES = frozenset(state.value for state in RunPublicStatus)
@@ -91,12 +90,12 @@ class Diagnostics:
         self.active = {}
         self.sequence = 0
         self.transactions = {}
+        self.recent_operations = deque(maxlen=2048)
         self.loop_samples = deque(maxlen=128)
         self.loop_count = 0
         self.loop_max_lag = 0
         self.loop_started = time.perf_counter()
         self.cpu_started = time.process_time()
-        self.cpu_sampler = CPUSampler()
 
     def loop_snapshot(self):
         """Report elapsed CPU and scheduler delays without inspecting application data."""
@@ -104,7 +103,8 @@ class Diagnostics:
                 "cpu_seconds": time.process_time() - self.cpu_started,
                 "max_lag_ms": self.loop_max_lag,
                 "samples": self.loop_count, "recent_lag": list(self.loop_samples),
-                "cpu_samples": self.cpu_sampler.snapshot()}
+                "cpu_samples": {"status": "disabled-during-measurement",
+                                "reason": "observer-effect-control"}}
 
     @asynccontextmanager
     async def monitor_loop(self, profile):
@@ -130,10 +130,8 @@ class Diagnostics:
             observer = loop.call_later(.05, sample)
 
         observer = loop.call_later(.05, sample)
-        self.cpu_sampler = CPUSampler()
         try:
-            with self.cpu_sampler:
-                yield
+            yield
         finally:
             observer.cancel()
             self.record({"operation": "profile_timing", "profile": profile,
@@ -205,8 +203,10 @@ class Diagnostics:
                 raise
             finally:
                 self.active.pop(token, None)
-                self.record({"operation": name, "elapsed_ms": (time.perf_counter()-started)*1000,
-                             "outcome": outcome})
+                self.recent_operations.append(
+                    {"operation": name, "elapsed_ms": (time.perf_counter()-started)*1000,
+                     "outcome": outcome}
+                )
 
         monkeypatch.setattr(owner, name, measured)
 
@@ -268,6 +268,7 @@ class Diagnostics:
                "tasks": [await_chain(task) for task in list(asyncio.all_tasks())[:256]],
                "transactions": self.transaction_snapshot(),
                "event_loop": self.loop_snapshot(),
+               "recent_operations": list(self.recent_operations),
                "active": [{"operation": name, "elapsed_ms": (now-started)*1000,
                            "cancelling": task.cancelling() if task else 0,
                            "owner": await_chain(task) if task else []}
