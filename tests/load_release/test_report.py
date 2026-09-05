@@ -278,6 +278,21 @@ def test_workload_still_requires_every_configured_worker() -> None:
     assert any("workload" in error and "worker matrix" in error for error in errors)
 
 
+def test_sparse_fault_deployments_do_not_contaminate_workload_matrix() -> None:
+    from release.load.report import evidence_errors, load_profiles
+
+    profiles = load_profiles(PROFILES)
+    rows = _rows()
+    for index, row in enumerate(row for row in rows if row["fault"] is not None):
+        row["deployment_ref"] = f"fault-only-deployment-{index}"
+        row["replica"] = "fault-only-replica"
+        row["worker"] = "fault-only-worker"
+
+    errors = evidence_errors(rows, profiles)
+
+    assert not any("workload" in error and "matrix" in error for error in errors)
+
+
 def test_raw_timestamps_must_prove_the_schedule_window_and_in_flight_bound() -> None:
     from release.load.report import evidence_errors, load_profiles
 

@@ -77,6 +77,13 @@ def test_load_gate_runs_in_the_pinned_capacity_environment() -> None:
     assert job["env"]["ZEROTH_LOAD_REDIS_VERSION"] == job["services"]["redis"]["image"]
 
 
+def test_release_measurement_does_not_enable_diagnostic_instrumentation() -> None:
+    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    job = workflow["jobs"]["load-recovery"]
+
+    assert "ZEROTH_LOAD_DIAGNOSTICS" not in job["env"]
+
+
 def test_baseline_sources_are_three_distinct_base_runs() -> None:
     baseline = json.loads(BASELINE.read_text(encoding="utf-8"))
     source = baseline["source"]

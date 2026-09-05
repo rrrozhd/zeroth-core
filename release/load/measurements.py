@@ -465,7 +465,8 @@ def evidence_errors(rows: Any, profiles: dict) -> list[str]:
     if {row["profile"] for row in valid} != set(profiles["profiles"]):
         errors.append("raw requests do not cover every profile")
     errors.extend(_profile_errors(valid, profiles))
-    errors.extend(_matrix_errors(valid, profiles["matrix"], "workload"))
+    workload = [row for row in valid if row["fault"] is None]
+    errors.extend(_matrix_errors(workload, profiles["matrix"], "workload"))
     errors.extend(_fault_errors(valid, profiles))
     lost, duplicates, _ = _lifecycle_accounting(valid)
     if lost:
